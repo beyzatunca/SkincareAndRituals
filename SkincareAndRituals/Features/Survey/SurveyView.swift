@@ -1021,6 +1021,9 @@ final class SkinReportViewModel: ObservableObject {
         // Analytics event
         print("Analytics: results_feedback_satisfied")
         
+        // Set home tab as default for next app launch
+        UserDefaults.standard.set(AppTab.home.rawValue, forKey: "lastTab")
+        
         // Navigate to main page after 2 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             self.showingSuccessOverlay = false
@@ -1035,6 +1038,9 @@ final class SkinReportViewModel: ObservableObject {
         showingSuccessOverlay = true
         // Analytics event
         print("Analytics: results_profile_completed")
+        
+        // Set home tab as default for next app launch
+        UserDefaults.standard.set(AppTab.home.rawValue, forKey: "lastTab")
         
         // Navigate to main page after 2 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {

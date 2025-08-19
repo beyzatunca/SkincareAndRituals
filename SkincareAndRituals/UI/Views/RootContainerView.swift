@@ -46,10 +46,9 @@ struct RootContainerView: View {
             }
         }
         .onAppear {
-            // Restore last selected tab
-            if let tab = AppTab(rawValue: lastSelectedTab) {
-                selectedTab = tab
-            }
+            // Always start with home tab (Skincare & Rituals)
+            selectedTab = .home
+            lastSelectedTab = AppTab.home.rawValue
         }
         .onChange(of: selectedTab) { newValue in
             // Save selected tab
