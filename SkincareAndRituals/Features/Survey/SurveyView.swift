@@ -1,5 +1,499 @@
 import SwiftUI
 import AVFoundation
+
+// MARK: - Product Category
+enum ProductCategory: String, CaseIterable, Identifiable, Codable, Hashable {
+    case cleanser = "Cleanser"
+    case moisturizer = "Moisturizer"
+    case serum = "Serum"
+    case sunscreen = "Sunscreen"
+    case toner = "Toner"
+    case exfoliant = "Exfoliant"
+    case mask = "Mask"
+    case eyeCare = "Eye Care"
+    case lipCare = "Lip Care"
+    case all = "All"
+    
+    var id: String { rawValue }
+    
+    var icon: String {
+        switch self {
+        case .cleanser: return "drop.fill"
+        case .moisturizer: return "leaf.fill"
+        case .serum: return "eyedropper"
+        case .sunscreen: return "sun.max.fill"
+        case .toner: return "sparkles"
+        case .exfoliant: return "circle.grid.3x3.fill"
+        case .mask: return "face.smiling"
+        case .eyeCare: return "eye.fill"
+        case .lipCare: return "heart.fill"
+        case .all: return "square.grid.2x2.fill"
+        }
+    }
+}
+
+
+// MARK: - Product
+struct Product: Identifiable, Codable, Hashable {
+    let id = UUID()
+    let name: String
+    let brand: String
+    let category: ProductCategory
+    let price: Double
+    let currency: String
+    let imageURL: String?
+    let description: String
+    let ingredients: [String]
+    let skinTypes: [SkinType]
+    let rating: Double
+    let reviewCount: Int
+    let size: String
+    let isCrueltyFree: Bool
+    let isVegan: Bool
+    let isRecommended: Bool
+    let benefits: [String]
+    let howToUse: String
+    let warnings: [String]
+    
+    // Computed properties
+    var formattedPrice: String {
+        return "\(currency) \(String(format: "%.2f", price))"
+    }
+    
+    var ratingText: String {
+        return String(format: "%.1f", rating)
+    }
+    
+    var reviewText: String {
+        return "\(reviewCount) reviews"
+    }
+}
+
+// MARK: - Sample Data
+extension Product {
+    static let sampleProducts: [Product] = [
+        // Cleansers
+        Product(
+            name: "Gentle Foaming Cleanser",
+            brand: "CeraVe",
+            category: .cleanser,
+            price: 15.99,
+            currency: "$",
+            imageURL: nil,
+            description: "Hassas ciltler için nazik köpüklü temizleyici. Cildi temizlerken nemlendirir.",
+            ingredients: ["Ceramides", "Hyaluronic Acid", "Niacinamide"],
+            skinTypes: [.normal, .dry, .sensitive],
+            rating: 4.5,
+            reviewCount: 1247,
+            size: "236ml",
+            isCrueltyFree: true,
+            isVegan: false,
+            isRecommended: true,
+            benefits: ["Temizler", "Nemlendirir", "Hassas ciltler için uygun"],
+            howToUse: "Sabah ve akşam ıslak cilde uygulayın, köpürtün ve durulayın.",
+            warnings: ["Gözlerle temas ettirmeyin"]
+        ),
+        
+        Product(
+            name: "Salicylic Acid Cleanser",
+            brand: "The Ordinary",
+            category: .cleanser,
+            price: 12.90,
+            currency: "$",
+            imageURL: nil,
+            description: "Akne eğilimli ciltler için salisilik asit içeren temizleyici.",
+            ingredients: ["Salicylic Acid", "Coconut-derived Surfactants"],
+            skinTypes: [.oily, .combination, .acneProne],
+            rating: 4.2,
+            reviewCount: 892,
+            size: "150ml",
+            isCrueltyFree: true,
+            isVegan: true,
+            isRecommended: true,
+            benefits: ["Gözenekleri temizler", "Akne oluşumunu azaltır", "Yağ kontrolü"],
+            howToUse: "Günde 1-2 kez ıslak cilde uygulayın ve durulayın.",
+            warnings: ["Güneş hassasiyeti yaratabilir", "Güneş koruyucu kullanın"]
+        ),
+        
+        // Moisturizers
+        Product(
+            name: "Daily Moisturizing Lotion",
+            brand: "Cetaphil",
+            category: .moisturizer,
+            price: 18.50,
+            currency: "$",
+            imageURL: nil,
+            description: "Günlük kullanım için hafif ve hızlı emilen nemlendirici.",
+            ingredients: ["Glycerin", "Dimethicone", "Vitamin E"],
+            skinTypes: [.normal, .dry, .combination],
+            rating: 4.3,
+            reviewCount: 2156,
+            size: "200ml",
+            isCrueltyFree: false,
+            isVegan: false,
+            isRecommended: true,
+            benefits: ["24 saat nemlendirme", "Hızlı emilim", "Günlük kullanım"],
+            howToUse: "Temiz cilde sabah ve akşam uygulayın.",
+            warnings: []
+        ),
+        
+        Product(
+            name: "Hyaluronic Acid Moisturizer",
+            brand: "The Inkey List",
+            category: .moisturizer,
+            price: 14.99,
+            currency: "$",
+            imageURL: nil,
+            description: "Hyaluronik asit ile yoğun nemlendirme sağlayan krem.",
+            ingredients: ["Hyaluronic Acid", "Squalane", "Ceramides"],
+            skinTypes: [.normal, .dry, .sensitive],
+            rating: 4.4,
+            reviewCount: 743,
+            size: "50ml",
+            isCrueltyFree: true,
+            isVegan: true,
+            isRecommended: true,
+            benefits: ["Yoğun nemlendirme", "Cilt bariyerini güçlendirir", "Hassas ciltler için uygun"],
+            howToUse: "Temiz cilde günde 1-2 kez uygulayın.",
+            warnings: []
+        ),
+        
+        // Serums
+        Product(
+            name: "Vitamin C Serum",
+            brand: "Paula's Choice",
+            category: .serum,
+            price: 36.00,
+            currency: "$",
+            imageURL: nil,
+            description: "C vitamini ile parlak ve eşit tonlu cilt için serum.",
+            ingredients: ["Vitamin C", "Vitamin E", "Ferulic Acid"],
+            skinTypes: [.normal, .dry, .combination],
+            rating: 4.6,
+            reviewCount: 1843,
+            size: "30ml",
+            isCrueltyFree: true,
+            isVegan: true,
+            isRecommended: true,
+            benefits: ["Anti-aging", "Parlaklık", "Eşit ton"],
+            howToUse: "Sabah temiz cilde uygulayın, güneş koruyucu kullanın.",
+            warnings: ["Güneş hassasiyeti yaratabilir", "Güneş koruyucu kullanın"]
+        ),
+        
+        Product(
+            name: "Niacinamide 10% + Zinc 1%",
+            brand: "The Ordinary",
+            category: .serum,
+            price: 8.90,
+            currency: "$",
+            imageURL: nil,
+            description: "Gözenekleri küçültmek ve yağ kontrolü için niacinamide serumu.",
+            ingredients: ["Niacinamide", "Zinc PCA"],
+            skinTypes: [.oily, .combination, .acneProne],
+            rating: 4.1,
+            reviewCount: 3247,
+            size: "30ml",
+            isCrueltyFree: true,
+            isVegan: true,
+            isRecommended: true,
+            benefits: ["Gözenek kontrolü", "Yağ azaltma", "Akne önleme"],
+            howToUse: "Akşam temiz cilde uygulayın.",
+            warnings: ["C vitamini ile birlikte kullanmayın"]
+        ),
+        
+        // Sunscreens
+        Product(
+            name: "Ultra Light Daily UV Defense",
+            brand: "EltaMD",
+            category: .sunscreen,
+            price: 32.00,
+            currency: "$",
+            imageURL: nil,
+            description: "Günlük kullanım için hafif ve hızlı emilen güneş koruyucu.",
+            ingredients: ["Zinc Oxide", "Octinoxate", "Hyaluronic Acid"],
+            skinTypes: [.normal, .dry, .sensitive],
+            rating: 4.7,
+            reviewCount: 1567,
+            size: "48g",
+            isCrueltyFree: true,
+            isVegan: false,
+            isRecommended: true,
+            benefits: ["SPF 46", "Hafif formül", "Hassas ciltler için uygun"],
+            howToUse: "Güneşe çıkmadan 15 dakika önce uygulayın.",
+            warnings: ["2 saatte bir yenileyin"]
+        ),
+        
+        Product(
+            name: "Clear Zinc Sunscreen",
+            brand: "Neutrogena",
+            category: .sunscreen,
+            price: 11.99,
+            currency: "$",
+            imageURL: nil,
+            description: "Akne eğilimli ciltler için berrak çinko oksit güneş koruyucu.",
+            ingredients: ["Zinc Oxide", "Helioplex Technology"],
+            skinTypes: [.oily, .combination, .acneProne],
+            rating: 4.0,
+            reviewCount: 892,
+            size: "88ml",
+            isCrueltyFree: false,
+            isVegan: false,
+            isRecommended: false,
+            benefits: ["SPF 30", "Akne dostu", "Berrak formül"],
+            howToUse: "Güneşe çıkmadan 15 dakika önce uygulayın.",
+            warnings: ["2 saatte bir yenileyin"]
+        ),
+        
+        // Toners
+        Product(
+            name: "Glycolic Acid 7% Toning Solution",
+            brand: "The Ordinary",
+            category: .toner,
+            price: 8.70,
+            currency: "$",
+            imageURL: nil,
+            description: "Cilt yenileme ve parlaklık için glikolik asit toniği.",
+            ingredients: ["Glycolic Acid", "Tasmanian Pepperberry"],
+            skinTypes: [.normal, .combination, .oily],
+            rating: 4.3,
+            reviewCount: 2156,
+            size: "240ml",
+            isCrueltyFree: true,
+            isVegan: true,
+            isRecommended: true,
+            benefits: ["Cilt yenileme", "Parlaklık", "Gözenek temizliği"],
+            howToUse: "Akşam temizlik sonrası pamukla uygulayın.",
+            warnings: ["Güneş hassasiyeti yaratabilir", "Güneş koruyucu kullanın"]
+        ),
+        
+        Product(
+            name: "Rose Petal Witch Hazel Toner",
+            brand: "Thayers",
+            category: .toner,
+            price: 9.95,
+            currency: "$",
+            imageURL: nil,
+            description: "Gül yaprağı ve cadı fındığı ile doğal tonik.",
+            ingredients: ["Witch Hazel", "Rose Petal", "Aloe Vera"],
+            skinTypes: [.normal, .dry, .sensitive],
+            rating: 4.2,
+            reviewCount: 1847,
+            size: "355ml",
+            isCrueltyFree: true,
+            isVegan: true,
+            isRecommended: false,
+            benefits: ["Doğal formül", "Yatıştırıcı", "Gözenek sıkılaştırma"],
+            howToUse: "Temizlik sonrası pamukla uygulayın.",
+            warnings: []
+        ),
+        
+        // Exfoliants
+        Product(
+            name: "AHA 30% + BHA 2% Peeling Solution",
+            brand: "The Ordinary",
+            category: .exfoliant,
+            price: 7.20,
+            currency: "$",
+            imageURL: nil,
+            description: "Güçlü AHA ve BHA karışımı ile derin peeling çözeltisi.",
+            ingredients: ["Glycolic Acid", "Salicylic Acid", "Tasmanian Pepperberry"],
+            skinTypes: [.normal, .oily, .combination],
+            rating: 4.4,
+            reviewCount: 3247,
+            size: "30ml",
+            isCrueltyFree: true,
+            isVegan: true,
+            isRecommended: true,
+            benefits: ["Derin temizlik", "Cilt yenileme", "Gözenek temizliği"],
+            howToUse: "Haftada 1-2 kez, 10 dakika bekletip durulayın.",
+            warnings: ["Güçlü formül", "Hassas ciltler için uygun değil", "Güneş koruyucu kullanın"]
+        ),
+        
+        // Masks
+        Product(
+            name: "Hydrating Face Mask",
+            brand: "The Body Shop",
+            category: .mask,
+            price: 22.00,
+            currency: "$",
+            imageURL: nil,
+            description: "Yoğun nemlendirme için krem mask.",
+            ingredients: ["Hyaluronic Acid", "Shea Butter", "Vitamin E"],
+            skinTypes: [.normal, .dry],
+            rating: 4.1,
+            reviewCount: 567,
+            size: "75ml",
+            isCrueltyFree: true,
+            isVegan: true,
+            isRecommended: false,
+            benefits: ["Yoğun nemlendirme", "Yatıştırıcı", "Cilt yumuşatma"],
+            howToUse: "Haftada 1-2 kez 10-15 dakika bekletip durulayın.",
+            warnings: []
+        ),
+        
+        // Eye Care
+        Product(
+            name: "Caffeine Solution 5% + EGCG",
+            brand: "The Ordinary",
+            category: .eyeCare,
+            price: 6.70,
+            currency: "$",
+            imageURL: nil,
+            description: "Göz altı torbaları ve koyu halkalar için kafein serumu.",
+            ingredients: ["Caffeine", "EGCG", "Hyaluronic Acid"],
+            skinTypes: [.normal, .dry, .sensitive],
+            rating: 4.0,
+            reviewCount: 1847,
+            size: "30ml",
+            isCrueltyFree: true,
+            isVegan: true,
+            isRecommended: true,
+            benefits: ["Göz altı torbaları azaltır", "Koyu halkaları hafifletir", "Nemlendirir"],
+            howToUse: "Sabah ve akşam göz çevresine nazikçe uygulayın.",
+            warnings: ["Gözlerle temas ettirmeyin"]
+        ),
+        
+        // Lip Care
+        Product(
+            name: "Laneige Lip Sleeping Mask",
+            brand: "Laneige",
+            category: .lipCare,
+            price: 20.00,
+            currency: "$",
+            imageURL: nil,
+            description: "Gece kullanımı için yoğun dudak bakım maskesi.",
+            ingredients: ["Berry Mix Complex", "Vitamin C", "Hyaluronic Acid"],
+            skinTypes: [.normal, .dry],
+            rating: 4.5,
+            reviewCount: 2156,
+            size: "20g",
+            isCrueltyFree: false,
+            isVegan: false,
+            isRecommended: true,
+            benefits: ["Yoğun nemlendirme", "Dudak yumuşatma", "Gece bakımı"],
+            howToUse: "Gece yatmadan önce dudaklara uygulayın.",
+            warnings: []
+        )
+    ]
+}
+
+// MARK: - Products ViewModel
+@MainActor
+class ProductsViewModel: ObservableObject {
+    @Published var products: [Product] = []
+    @Published var filteredProducts: [Product] = []
+    @Published var categories: [ProductCategory] = []
+    @Published var selectedCategory: ProductCategory = .all
+    @Published var query: String = ""
+    @Published var isLoading: Bool = false
+    
+    init() {
+        loadProducts()
+        setupCategories()
+    }
+    
+    // MARK: - Data Loading
+    func loadProducts() {
+        isLoading = true
+        
+        // Simulate network delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.products = Product.sampleProducts
+            self.filterProducts()
+            self.isLoading = false
+        }
+    }
+    
+    private func setupCategories() {
+        categories = ProductCategory.allCases
+    }
+    
+    // MARK: - Filtering
+    func selectCategory(_ category: ProductCategory) {
+        selectedCategory = category
+        filterProducts()
+    }
+    
+    func filterProducts() {
+        var filtered = products
+        
+        // Filter by category
+        if selectedCategory != .all {
+            filtered = filtered.filter { $0.category == selectedCategory }
+        }
+        
+        // Filter by search query
+        if !query.isEmpty {
+            filtered = filtered.filter { product in
+                product.name.localizedCaseInsensitiveContains(query) ||
+                product.brand.localizedCaseInsensitiveContains(query) ||
+                product.description.localizedCaseInsensitiveContains(query) ||
+                product.ingredients.joined().localizedCaseInsensitiveContains(query)
+            }
+        }
+        
+        filteredProducts = filtered
+    }
+    
+    func clearSearch() {
+        query = ""
+        filterProducts()
+    }
+    
+    // MARK: - Computed Properties
+    var hasProducts: Bool {
+        !filteredProducts.isEmpty
+    }
+    
+    var categoryCount: Int {
+        filteredProducts.count
+    }
+    
+    // MARK: - Search
+    func searchProducts(_ searchText: String) {
+        query = searchText
+        filterProducts()
+    }
+    
+    // MARK: - Product Management
+    func getProductsByCategory(_ category: ProductCategory) -> [Product] {
+        if category == .all {
+            return products
+        }
+        return products.filter { $0.category == category }
+    }
+    
+    func getRecommendedProducts() -> [Product] {
+        return products.filter { $0.isRecommended }
+    }
+    
+    func getProductsForSkinType(_ skinType: SkinType) -> [Product] {
+        return products.filter { $0.skinTypes.contains(skinType) }
+    }
+    
+    // MARK: - Statistics
+    func getCategoryStats() -> [ProductCategory: Int] {
+        var stats: [ProductCategory: Int] = [:]
+        
+        for category in ProductCategory.allCases {
+            if category != .all {
+                stats[category] = products.filter { $0.category == category }.count
+            }
+        }
+        
+        return stats
+    }
+    
+    var totalProducts: Int {
+        products.count
+    }
+    
+    var averageRating: Double {
+        guard !products.isEmpty else { return 0 }
+        let totalRating = products.reduce(0) { $0 + $1.rating }
+        return totalRating / Double(products.count)
+    }
+}
 import PhotosUI
 import Vision
 
@@ -1946,7 +2440,7 @@ struct MainTabContainerView: View {
                     MainPageView()
                         .tag(AppTab.home)
                     
-                    ProductsView()
+                    ProductsViewContent()
                         .tag(AppTab.products)
                     
                     ProductScannerView()
@@ -1993,43 +2487,639 @@ struct MainTabContainerView: View {
     }
 }
 
-// MARK: - Products View
-struct ProductsView: View {
+// MARK: - Products View Content
+struct ProductsViewContent: View {
+    @StateObject private var viewModel = ProductsViewModel()
+    @State private var showingProductDetail: Product?
+    
+    var body: some View {
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                // Header
+                HStack {
+                    Text("Products")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(hex: "111111"))
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                
+                // Category Selection Bar
+                categorySelectionBar(geometry: geometry)
+                
+                // Search Bar
+                searchBar(geometry: geometry)
+                
+                // Products Grid
+                productsGrid(geometry: geometry)
+            }
+            .background(Color(hex: "F6F7F8"))
+        }
+        .sheet(item: $showingProductDetail) { product in
+            ProductDetailViewContent(product: product)
+        }
+        .onAppear {
+            print("✅ ProductsViewContent appeared, items=\(viewModel.filteredProducts.count)")
+        }
+    }
+    
+    // MARK: - Category Selection Bar
+    private func categorySelectionBar(geometry: GeometryProxy) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(viewModel.categories, id: \.self) { category in
+                    Button(action: {
+                        viewModel.selectCategory(category)
+                    }) {
+                        Text(category.rawValue)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(viewModel.selectedCategory == category ? .white : Color(hex: "111111"))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(
+                                viewModel.selectedCategory == category ? 
+                                    Color(hex: "111111") : Color(hex: "E8E8E8")
+                            )
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+        }
+        .background(Color.white)
+    }
+    
+    // MARK: - Search Bar
+    private func searchBar(geometry: GeometryProxy) -> some View {
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(Color(hex: "6B7280"))
+                .font(.subheadline)
+            
+            TextField("Search products…", text: $viewModel.query)
+                .font(.subheadline)
+                .foregroundColor(Color(hex: "111111"))
+                .textFieldStyle(PlainTextFieldStyle())
+            
+            if !viewModel.query.isEmpty {
+                Button(action: {
+                    viewModel.clearSearch()
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(Color(hex: "6B7280"))
+                        .font(.subheadline)
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+    }
+    
+    // MARK: - Products Grid
+    private func productsGrid(geometry: GeometryProxy) -> some View {
+        ScrollView {
+            if viewModel.isLoading {
+                ProgressView()
+                    .padding()
+            } else if viewModel.filteredProducts.isEmpty {
+                emptyStateView(geometry: geometry)
+            } else {
+                LazyVGrid(
+                    columns: [
+                        GridItem(.adaptive(minimum: 168), spacing: 16)
+                    ],
+                    spacing: 16
+                ) {
+                    ForEach(viewModel.filteredProducts) { product in
+                        ProductCardViewContent(product: product) {
+                            showingProductDetail = product
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 20)
+            }
+        }
+        .refreshable {
+            viewModel.loadProducts()
+        }
+    }
+    
+    // MARK: - Empty State
+    private func emptyStateView(geometry: GeometryProxy) -> some View {
+        VStack(spacing: 20) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 48))
+                .foregroundColor(Color(hex: "6B7280").opacity(0.5))
+            
+            Text("No products found")
+                .font(.title2)
+                .fontWeight(.semibold)
+                .foregroundColor(Color(hex: "111111"))
+            
+            Text("Try adjusting your search or category filter")
+                .font(.body)
+                .foregroundColor(Color(hex: "6B7280"))
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+    }
+}
+
+// MARK: - Product Card View Content
+struct ProductCardViewContent: View {
+    let product: Product
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 12) {
+                // Product Image Placeholder
+                productImageSection
+                
+                // Product Info
+                productInfoSection
+                
+                // Rating and Reviews
+                ratingSection
+                
+                // Price
+                priceSection
+                
+                // Badges
+                badgesSection
+            }
+            .padding(16)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    // MARK: - Product Image Section
+    private var productImageSection: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color(hex: "F6F7F8"))
+                .frame(height: 120)
+            
+            VStack(spacing: 8) {
+                Image(systemName: product.category.icon)
+                    .font(.system(size: 32))
+                    .foregroundColor(Color(hex: "8B5CF6"))
+                
+                Text(product.category.rawValue)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(Color(hex: "6B7280"))
+            }
+        }
+    }
+    
+    // MARK: - Product Info Section
+    private var productInfoSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(product.brand)
+                .font(.caption)
+                .fontWeight(.medium)
+                .foregroundColor(Color(hex: "8B5CF6"))
+            
+            Text(product.name)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(Color(hex: "111111"))
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+            
+            Text(product.size)
+                .font(.caption)
+                .foregroundColor(Color(hex: "6B7280"))
+        }
+    }
+    
+    // MARK: - Rating Section
+    private var ratingSection: some View {
+        HStack(spacing: 4) {
+            HStack(spacing: 2) {
+                ForEach(0..<5) { index in
+                    Image(systemName: index < Int(product.rating) ? "star.fill" : "star")
+                        .font(.caption)
+                        .foregroundColor(Color(hex: "F59E0B"))
+                }
+            }
+            
+            Text(product.ratingText)
+                .font(.caption)
+                .fontWeight(.medium)
+                .foregroundColor(Color(hex: "111111"))
+            
+            Text("(\(product.reviewCount))")
+                .font(.caption)
+                .foregroundColor(Color(hex: "6B7280"))
+            
+            Spacer()
+        }
+    }
+    
+    // MARK: - Price Section
+    private var priceSection: some View {
+        HStack {
+            Text(product.formattedPrice)
+                .font(.subheadline)
+                .fontWeight(.bold)
+                .foregroundColor(Color(hex: "111111"))
+            
+            Spacer()
+            
+            if product.isRecommended {
+                Text("Önerilen")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color(hex: "10B981"))
+                    .clipShape(Capsule())
+            }
+        }
+    }
+    
+    // MARK: - Badges Section
+    private var badgesSection: some View {
+        HStack(spacing: 6) {
+            if product.isCrueltyFree {
+                badgeView(text: "Cruelty Free", color: "8B5CF6")
+            }
+            
+            if product.isVegan {
+                badgeView(text: "Vegan", color: "10B981")
+            }
+            
+            Spacer()
+        }
+    }
+    
+    // MARK: - Helper Views
+    private func badgeView(text: String, color: String) -> some View {
+        Text(text)
+            .font(.caption2)
+            .fontWeight(.medium)
+            .foregroundColor(Color(hex: color))
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(Color(hex: color).opacity(0.1))
+            .clipShape(Capsule())
+    }
+}
+
+// MARK: - Product Detail View Content
+struct ProductDetailViewContent: View {
+    let product: Product
+    @Environment(\.dismiss) private var dismiss
+    @State private var showingIngredients = false
+    @State private var showingWarnings = false
+    
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                // Placeholder content
-                VStack(spacing: 16) {
-                    Image(systemName: "drop.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(AppTheme.primaryColor.opacity(0.3))
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    // Product Header
+                    productHeaderSection
                     
-                    Text("Products")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(AppTheme.textPrimary)
+                    // Product Image
+                    productImageSection
                     
-                    Text("Discover and manage your skincare products")
-                        .font(.system(size: 16, weight: .regular))
-                        .foregroundColor(AppTheme.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
+                    // Product Info
+                    productInfoSection
+                    
+                    // Rating and Reviews
+                    ratingSection
+                    
+                    // Benefits
+                    benefitsSection
+                    
+                    // How to Use
+                    howToUseSection
+                    
+                    // Ingredients
+                    ingredientsSection
+                    
+                    // Warnings
+                    warningsSection
+                    
+                    // Skin Types
+                    skinTypesSection
+                    
+                    // Badges
+                    badgesSection
                 }
-                .padding(32)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(AppTheme.surfaceColor)
-                        .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
-                )
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 32)
+            }
+            .navigationTitle("Product Details")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Product Header Section
+    private var productHeaderSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(product.brand)
+                .font(.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(Color(hex: "8B5CF6"))
+            
+            Text(product.name)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(Color(hex: "111111"))
+            
+            Text(product.size)
+                .font(.subheadline)
+                .foregroundColor(Color(hex: "6B7280"))
+        }
+    }
+    
+    // MARK: - Product Image Section
+    private var productImageSection: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(hex: "F6F7F8"))
+                .frame(height: 200)
+            
+            VStack(spacing: 16) {
+                Image(systemName: product.category.icon)
+                    .font(.system(size: 64))
+                    .foregroundColor(Color(hex: "8B5CF6"))
+                
+                Text(product.category.rawValue)
+                    .font(.headline)
+                    .fontWeight(.medium)
+                    .foregroundColor(Color(hex: "6B7280"))
+            }
+        }
+    }
+    
+    // MARK: - Product Info Section
+    private var productInfoSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(product.formattedPrice)
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(hex: "111111"))
+                
+                Spacer()
+                
+                if product.isRecommended {
+                    Text("Önerilen")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color(hex: "10B981"))
+                        .clipShape(Capsule())
+                }
+            }
+            
+            Text(product.description)
+                .font(.body)
+                .foregroundColor(Color(hex: "374151"))
+                .lineSpacing(4)
+        }
+    }
+    
+    // MARK: - Rating Section
+    private var ratingSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                HStack(spacing: 4) {
+                    ForEach(0..<5) { index in
+                        Image(systemName: index < Int(product.rating) ? "star.fill" : "star")
+                            .font(.title3)
+                            .foregroundColor(Color(hex: "F59E0B"))
+                    }
+                }
+                
+                Text(product.ratingText)
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color(hex: "111111"))
                 
                 Spacer()
             }
-            .padding(.top, 20)
-            .navigationTitle("Products")
-            .navigationBarTitleDisplayMode(.large)
+            
+            Text(product.reviewText)
+                .font(.subheadline)
+                .foregroundColor(Color(hex: "6B7280"))
         }
     }
+    
+    // MARK: - Benefits Section
+    private var benefitsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Faydalar")
+                .font(.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(Color(hex: "111111"))
+            
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 8) {
+                ForEach(product.benefits, id: \.self) { benefit in
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(Color(hex: "10B981"))
+                            .font(.caption)
+                        
+                        Text(benefit)
+                            .font(.caption)
+                            .foregroundColor(Color(hex: "374151"))
+                        
+                        Spacer()
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - How to Use Section
+    private var howToUseSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Kullanım Şekli")
+                .font(.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(Color(hex: "111111"))
+            
+            Text(product.howToUse)
+                .font(.body)
+                .foregroundColor(Color(hex: "374151"))
+                .lineSpacing(4)
+        }
+    }
+    
+    // MARK: - Ingredients Section
+    private var ingredientsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Button(action: {
+                showingIngredients.toggle()
+            }) {
+                HStack {
+                    Text("İçerikler")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(Color(hex: "111111"))
+                    
+                    Spacer()
+                    
+                    Image(systemName: showingIngredients ? "chevron.up" : "chevron.down")
+                        .foregroundColor(Color(hex: "6B7280"))
+                }
+            }
+            .buttonStyle(PlainButtonStyle())
+            
+            if showingIngredients {
+                LazyVGrid(columns: [
+                    GridItem(.flexible()),
+                    GridItem(.flexible())
+                ], spacing: 8) {
+                    ForEach(product.ingredients, id: \.self) { ingredient in
+                        Text(ingredient)
+                            .font(.caption)
+                            .foregroundColor(Color(hex: "374151"))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color(hex: "F3F4F6"))
+                            .clipShape(Capsule())
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Warnings Section
+    private var warningsSection: some View {
+        Group {
+            if !product.warnings.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    Button(action: {
+                        showingWarnings.toggle()
+                    }) {
+                        HStack {
+                            Text("Uyarılar")
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(Color(hex: "EF4444"))
+                            
+                            Spacer()
+                            
+                            Image(systemName: showingWarnings ? "chevron.up" : "chevron.down")
+                                .foregroundColor(Color(hex: "6B7280"))
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    if showingWarnings {
+                        VStack(alignment: .leading, spacing: 8) {
+                            ForEach(product.warnings, id: \.self) { warning in
+                                HStack(alignment: .top) {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .foregroundColor(Color(hex: "EF4444"))
+                                        .font(.caption)
+                                    
+                                    Text(warning)
+                                        .font(.caption)
+                                        .foregroundColor(Color(hex: "374151"))
+                                    
+                                    Spacer()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Skin Types Section
+    private var skinTypesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Uygun Cilt Tipleri")
+                .font(.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(Color(hex: "111111"))
+            
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 8) {
+                ForEach(product.skinTypes, id: \.self) { skinType in
+                    Text(skinType.rawValue)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(Color(hex: "8B5CF6"))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color(hex: "8B5CF6").opacity(0.1))
+                        .clipShape(Capsule())
+                }
+            }
+        }
+    }
+    
+    // MARK: - Badges Section
+    private var badgesSection: some View {
+        HStack(spacing: 12) {
+            if product.isCrueltyFree {
+                badgeView(text: "Cruelty Free", icon: "heart.fill", color: "8B5CF6")
+            }
+            
+            if product.isVegan {
+                badgeView(text: "Vegan", icon: "leaf.fill", color: "10B981")
+            }
+            
+            Spacer()
+        }
+    }
+    
+    // MARK: - Helper Views
+    private func badgeView(text: String, icon: String, color: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.caption)
+            
+            Text(text)
+                .font(.caption)
+                .fontWeight(.medium)
+        }
+        .foregroundColor(Color(hex: color))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(Color(hex: color).opacity(0.1))
+        .clipShape(Capsule())
+    }
 }
+
 
 // MARK: - Product Scanner View
 struct ProductScannerView: View {

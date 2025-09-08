@@ -32,6 +32,8 @@ enum SkinType: String, CaseIterable, Codable {
     case dry = "Dry"
     case combination = "Combination"
     case normal = "Normal"
+    case sensitive = "Sensitive"
+    case acneProne = "Acne Prone"
     
     var displayName: String {
         return self.rawValue
@@ -47,6 +49,10 @@ enum SkinType: String, CaseIterable, Codable {
             return "Oily T-zone with dry cheeks"
         case .normal:
             return "Balanced, clear, and healthy appearance"
+        case .sensitive:
+            return "Easily irritated, reactive to products"
+        case .acneProne:
+            return "Prone to breakouts and blemishes"
         }
     }
 }
