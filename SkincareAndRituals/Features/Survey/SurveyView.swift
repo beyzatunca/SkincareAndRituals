@@ -2821,7 +2821,7 @@ struct ProductDetailViewContent: View {
     @State private var showingWarnings = false
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     // Product Header
@@ -5248,7 +5248,7 @@ struct MyScansView: View {
     @State private var showingProductDetail = false
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 if scanViewModel.scans.isEmpty {
                     emptyStateView
@@ -5481,6 +5481,8 @@ struct MyScansView: View {
         // Extract price from string (remove $ and convert to Double)
         let priceString = scan.productPrice.replacingOccurrences(of: "$", with: "")
         let price = Double(priceString) ?? 0.0
+        
+        print("🔍 Converting scan to product: \(scan.productName)")
         
         return Product(
             name: scan.productName,
