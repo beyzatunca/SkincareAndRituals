@@ -77,6 +77,8 @@ struct Product: Identifiable, Codable, Hashable {
     let benefits: [String]
     let howToUse: String
     let warnings: [String]
+    let potentiallyIrritatingIngredients: [String]
+    let certifications: [String]
     
     // Computed properties
     var formattedPrice: String {
@@ -103,7 +105,7 @@ extension Product {
             price: 15.99,
             currency: "$",
             imageURL: nil,
-            description: "Hassas ciltler için nazik köpüklü temizleyici. Cildi temizlerken nemlendirir.",
+            description: "Gentle foaming cleanser for sensitive skin. Moisturizes while cleansing the skin.",
             ingredients: ["Ceramides", "Hyaluronic Acid", "Niacinamide"],
             skinTypes: [.normal, .dry, .sensitive],
             rating: 4.5,
@@ -112,9 +114,11 @@ extension Product {
             isCrueltyFree: true,
             isVegan: false,
             isRecommended: true,
-            benefits: ["Temizler", "Nemlendirir", "Hassas ciltler için uygun"],
-            howToUse: "Sabah ve akşam ıslak cilde uygulayın, köpürtün ve durulayın.",
-            warnings: ["Gözlerle temas ettirmeyin"]
+            benefits: ["Cleanses", "Moisturizes", "Suitable for sensitive skin"],
+            howToUse: "Apply to wet skin morning and evening, lather and rinse.",
+            warnings: ["Avoid contact with eyes"],
+            potentiallyIrritatingIngredients: ["Sulfates", "Fragrances/Parfumes", "Parabens"],
+            certifications: ["Cruelty-free", "Dermatologically Tested", "Hypoallergenic"]
         ),
         
         Product(
@@ -124,7 +128,7 @@ extension Product {
             price: 12.90,
             currency: "$",
             imageURL: nil,
-            description: "Akne eğilimli ciltler için salisilik asit içeren temizleyici.",
+            description: "Salicylic acid cleanser for acne-prone skin.",
             ingredients: ["Salicylic Acid", "Coconut-derived Surfactants"],
             skinTypes: [.oily, .combination, .acneProne],
             rating: 4.2,
@@ -133,9 +137,11 @@ extension Product {
             isCrueltyFree: true,
             isVegan: true,
             isRecommended: true,
-            benefits: ["Gözenekleri temizler", "Akne oluşumunu azaltır", "Yağ kontrolü"],
-            howToUse: "Günde 1-2 kez ıslak cilde uygulayın ve durulayın.",
-            warnings: ["Güneş hassasiyeti yaratabilir", "Güneş koruyucu kullanın"]
+            benefits: ["Cleanses pores", "Reduces acne formation", "Oil control"],
+            howToUse: "Apply to wet skin 1-2 times daily and rinse.",
+            warnings: ["May cause sun sensitivity", "Use sunscreen"],
+            potentiallyIrritatingIngredients: ["Salicylic Acid", "Drying Alcohols"],
+            certifications: ["Cruelty-free", "Vegan", "Non-comedogenic"]
         ),
         
         // Moisturizers
@@ -146,7 +152,7 @@ extension Product {
             price: 18.50,
             currency: "$",
             imageURL: nil,
-            description: "Günlük kullanım için hafif ve hızlı emilen nemlendirici.",
+            description: "Lightweight and fast-absorbing moisturizer for daily use.",
             ingredients: ["Glycerin", "Dimethicone", "Vitamin E"],
             skinTypes: [.normal, .dry, .combination],
             rating: 4.3,
@@ -155,9 +161,10 @@ extension Product {
             isCrueltyFree: false,
             isVegan: false,
             isRecommended: true,
-            benefits: ["24 saat nemlendirme", "Hızlı emilim", "Günlük kullanım"],
-            howToUse: "Temiz cilde sabah ve akşam uygulayın.",
-            warnings: []
+            benefits: ["24-hour hydration", "Fast absorption", "Daily use"],
+            howToUse: "Apply to clean skin morning and evening.",
+            warnings: [],
+            potentiallyIrritatingIngredients: ["Fragrances/Parfumes", "Parabens"]
         ),
         
         Product(
@@ -167,7 +174,7 @@ extension Product {
             price: 14.99,
             currency: "$",
             imageURL: nil,
-            description: "Hyaluronik asit ile yoğun nemlendirme sağlayan krem.",
+            description: "Intensive moisturizing cream with hyaluronic acid.",
             ingredients: ["Hyaluronic Acid", "Squalane", "Ceramides"],
             skinTypes: [.normal, .dry, .sensitive],
             rating: 4.4,
@@ -176,9 +183,12 @@ extension Product {
             isCrueltyFree: true,
             isVegan: true,
             isRecommended: true,
-            benefits: ["Yoğun nemlendirme", "Cilt bariyerini güçlendirir", "Hassas ciltler için uygun"],
-            howToUse: "Temiz cilde günde 1-2 kez uygulayın.",
-            warnings: []
+            benefits: ["Intensive hydration", "Strengthens skin barrier", "Suitable for sensitive skin"],
+            howToUse: "Apply to clean skin 1-2 times daily.",
+            warnings: [],
+            potentiallyIrritatingIngredients: [],
+            certifications: ["Cruelty-free", "Vegan", "Dermatologically Tested"],
+            certifications: ["Dermatologically Tested", "Hypoallergenic"]
         ),
         
         // Serums
@@ -189,7 +199,7 @@ extension Product {
             price: 36.00,
             currency: "$",
             imageURL: nil,
-            description: "C vitamini ile parlak ve eşit tonlu cilt için serum.",
+            description: "Vitamin C serum for bright and even-toned skin.",
             ingredients: ["Vitamin C", "Vitamin E", "Ferulic Acid"],
             skinTypes: [.normal, .dry, .combination],
             rating: 4.6,
@@ -198,9 +208,11 @@ extension Product {
             isCrueltyFree: true,
             isVegan: true,
             isRecommended: true,
-            benefits: ["Anti-aging", "Parlaklık", "Eşit ton"],
-            howToUse: "Sabah temiz cilde uygulayın, güneş koruyucu kullanın.",
-            warnings: ["Güneş hassasiyeti yaratabilir", "Güneş koruyucu kullanın"]
+            benefits: ["Anti-aging", "Brightness", "Even tone"],
+            howToUse: "Apply to clean skin in the morning, use sunscreen.",
+            warnings: ["May cause sun sensitivity", "Use sunscreen"],
+            potentiallyIrritatingIngredients: ["Vitamin C", "Drying Alcohols"],
+            certifications: ["Cruelty-free", "Vegan", "Dermatologically Tested"]
         ),
         
         Product(
@@ -210,7 +222,7 @@ extension Product {
             price: 8.90,
             currency: "$",
             imageURL: nil,
-            description: "Gözenekleri küçültmek ve yağ kontrolü için niacinamide serumu.",
+            description: "Niacinamide serum for pore reduction and oil control.",
             ingredients: ["Niacinamide", "Zinc PCA"],
             skinTypes: [.oily, .combination, .acneProne],
             rating: 4.1,
@@ -219,9 +231,11 @@ extension Product {
             isCrueltyFree: true,
             isVegan: true,
             isRecommended: true,
-            benefits: ["Gözenek kontrolü", "Yağ azaltma", "Akne önleme"],
-            howToUse: "Akşam temiz cilde uygulayın.",
-            warnings: ["C vitamini ile birlikte kullanmayın"]
+            benefits: ["Pore control", "Oil reduction", "Acne prevention"],
+            howToUse: "Apply to clean skin in the evening.",
+            warnings: ["Do not use with vitamin C"],
+            potentiallyIrritatingIngredients: ["Niacinamide"],
+            certifications: ["Cruelty-free", "Vegan", "Non-comedogenic"]
         ),
         
         // Sunscreens
@@ -232,7 +246,7 @@ extension Product {
             price: 32.00,
             currency: "$",
             imageURL: nil,
-            description: "Günlük kullanım için hafif ve hızlı emilen güneş koruyucu.",
+            description: "Lightweight and fast-absorbing sunscreen for daily use.",
             ingredients: ["Zinc Oxide", "Octinoxate", "Hyaluronic Acid"],
             skinTypes: [.normal, .dry, .sensitive],
             rating: 4.7,
@@ -241,9 +255,11 @@ extension Product {
             isCrueltyFree: true,
             isVegan: false,
             isRecommended: true,
-            benefits: ["SPF 46", "Hafif formül", "Hassas ciltler için uygun"],
-            howToUse: "Güneşe çıkmadan 15 dakika önce uygulayın.",
-            warnings: ["2 saatte bir yenileyin"]
+            benefits: ["SPF 46", "Lightweight formula", "Suitable for sensitive skin"],
+            howToUse: "Apply 15 minutes before sun exposure.",
+            warnings: ["Reapply every 2 hours"],
+            potentiallyIrritatingIngredients: ["Chemical Sunscreens"],
+            certifications: ["Cruelty-free", "Dermatologically Tested", "Hypoallergenic"]
         ),
         
         Product(
@@ -253,7 +269,7 @@ extension Product {
             price: 11.99,
             currency: "$",
             imageURL: nil,
-            description: "Akne eğilimli ciltler için berrak çinko oksit güneş koruyucu.",
+            description: "Clear zinc oxide sunscreen for acne-prone skin.",
             ingredients: ["Zinc Oxide", "Helioplex Technology"],
             skinTypes: [.oily, .combination, .acneProne],
             rating: 4.0,
@@ -262,9 +278,11 @@ extension Product {
             isCrueltyFree: false,
             isVegan: false,
             isRecommended: false,
-            benefits: ["SPF 30", "Akne dostu", "Berrak formül"],
-            howToUse: "Güneşe çıkmadan 15 dakika önce uygulayın.",
-            warnings: ["2 saatte bir yenileyin"]
+            benefits: ["SPF 30", "Acne-friendly", "Clear formula"],
+            howToUse: "Apply 15 minutes before sun exposure.",
+            warnings: ["Reapply every 2 hours"],
+            potentiallyIrritatingIngredients: [],
+            certifications: ["Non-comedogenic"]
         ),
         
         // Toners
@@ -275,7 +293,7 @@ extension Product {
             price: 8.70,
             currency: "$",
             imageURL: nil,
-            description: "Cilt yenileme ve parlaklık için glikolik asit toniği.",
+            description: "Glycolic acid toner for skin renewal and brightness.",
             ingredients: ["Glycolic Acid", "Tasmanian Pepperberry"],
             skinTypes: [.normal, .combination, .oily],
             rating: 4.3,
@@ -284,9 +302,11 @@ extension Product {
             isCrueltyFree: true,
             isVegan: true,
             isRecommended: true,
-            benefits: ["Cilt yenileme", "Parlaklık", "Gözenek temizliği"],
-            howToUse: "Akşam temizlik sonrası pamukla uygulayın.",
-            warnings: ["Güneş hassasiyeti yaratabilir", "Güneş koruyucu kullanın"]
+            benefits: ["Skin renewal", "Brightness", "Pore cleansing"],
+            howToUse: "Apply with cotton pad after evening cleansing.",
+            warnings: ["May cause sun sensitivity", "Use sunscreen"],
+            potentiallyIrritatingIngredients: ["Glycolic Acid", "Drying Alcohols"],
+            certifications: ["Cruelty-free", "Vegan", "Dermatologically Tested"]
         ),
         
         Product(

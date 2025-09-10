@@ -54,6 +54,8 @@ struct Product: Identifiable, Codable, Hashable {
     let benefits: [String]
     let howToUse: String
     let warnings: [String]
+    let potentiallyIrritatingIngredients: [String]
+    let certifications: [String]
     
     // Computed properties
     var formattedPrice: String {
@@ -80,7 +82,7 @@ extension Product {
             price: 15.99,
             currency: "$",
             imageURL: nil,
-            description: "Hassas ciltler için nazik köpüklü temizleyici. Cildi temizlerken nemlendirir.",
+            description: "Gentle foaming cleanser for sensitive skin. Moisturizes while cleansing the skin.",
             ingredients: ["Ceramides", "Hyaluronic Acid", "Niacinamide"],
             skinTypes: [.normal, .dry, .sensitive],
             rating: 4.5,
@@ -89,9 +91,11 @@ extension Product {
             isCrueltyFree: true,
             isVegan: false,
             isRecommended: true,
-            benefits: ["Temizler", "Nemlendirir", "Hassas ciltler için uygun"],
-            howToUse: "Sabah ve akşam ıslak cilde uygulayın, köpürtün ve durulayın.",
-            warnings: ["Gözlerle temas ettirmeyin"]
+            benefits: ["Cleanses", "Moisturizes", "Suitable for sensitive skin"],
+            howToUse: "Apply to wet skin morning and evening, lather and rinse.",
+            warnings: ["Avoid contact with eyes"],
+            potentiallyIrritatingIngredients: ["Sulfates", "Fragrances/Parfumes", "Parabens"],
+            certifications: ["Cruelty-free", "Dermatologically Tested", "Hypoallergenic"]
         ),
         
         Product(
@@ -101,7 +105,7 @@ extension Product {
             price: 12.90,
             currency: "$",
             imageURL: nil,
-            description: "Akne eğilimli ciltler için salisilik asit içeren temizleyici.",
+            description: "Salicylic acid cleanser for acne-prone skin.",
             ingredients: ["Salicylic Acid", "Coconut-derived Surfactants"],
             skinTypes: [.oily, .combination, .acneProne],
             rating: 4.2,
@@ -110,9 +114,11 @@ extension Product {
             isCrueltyFree: true,
             isVegan: true,
             isRecommended: true,
-            benefits: ["Gözenekleri temizler", "Akne oluşumunu azaltır", "Yağ kontrolü"],
-            howToUse: "Günde 1-2 kez ıslak cilde uygulayın ve durulayın.",
-            warnings: ["Güneş hassasiyeti yaratabilir", "Güneş koruyucu kullanın"]
+            benefits: ["Cleanses pores", "Reduces acne formation", "Oil control"],
+            howToUse: "Apply to wet skin 1-2 times daily and rinse.",
+            warnings: ["May cause sun sensitivity", "Use sunscreen"],
+            potentiallyIrritatingIngredients: ["Salicylic Acid", "Drying Alcohols"],
+            certifications: ["Cruelty-free", "Vegan", "Non-comedogenic"]
         ),
         
         // Moisturizers
@@ -134,7 +140,9 @@ extension Product {
             isRecommended: true,
             benefits: ["24 saat nemlendirme", "Hızlı emilim", "Günlük kullanım"],
             howToUse: "Temiz cilde sabah ve akşam uygulayın.",
-            warnings: []
+            warnings: [],
+            potentiallyIrritatingIngredients: [],
+            certifications: ["Dermatologically Tested", "Hypoallergenic"]
         ),
         
         Product(
@@ -153,9 +161,11 @@ extension Product {
             isCrueltyFree: true,
             isVegan: true,
             isRecommended: true,
-            benefits: ["Yoğun nemlendirme", "Cilt bariyerini güçlendirir", "Hassas ciltler için uygun"],
+            benefits: ["Intensive hydration", "Strengthens skin barrier", "Suitable for sensitive skin"],
             howToUse: "Temiz cilde günde 1-2 kez uygulayın.",
-            warnings: []
+            warnings: [],
+            potentiallyIrritatingIngredients: [],
+            certifications: ["Dermatologically Tested", "Hypoallergenic"]
         ),
         
         // Serums
@@ -177,7 +187,9 @@ extension Product {
             isRecommended: true,
             benefits: ["Anti-aging", "Parlaklık", "Eşit ton"],
             howToUse: "Sabah temiz cilde uygulayın, güneş koruyucu kullanın.",
-            warnings: ["Güneş hassasiyeti yaratabilir", "Güneş koruyucu kullanın"]
+            warnings: ["May cause sun sensitivity", "Use sunscreen"],
+            potentiallyIrritatingIngredients: ["Vitamin C", "Drying Alcohols"],
+            certifications: ["Cruelty-free", "Vegan", "Dermatologically Tested"]
         ),
         
         Product(
@@ -198,7 +210,9 @@ extension Product {
             isRecommended: true,
             benefits: ["Gözenek kontrolü", "Yağ azaltma", "Akne önleme"],
             howToUse: "Akşam temiz cilde uygulayın.",
-            warnings: ["C vitamini ile birlikte kullanmayın"]
+            warnings: ["Do not use with vitamin C"],
+            potentiallyIrritatingIngredients: ["Niacinamide"],
+            certifications: ["Cruelty-free", "Vegan", "Non-comedogenic"]
         ),
         
         // Sunscreens
@@ -218,9 +232,11 @@ extension Product {
             isCrueltyFree: true,
             isVegan: false,
             isRecommended: true,
-            benefits: ["SPF 46", "Hafif formül", "Hassas ciltler için uygun"],
+            benefits: ["SPF 46", "Lightweight formula", "Suitable for sensitive skin"],
             howToUse: "Güneşe çıkmadan 15 dakika önce uygulayın.",
-            warnings: ["2 saatte bir yenileyin"]
+            warnings: ["Reapply every 2 hours"],
+            potentiallyIrritatingIngredients: ["Chemical Sunscreens"],
+            certifications: ["Cruelty-free", "Dermatologically Tested", "Hypoallergenic"]
         ),
         
         Product(
@@ -241,7 +257,9 @@ extension Product {
             isRecommended: false,
             benefits: ["SPF 30", "Akne dostu", "Berrak formül"],
             howToUse: "Güneşe çıkmadan 15 dakika önce uygulayın.",
-            warnings: ["2 saatte bir yenileyin"]
+            warnings: ["Reapply every 2 hours"],
+            potentiallyIrritatingIngredients: ["Chemical Sunscreens"],
+            certifications: ["Cruelty-free", "Dermatologically Tested", "Hypoallergenic"]
         ),
         
         // Toners
@@ -263,7 +281,9 @@ extension Product {
             isRecommended: true,
             benefits: ["Cilt yenileme", "Parlaklık", "Gözenek temizliği"],
             howToUse: "Akşam temizlik sonrası pamukla uygulayın.",
-            warnings: ["Güneş hassasiyeti yaratabilir", "Güneş koruyucu kullanın"]
+            warnings: ["May cause sun sensitivity", "Use sunscreen"],
+            potentiallyIrritatingIngredients: ["Vitamin C", "Drying Alcohols"],
+            certifications: ["Cruelty-free", "Vegan", "Dermatologically Tested"]
         ),
         
         Product(
@@ -284,7 +304,9 @@ extension Product {
             isRecommended: false,
             benefits: ["Doğal formül", "Yatıştırıcı", "Gözenek sıkılaştırma"],
             howToUse: "Temizlik sonrası pamukla uygulayın.",
-            warnings: []
+            warnings: [],
+            potentiallyIrritatingIngredients: [],
+            certifications: ["Dermatologically Tested", "Hypoallergenic"]
         ),
         
         // Exfoliants
@@ -306,7 +328,9 @@ extension Product {
             isRecommended: true,
             benefits: ["Derin temizlik", "Cilt yenileme", "Gözenek temizliği"],
             howToUse: "Haftada 1-2 kez, 10 dakika bekletip durulayın.",
-            warnings: ["Güçlü formül", "Hassas ciltler için uygun değil", "Güneş koruyucu kullanın"]
+            warnings: ["Strong formula", "Not suitable for sensitive skin", "Use sunscreen"],
+            potentiallyIrritatingIngredients: ["Glycolic Acid", "Drying Alcohols"],
+            certifications: ["Cruelty-free", "Vegan", "Dermatologically Tested"]
         ),
         
         // Masks
@@ -328,7 +352,9 @@ extension Product {
             isRecommended: false,
             benefits: ["Yoğun nemlendirme", "Yatıştırıcı", "Cilt yumuşatma"],
             howToUse: "Haftada 1-2 kez 10-15 dakika bekletip durulayın.",
-            warnings: []
+            warnings: [],
+            potentiallyIrritatingIngredients: [],
+            certifications: ["Dermatologically Tested", "Hypoallergenic"]
         ),
         
         // Eye Care
@@ -348,9 +374,11 @@ extension Product {
             isCrueltyFree: true,
             isVegan: true,
             isRecommended: true,
-            benefits: ["Göz altı torbaları azaltır", "Koyu halkaları hafifletir", "Nemlendirir"],
+            benefits: ["Reduces under-eye bags", "Lightens dark circles", "Moisturizes"],
             howToUse: "Sabah ve akşam göz çevresine nazikçe uygulayın.",
-            warnings: ["Gözlerle temas ettirmeyin"]
+            warnings: ["Avoid contact with eyes"],
+            potentiallyIrritatingIngredients: ["Fragrances/Parfumes"],
+            certifications: ["Cruelty-free", "Vegan", "Hypoallergenic"]
         ),
         
         // Lip Care
@@ -372,7 +400,9 @@ extension Product {
             isRecommended: true,
             benefits: ["Yoğun nemlendirme", "Dudak yumuşatma", "Gece bakımı"],
             howToUse: "Gece yatmadan önce dudaklara uygulayın.",
-            warnings: []
+            warnings: [],
+            potentiallyIrritatingIngredients: [],
+            certifications: ["Dermatologically Tested", "Hypoallergenic"]
         )
     ]
 }
@@ -2821,6 +2851,12 @@ struct ProductDetailViewContent: View {
                     // Skin Types
                     skinTypesSection
                     
+                    // Potentially Irritating Ingredients
+                    potentiallyIrritatingIngredientsSection
+                    
+                    // Certifications & Claims
+                    certificationsSection
+                    
                     // Badges
                     badgesSection
                 }
@@ -2890,7 +2926,7 @@ struct ProductDetailViewContent: View {
                 Spacer()
                 
                 if product.isRecommended {
-                    Text("Önerilen")
+                    Text("Recommended")
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundColor(.white)
@@ -2937,7 +2973,7 @@ struct ProductDetailViewContent: View {
     // MARK: - Benefits Section
     private var benefitsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Faydalar")
+            Text("Benefits")
                 .font(.headline)
                 .fontWeight(.semibold)
                 .foregroundColor(Color(hex: "111111"))
@@ -2966,7 +3002,7 @@ struct ProductDetailViewContent: View {
     // MARK: - How to Use Section
     private var howToUseSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Kullanım Şekli")
+            Text("How to Use")
                 .font(.headline)
                 .fontWeight(.semibold)
                 .foregroundColor(Color(hex: "111111"))
@@ -2985,7 +3021,7 @@ struct ProductDetailViewContent: View {
                 showingIngredients.toggle()
             }) {
                 HStack {
-                    Text("İçerikler")
+                    Text("Ingredients")
                         .font(.headline)
                         .fontWeight(.semibold)
                         .foregroundColor(Color(hex: "111111"))
@@ -2999,18 +3035,19 @@ struct ProductDetailViewContent: View {
             .buttonStyle(PlainButtonStyle())
             
             if showingIngredients {
-                LazyVGrid(columns: [
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
-                ], spacing: 8) {
+                VStack(alignment: .leading, spacing: 8) {
                     ForEach(product.ingredients, id: \.self) { ingredient in
-                        Text(ingredient)
-                            .font(.caption)
-                            .foregroundColor(Color(hex: "374151"))
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color(hex: "F3F4F6"))
-                            .clipShape(Capsule())
+                        HStack {
+                            Text(ingredient)
+                                .font(.subheadline)
+                                .foregroundColor(Color(hex: "374151"))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color(hex: "F3F4F6"))
+                                .clipShape(Capsule())
+                            
+                            Spacer()
+                        }
                     }
                 }
             }
@@ -3026,7 +3063,7 @@ struct ProductDetailViewContent: View {
                         showingWarnings.toggle()
                     }) {
                         HStack {
-                            Text("Uyarılar")
+                            Text("Warnings")
                                 .font(.headline)
                                 .fontWeight(.semibold)
                                 .foregroundColor(Color(hex: "EF4444"))
@@ -3064,24 +3101,101 @@ struct ProductDetailViewContent: View {
     // MARK: - Skin Types Section
     private var skinTypesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Uygun Cilt Tipleri")
+            Text("Suitable Skin Types")
                 .font(.headline)
                 .fontWeight(.semibold)
                 .foregroundColor(Color(hex: "111111"))
             
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 8) {
+            VStack(alignment: .leading, spacing: 8) {
                 ForEach(product.skinTypes, id: \.self) { skinType in
-                    Text(skinType.rawValue)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(Color(hex: "8B5CF6"))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color(hex: "8B5CF6").opacity(0.1))
-                        .clipShape(Capsule())
+                    HStack {
+                        Text(skinType.rawValue)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(Color(hex: "8B5CF6"))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color(hex: "8B5CF6").opacity(0.1))
+                            .clipShape(Capsule())
+                        
+                        Spacer()
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Potentially Irritating Ingredients Section
+    private var potentiallyIrritatingIngredientsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Potentially Irritating Ingredients")
+                .font(.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(Color(hex: "111111"))
+            
+            if product.potentiallyIrritatingIngredients.isEmpty {
+                Text("No potentially irritating ingredients detected")
+                    .font(.subheadline)
+                    .foregroundColor(Color(hex: "10B981"))
+                    .padding(.vertical, 8)
+            } else {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(product.potentiallyIrritatingIngredients, id: \.self) { ingredient in
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.caption)
+                                .foregroundColor(Color(hex: "EF4444"))
+                            
+                            Text(ingredient)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(Color(hex: "EF4444"))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color(hex: "EF4444").opacity(0.1))
+                                .clipShape(Capsule())
+                            
+                            Spacer()
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Certifications & Claims Section
+    private var certificationsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Certifications & Claims")
+                .font(.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(Color(hex: "111111"))
+            
+            if product.certifications.isEmpty {
+                Text("No certifications available")
+                    .font(.subheadline)
+                    .foregroundColor(Color(hex: "6B7280"))
+                    .padding(.vertical, 8)
+            } else {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(product.certifications, id: \.self) { certification in
+                        HStack {
+                            Image(systemName: "checkmark.seal.fill")
+                                .font(.caption)
+                                .foregroundColor(Color(hex: "10B981"))
+                            
+                            Text(certification)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(Color(hex: "10B981"))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color(hex: "10B981").opacity(0.1))
+                                .clipShape(Capsule())
+                            
+                            Spacer()
+                        }
+                    }
                 }
             }
         }
@@ -3090,10 +3204,6 @@ struct ProductDetailViewContent: View {
     // MARK: - Badges Section
     private var badgesSection: some View {
         HStack(spacing: 12) {
-            if product.isCrueltyFree {
-                badgeView(text: "Cruelty Free", icon: "heart.fill", color: "8B5CF6")
-            }
-            
             if product.isVegan {
                 badgeView(text: "Vegan", icon: "leaf.fill", color: "10B981")
             }
@@ -5390,7 +5500,9 @@ struct MyScansView: View {
             isRecommended: scan.productRating >= 4.0,
             benefits: ["Hydrating", "Gentle"],
             howToUse: "Apply to clean skin morning and evening",
-            warnings: scan.flaggedIngredients
+            warnings: scan.flaggedIngredients,
+            potentiallyIrritatingIngredients: scan.flaggedIngredients,
+            certifications: ["Dermatologically Tested"]
         )
     }
 }

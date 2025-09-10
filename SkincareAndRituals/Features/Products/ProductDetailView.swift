@@ -37,6 +37,12 @@ struct ProductDetailView: View {
                     // Skin Types
                     skinTypesSection
                     
+                    // Potentially Irritating Ingredients
+                    potentiallyIrritatingIngredientsSection
+                    
+                    // Certifications & Claims
+                    certificationsSection
+                    
                     // Badges
                     badgesSection
                 }
@@ -106,7 +112,7 @@ struct ProductDetailView: View {
                 Spacer()
                 
                 if product.isRecommended {
-                    Text("Önerilen")
+                    Text("Recommended")
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundColor(.white)
@@ -153,7 +159,7 @@ struct ProductDetailView: View {
     // MARK: - Benefits Section
     private var benefitsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Faydalar")
+            Text("Benefits")
                 .font(.headline)
                 .fontWeight(.semibold)
                 .foregroundColor(Color(hex: "111111"))
@@ -182,7 +188,7 @@ struct ProductDetailView: View {
     // MARK: - How to Use Section
     private var howToUseSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Kullanım Şekli")
+            Text("How to Use")
                 .font(.headline)
                 .fontWeight(.semibold)
                 .foregroundColor(Color(hex: "111111"))
@@ -201,7 +207,7 @@ struct ProductDetailView: View {
                 showingIngredients.toggle()
             }) {
                 HStack {
-                    Text("İçerikler")
+                    Text("Ingredients")
                         .font(.headline)
                         .fontWeight(.semibold)
                         .foregroundColor(Color(hex: "111111"))
@@ -215,18 +221,19 @@ struct ProductDetailView: View {
             .buttonStyle(PlainButtonStyle())
             
             if showingIngredients {
-                LazyVGrid(columns: [
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
-                ], spacing: 8) {
+                VStack(alignment: .leading, spacing: 8) {
                     ForEach(product.ingredients, id: \.self) { ingredient in
-                        Text(ingredient)
-                            .font(.caption)
-                            .foregroundColor(Color(hex: "374151"))
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color(hex: "F3F4F6"))
-                            .clipShape(Capsule())
+                        HStack {
+                            Text(ingredient)
+                                .font(.subheadline)
+                                .foregroundColor(Color(hex: "374151"))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color(hex: "F3F4F6"))
+                                .clipShape(Capsule())
+                            
+                            Spacer()
+                        }
                     }
                 }
             }
@@ -242,7 +249,7 @@ struct ProductDetailView: View {
                         showingWarnings.toggle()
                     }) {
                         HStack {
-                            Text("Uyarılar")
+                            Text("Warnings")
                                 .font(.headline)
                                 .fontWeight(.semibold)
                                 .foregroundColor(Color(hex: "EF4444"))
@@ -280,24 +287,101 @@ struct ProductDetailView: View {
     // MARK: - Skin Types Section
     private var skinTypesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Uygun Cilt Tipleri")
+            Text("Suitable Skin Types")
                 .font(.headline)
                 .fontWeight(.semibold)
                 .foregroundColor(Color(hex: "111111"))
             
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 8) {
+            VStack(alignment: .leading, spacing: 8) {
                 ForEach(product.skinTypes, id: \.self) { skinType in
-                    Text(skinType.rawValue)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(Color(hex: "8B5CF6"))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color(hex: "8B5CF6").opacity(0.1))
-                        .clipShape(Capsule())
+                    HStack {
+                        Text(skinType.rawValue)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(Color(hex: "8B5CF6"))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color(hex: "8B5CF6").opacity(0.1))
+                            .clipShape(Capsule())
+                        
+                        Spacer()
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Potentially Irritating Ingredients Section
+    private var potentiallyIrritatingIngredientsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Potentially Irritating Ingredients")
+                .font(.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(Color(hex: "111111"))
+            
+            if product.potentiallyIrritatingIngredients.isEmpty {
+                Text("No potentially irritating ingredients detected")
+                    .font(.subheadline)
+                    .foregroundColor(Color(hex: "10B981"))
+                    .padding(.vertical, 8)
+            } else {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(product.potentiallyIrritatingIngredients, id: \.self) { ingredient in
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.caption)
+                                .foregroundColor(Color(hex: "EF4444"))
+                            
+                            Text(ingredient)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(Color(hex: "EF4444"))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color(hex: "EF4444").opacity(0.1))
+                                .clipShape(Capsule())
+                            
+                            Spacer()
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Certifications & Claims Section
+    private var certificationsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Certifications & Claims")
+                .font(.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(Color(hex: "111111"))
+            
+            if product.certifications.isEmpty {
+                Text("No certifications available")
+                    .font(.subheadline)
+                    .foregroundColor(Color(hex: "6B7280"))
+                    .padding(.vertical, 8)
+            } else {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(product.certifications, id: \.self) { certification in
+                        HStack {
+                            Image(systemName: "checkmark.seal.fill")
+                                .font(.caption)
+                                .foregroundColor(Color(hex: "10B981"))
+                            
+                            Text(certification)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(Color(hex: "10B981"))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color(hex: "10B981").opacity(0.1))
+                                .clipShape(Capsule())
+                            
+                            Spacer()
+                        }
+                    }
                 }
             }
         }
@@ -306,10 +390,6 @@ struct ProductDetailView: View {
     // MARK: - Badges Section
     private var badgesSection: some View {
         HStack(spacing: 12) {
-            if product.isCrueltyFree {
-                badgeView(text: "Cruelty Free", icon: "heart.fill", color: "8B5CF6")
-            }
-            
             if product.isVegan {
                 badgeView(text: "Vegan", icon: "leaf.fill", color: "10B981")
             }
