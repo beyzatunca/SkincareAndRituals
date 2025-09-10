@@ -77,9 +77,42 @@ class SurveyViewModel: ObservableObject {
         // Here you would typically send the survey response to your backend
         print("Survey completed: \(surveyResponse)")
         
+        // Save survey data to UserDefaults for My Skin Profile
+        saveSurveyDataToUserDefaults()
+        
         // For now, we'll just mark onboarding as complete
         // In a real app, you'd navigate to results or main app
         isOnboardingComplete = false // Reset for demo purposes
+    }
+    
+    private func saveSurveyDataToUserDefaults() {
+        let userDefaults = UserDefaults.standard
+        
+        // Save basic info
+        userDefaults.set(surveyResponse.name, forKey: "survey_name")
+        userDefaults.set(surveyResponse.age.rawValue, forKey: "survey_age")
+        userDefaults.set(surveyResponse.skinType.rawValue, forKey: "survey_skin_type")
+        userDefaults.set(surveyResponse.isSensitive ? "High" : "Low", forKey: "survey_skin_sensitivity")
+        
+        // Save skin concerns as JSON
+        let concernsArray = Array(surveyResponse.skinConcerns).map { $0.rawValue }
+        if let concernsData = try? JSONEncoder().encode(concernsArray) {
+            userDefaults.set(concernsData, forKey: "survey_skin_concerns")
+        }
+        
+        // Save avoid ingredients as JSON
+        let avoidIngredientsArray = Array(surveyResponse.avoidIngredients).map { $0.rawValue }
+        if let avoidIngredientsData = try? JSONEncoder().encode(avoidIngredientsArray) {
+            userDefaults.set(avoidIngredientsData, forKey: "survey_avoid_ingredients")
+        }
+        
+        // Save budget
+        userDefaults.set(surveyResponse.budget.rawValue, forKey: "survey_budget")
+        
+        // Save pregnancy status
+        userDefaults.set(surveyResponse.isPregnantOrBreastfeeding, forKey: "survey_pregnancy_status")
+        
+        print("Survey data saved to UserDefaults")
     }
     
     func startSurvey() {

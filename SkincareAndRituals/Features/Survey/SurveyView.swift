@@ -2449,7 +2449,7 @@ struct MainTabContainerView: View {
                     ExploreRoutinesView()
                         .tag(AppTab.explore)
                     
-                    ProfileView()
+                    ProfileViewContent()
                         .tag(AppTab.profile)
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
@@ -2616,7 +2616,7 @@ struct ProductsViewContent: View {
     
     // MARK: - Empty State
     private func emptyStateView(geometry: GeometryProxy) -> some View {
-        VStack(spacing: 20) {
+            VStack(spacing: 20) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 48))
                 .foregroundColor(Color(hex: "6B7280").opacity(0.5))
@@ -2629,7 +2629,7 @@ struct ProductsViewContent: View {
             Text("Try adjusting your search or category filter")
                 .font(.body)
                 .foregroundColor(Color(hex: "6B7280"))
-                .multilineTextAlignment(.center)
+                        .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
@@ -2699,7 +2699,7 @@ struct ProductCardViewContent: View {
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .foregroundColor(Color(hex: "111111"))
-                .lineLimit(2)
+                        .lineLimit(2)
                 .multilineTextAlignment(.leading)
             
             Text(product.size)
@@ -2727,9 +2727,9 @@ struct ProductCardViewContent: View {
             Text("(\(product.reviewCount))")
                 .font(.caption)
                 .foregroundColor(Color(hex: "6B7280"))
-            
-            Spacer()
-        }
+                
+                Spacer()
+            }
     }
     
     // MARK: - Price Section
@@ -3197,58 +3197,3080 @@ struct ExploreRoutinesView: View {
     }
 }
 
-// MARK: - Profile View
-struct ProfileView: View {
+// MARK: - Profile View Content
+struct ProfileViewContent: View {
+    @StateObject private var viewModel = ProfileViewModel()
+    @State private var showingActionSheet = false
+    @State private var showingCalendar = false
+    @State private var currentDate = Date()
+    @State private var showingSkinProfile = false // Added for skin profile
+    @State private var showingRoutinePreferences = false // Added for routine preferences
+    @State private var showingMyScans = false // Added for my scans
+    @State private var showingFaceScans = false // Added for face scans
+    
     var body: some View {
-        NavigationView {
+        NavigationStack {
+            GeometryReader { geometry in
+                ScrollView(.vertical, showsIndicators: true) {
+                    LazyVStack(spacing: 0) {
+                        // Profile Header
+                        profileHeaderSection
+                        
+                        // Scans & Diary Card
+                        scansAndDiaryCard
+                        
+                        // Profile Sections
+                        profileSectionsView
+                        
+                        // Log Out Button
+                        logOutButton
+                        
+                        // Extra content to ensure scrolling
             VStack(spacing: 20) {
-                // Placeholder content
-                VStack(spacing: 16) {
-                    Image(systemName: "person.crop.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(AppTheme.primaryColor.opacity(0.3))
-                    
-                    Text("Profile")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(AppTheme.textPrimary)
-                    
-                    Text("Manage your account and preferences")
-                        .font(.system(size: 16, weight: .regular))
-                        .foregroundColor(AppTheme.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
+                            Rectangle()
+                                .fill(Color.clear)
+                                .frame(height: 200)
+                            
+                            Text("Scroll Test Area")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                                .padding()
+                            
+                            Rectangle()
+                                .fill(Color.clear)
+                                .frame(height: 200)
+                        }
+                    }
+                    .frame(minHeight: geometry.size.height + 500)
                 }
-                .padding(32)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(AppTheme.surfaceColor)
-                        .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
-                )
-                .padding(.horizontal, 20)
-                
-                Spacer()
+                .background(Color(hex: "F8F8F8"))
+                .clipped()
             }
-            .padding(.top, 20)
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.large)
+            .ignoresSafeArea(.container, edges: .bottom)
+        }
+        .alert("Log Out", isPresented: $viewModel.showingLogOutAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Log Out", role: .destructive) {
+                viewModel.logOut()
+            }
+        } message: {
+            Text("Are you sure you want to log out?")
+        }
+        .onChange(of: viewModel.selectedAction) { action in
+            if let action = action {
+                handleAction(action)
+            }
+        }
+        .sheet(isPresented: $showingCalendar) {
+            CalendarView(currentDate: $currentDate)
+        }
+        .sheet(isPresented: $showingSkinProfile) {
+            SkinProfileView()
+        }
+        .sheet(isPresented: $showingRoutinePreferences) {
+            RoutinePreferencesView()
+        }
+        .sheet(isPresented: $showingMyScans) {
+            MyScansView()
+        }
+        .sheet(isPresented: $showingFaceScans) {
+            FaceScansView()
+        }
+    }
+    
+    // MARK: - Profile Header Section
+    private var profileHeaderSection: some View {
+                VStack(spacing: 16) {
+            // Avatar with edit button
+            ZStack {
+                Circle()
+                    .fill(Color(hex: "E5E7EB"))
+                    .frame(width: 80, height: 80)
+                
+                Text("😊")
+                    .font(.system(size: 40))
+                
+                // Edit button
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            // Handle edit profile
+                        }) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 20, height: 20)
+                                .background(Color(hex: "8B5CF6"))
+                                .clipShape(Circle())
+                        }
+                    }
+                }
+                .frame(width: 80, height: 80)
+            }
+            
+            // User name
+            Text(viewModel.userProfile.name)
+                        .font(.system(size: 28, weight: .bold))
+                .foregroundColor(Color(hex: "111111"))
+        }
+        .padding(.top, 20)
+        .padding(.bottom, 24)
+    }
+    
+    // MARK: - Scans & Diary Card
+    private var scansAndDiaryCard: some View {
+        Button(action: {
+            showingCalendar = true
+        }) {
+            HStack {
+                Image(systemName: "calendar")
+                    .font(.system(size: 20))
+                    .foregroundColor(Color(hex: "6B7280"))
+                
+                Text("Scans & Diary - \(currentDate.formatted(.dateTime.month(.wide))))")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(hex: "111111"))
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(hex: "6B7280"))
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .padding(.horizontal, 16)
+        .padding(.bottom, 24)
+    }
+    
+    // MARK: - Profile Sections View
+    private var profileSectionsView: some View {
+        VStack(spacing: 32) {
+            ForEach(ProfileSection.allCases) { section in
+                if section == .getInvolved {
+                    socialMediaSectionView
+                } else {
+                    profileSectionView(section: section)
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 20)
+        .padding(.bottom, 40)
+    }
+    
+    // MARK: - Profile Section View
+    private func profileSectionView(section: ProfileSection) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Section Header
+            Text(section.rawValue)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(Color(hex: "6B7280"))
+                .padding(.horizontal, 4)
+            
+            // Section Items
+            VStack(spacing: 0) {
+                ForEach(Array(section.items.enumerated()), id: \.element.id) { index, item in
+                    profileMenuItemView(item: item, isLast: index == section.items.count - 1)
+                }
+            }
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+    }
+    
+    // MARK: - Profile Menu Item View
+    private func profileMenuItemView(item: ProfileMenuItem, isLast: Bool) -> some View {
+        Button(action: {
+            viewModel.handleAction(item.action)
+        }) {
+            HStack(spacing: 16) {
+                // Icon
+                Image(systemName: item.icon)
+                    .font(.system(size: 20))
+                    .foregroundColor(Color(hex: "6B7280"))
+                    .frame(width: 24, height: 24)
+                
+                // Title
+                Text(item.title)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(hex: "111111"))
+                
+                Spacer()
+                
+                // Badge
+                if let badge = item.badge {
+                    Text(badge)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color(hex: "8B5CF6"))
+                        .clipShape(Capsule())
+                }
+                
+                // Chevron
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(hex: "6B7280"))
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .background(Color.white)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .overlay(
+            // Divider
+            VStack {
+                Spacer()
+                if !isLast {
+                    Rectangle()
+                        .fill(Color(hex: "E5E7EB"))
+                        .frame(height: 1)
+                        .padding(.leading, 60)
+                }
+            }
+        )
+    }
+    
+    // MARK: - Social Media Section View
+    private var socialMediaSectionView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Section Header
+            Text("GET INVOLVED")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(Color(hex: "6B7280"))
+                .padding(.horizontal, 4)
+            
+            VStack(spacing: 0) {
+                // Share Lóvi item
+                Button(action: {
+                    viewModel.handleAction(.shareLovi)
+                }) {
+                    HStack(spacing: 16) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 20))
+                            .foregroundColor(Color(hex: "6B7280"))
+                            .frame(width: 24, height: 24)
+                        
+                        Text("Share Lóvi")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(hex: "111111"))
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(hex: "6B7280"))
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    .background(Color.white)
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                // Divider
+                Rectangle()
+                    .fill(Color(hex: "E5E7EB"))
+                    .frame(height: 1)
+                    .padding(.leading, 60)
+                
+                // Social Media Platforms
+                HStack(spacing: 20) {
+                    ForEach(SocialMediaPlatform.allCases) { platform in
+                        socialMediaButton(platform: platform)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 20)
+                .background(Color.white)
+            }
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+    }
+    
+    // MARK: - Social Media Button
+    private func socialMediaButton(platform: SocialMediaPlatform) -> some View {
+        Button(action: {
+            if let url = URL(string: platform.url) {
+                UIApplication.shared.open(url)
+            }
+        }) {
+            VStack(spacing: 8) {
+                ZStack {
+                    Circle()
+                        .fill(Color(hex: platform.color))
+                        .frame(width: 50, height: 50)
+                    
+                    Image(systemName: platform.icon)
+                        .font(.system(size: 20))
+                        .foregroundColor(.white)
+                }
+                
+                Text(platform.rawValue)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(Color(hex: "6B7280"))
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    // MARK: - Log Out Button
+    private var logOutButton: some View {
+        Button(action: {
+            viewModel.handleAction(.logOut)
+        }) {
+            Text("Log Out")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color(hex: "111111"))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color(hex: "E5E7EB"))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(PlainButtonStyle())
+        .padding(.horizontal, 16)
+        .padding(.top, 40)
+        .padding(.bottom, 60)
+    }
+    
+    // MARK: - Action Handling
+    private func handleAction(_ action: ProfileAction) {
+        switch action {
+        case .mySkinProfile:
+            // Navigate to skin profile
+            showingSkinProfile = true
+        case .routinePreferences:
+            // Navigate to routine preferences
+            showingRoutinePreferences = true
+        case .routineForYou:
+            // Navigate to routine for you
+            print("Navigate to Routine for You")
+        case .myShelf:
+            // Navigate to my scans
+            showingMyScans = true
+        case .faceScans:
+            // Navigate to face scans
+            showingFaceScans = true
+        case .subscriptionManagement:
+            // Navigate to subscription management
+            print("Navigate to Subscription Management")
+        case .frequentlyAskedQuestions:
+            // Show FAQ
+            print("Show FAQ")
+        case .appSettings:
+            // Open app settings
+            print("Open App Settings")
+        case .suggestFeature:
+            // Show suggest feature
+            print("Show Suggest Feature")
+        case .contactUs:
+            // Open contact us
+            print("Open Contact Us")
+        case .shareLovi:
+            // Share app
+            print("Share App")
+        case .privacyPolicy:
+            // Show privacy policy
+            print("Show Privacy Policy")
+        case .moneyBackPolicy:
+            // Show money back policy
+            print("Show Money Back Policy")
+        case .termsOfUse:
+            // Show terms of use
+            print("Show Terms of Use")
+        case .logOut:
+            // Handle logout
+            print("Handle Logout")
         }
     }
 }
 
+// MARK: - Profile Models
+// MARK: - Profile Menu Item
+struct ProfileMenuItem: Identifiable, Hashable {
+    let id = UUID()
+    let title: String
+    let icon: String
+    let action: ProfileAction
+    let badge: String?
+    
+    init(title: String, icon: String, action: ProfileAction, badge: String? = nil) {
+        self.title = title
+        self.icon = icon
+        self.action = action
+        self.badge = badge
+    }
+}
 
+// MARK: - Profile Action
+enum ProfileAction: String, CaseIterable {
+    case mySkinProfile = "My Skin Profile"
+    case routinePreferences = "Routine Preferences"
+    case routineForYou = "Routine for you"
+    case myShelf = "My Scans"
+    case faceScans = "Face Scans"
+    case subscriptionManagement = "Subscription Management"
+    case frequentlyAskedQuestions = "Frequently Asked Questions"
+    case appSettings = "App Settings"
+    case suggestFeature = "Suggest a Feature"
+    case contactUs = "Contact us"
+    case shareLovi = "Share Lóvi"
+    case privacyPolicy = "Privacy policy"
+    case moneyBackPolicy = "Money-back Policy"
+    case termsOfUse = "Terms of Use"
+    case logOut = "Log Out"
+    
+    var icon: String {
+        switch self {
+        case .mySkinProfile: return "face.smiling"
+        case .routinePreferences: return "slider.horizontal.3"
+        case .routineForYou: return "sparkles"
+        case .myShelf: return "books.vertical"
+        case .faceScans: return "viewfinder"
+        case .subscriptionManagement: return "person.crop.circle.badge.checkmark"
+        case .frequentlyAskedQuestions: return "questionmark.circle"
+        case .appSettings: return "gearshape"
+        case .suggestFeature: return "lightbulb"
+        case .contactUs: return "bubble.left.and.bubble.right"
+        case .shareLovi: return "square.and.arrow.up"
+        case .privacyPolicy: return "hand.raised"
+        case .moneyBackPolicy: return "dollarsign.circle"
+        case .termsOfUse: return "doc.text"
+        case .logOut: return "rectangle.portrait.and.arrow.right"
+        }
+    }
+}
 
+// MARK: - Social Media Platform
+enum SocialMediaPlatform: String, CaseIterable, Identifiable {
+    case instagram = "Instagram"
+    case tiktok = "TikTok"
+    case facebook = "Facebook"
+    case snapchat = "Snapchat"
+    
+    var id: String { rawValue }
+    
+    var icon: String {
+        switch self {
+        case .instagram: return "camera"
+        case .tiktok: return "music.note"
+        case .facebook: return "person.2"
+        case .snapchat: return "camera.viewfinder"
+        }
+    }
+    
+    var color: String {
+        switch self {
+        case .instagram: return "E4405F"
+        case .tiktok: return "000000"
+        case .facebook: return "1877F2"
+        case .snapchat: return "FFFC00"
+        }
+    }
+    
+    var url: String {
+        switch self {
+        case .instagram: return "https://instagram.com/skincareandrituals"
+        case .tiktok: return "https://tiktok.com/@skincareandrituals"
+        case .facebook: return "https://facebook.com/skincareandrituals"
+        case .snapchat: return "https://snapchat.com/add/skincareandrituals"
+        }
+    }
+}
 
+// MARK: - Profile Section
+enum ProfileSection: String, CaseIterable, Identifiable {
+    case personal = "PERSONAL"
+    case needHelp = "NEED HELP?"
+    case getInvolved = "GET INVOLVED"
+    case legal = "LEGAL"
+    
+    var id: String { rawValue }
+    
+    var items: [ProfileMenuItem] {
+        switch self {
+        case .personal:
+            return [
+                ProfileMenuItem(title: "My Skin Profile", icon: ProfileAction.mySkinProfile.icon, action: .mySkinProfile),
+                ProfileMenuItem(title: "Routine Preferences", icon: ProfileAction.routinePreferences.icon, action: .routinePreferences),
+                ProfileMenuItem(title: "Routine for you", icon: ProfileAction.routineForYou.icon, action: .routineForYou),
+                ProfileMenuItem(title: "My Scans", icon: ProfileAction.myShelf.icon, action: .myShelf),
+                ProfileMenuItem(title: "Face Scans (2)", icon: ProfileAction.faceScans.icon, action: .faceScans, badge: "2"),
+                ProfileMenuItem(title: "Subscription Management", icon: ProfileAction.subscriptionManagement.icon, action: .subscriptionManagement)
+            ]
+        case .needHelp:
+            return [
+                ProfileMenuItem(title: "Frequently Asked Questions", icon: ProfileAction.frequentlyAskedQuestions.icon, action: .frequentlyAskedQuestions),
+                ProfileMenuItem(title: "App Settings", icon: ProfileAction.appSettings.icon, action: .appSettings),
+                ProfileMenuItem(title: "Suggest a Feature", icon: ProfileAction.suggestFeature.icon, action: .suggestFeature),
+                ProfileMenuItem(title: "Contact us", icon: ProfileAction.contactUs.icon, action: .contactUs)
+            ]
+        case .getInvolved:
+            return [
+                ProfileMenuItem(title: "Share Lóvi", icon: ProfileAction.shareLovi.icon, action: .shareLovi)
+            ]
+        case .legal:
+            return [
+                ProfileMenuItem(title: "Privacy policy", icon: ProfileAction.privacyPolicy.icon, action: .privacyPolicy),
+                ProfileMenuItem(title: "Money-back Policy", icon: ProfileAction.moneyBackPolicy.icon, action: .moneyBackPolicy),
+                ProfileMenuItem(title: "Terms of Use", icon: ProfileAction.termsOfUse.icon, action: .termsOfUse)
+            ]
+        }
+    }
+}
 
+// MARK: - User Profile
+struct UserProfile: Codable {
+    var name: String
+    var avatar: String?
+    var joinDate: Date
+    var subscriptionStatus: SubscriptionStatus
+    var faceScansCount: Int
+    var preferences: UserPreferences
+    
+    init(name: String = "Sunshine", avatar: String? = nil, joinDate: Date = Date(), subscriptionStatus: SubscriptionStatus = .free, faceScansCount: Int = 2, preferences: UserPreferences = UserPreferences()) {
+        self.name = name
+        self.avatar = avatar
+        self.joinDate = joinDate
+        self.subscriptionStatus = subscriptionStatus
+        self.faceScansCount = faceScansCount
+        self.preferences = preferences
+    }
+}
 
+// MARK: - Subscription Status
+enum SubscriptionStatus: String, CaseIterable, Codable {
+    case free = "Free"
+    case premium = "Premium"
+    case pro = "Pro"
+    
+    var displayName: String {
+        switch self {
+        case .free: return "Free Plan"
+        case .premium: return "Premium Plan"
+        case .pro: return "Pro Plan"
+        }
+    }
+    
+    var color: String {
+        switch self {
+        case .free: return "6B7280"
+        case .premium: return "8B5CF6"
+        case .pro: return "F59E0B"
+        }
+    }
+}
 
+// MARK: - User Preferences
+struct UserPreferences: Codable {
+    var notifications: Bool
+    var darkMode: Bool
+    var language: String
+    var units: String
+    
+    init(notifications: Bool = true, darkMode: Bool = false, language: String = "English", units: String = "Metric") {
+        self.notifications = notifications
+        self.darkMode = darkMode
+        self.language = language
+        self.units = units
+    }
+}
 
+// MARK: - Profile ViewModel
+@MainActor
+class ProfileViewModel: ObservableObject {
+    @Published var userProfile: UserProfile
+    @Published var showingLogOutAlert = false
+    @Published var selectedAction: ProfileAction?
+    
+    init() {
+        self.userProfile = UserProfile()
+    }
+    
+    // MARK: - Actions
+    func handleAction(_ action: ProfileAction) {
+        selectedAction = action
+        
+        switch action {
+        case .logOut:
+            showingLogOutAlert = true
+        case .shareLovi:
+            shareApp()
+        case .contactUs:
+            openContactUs()
+        case .appSettings:
+            openAppSettings()
+        default:
+            // Handle other actions
+            print("Selected action: \(action.rawValue)")
+        }
+    }
+    
+    private func shareApp() {
+        let activityViewController = UIActivityViewController(
+            activityItems: ["Check out Skincare & Rituals app!"],
+            applicationActivities: nil
+        )
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            window.rootViewController?.present(activityViewController, animated: true)
+        }
+    }
+    
+    private func openContactUs() {
+        if let url = URL(string: "mailto:support@skincareandrituals.com") {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    private func openAppSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    func logOut() {
+        // Handle logout logic
+        print("User logged out")
+    }
+    
+    // MARK: - Computed Properties
+    var formattedJoinDate: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: userProfile.joinDate)
+    }
+    
+    var subscriptionDisplayText: String {
+        return userProfile.subscriptionStatus.displayName
+    }
+}
 
+// MARK: - Skin Diary Models
+struct SkinDiaryEntry: Identifiable, Codable {
+    let id = UUID()
+    let date: Date
+    var photoData: Data?
+    var skinCondition: SkinCondition
+    var notes: String
+    var mood: DiaryMood
+    
+    init(date: Date, photoData: Data? = nil, skinCondition: SkinCondition = .normal, notes: String = "", mood: DiaryMood = .neutral) {
+        self.date = date
+        self.photoData = photoData
+        self.skinCondition = skinCondition
+        self.notes = notes
+        self.mood = mood
+    }
+}
 
+enum SkinCondition: String, CaseIterable, Codable {
+    case excellent = "Excellent"
+    case good = "Good"
+    case normal = "Normal"
+    case poor = "Poor"
+    case bad = "Bad"
+    
+    var emoji: String {
+        switch self {
+        case .excellent: return "🌟"
+        case .good: return "😊"
+        case .normal: return "😐"
+        case .poor: return "😔"
+        case .bad: return "😞"
+        }
+    }
+    
+    var color: String {
+        switch self {
+        case .excellent: return "4CAF50"
+        case .good: return "8BC34A"
+        case .normal: return "FFC107"
+        case .poor: return "FF9800"
+        case .bad: return "F44336"
+        }
+    }
+}
 
+enum DiaryMood: String, CaseIterable, Codable {
+    case happy = "Happy"
+    case neutral = "Neutral"
+    case stressed = "Stressed"
+    case tired = "Tired"
+    case energetic = "Energetic"
+    
+    var emoji: String {
+        switch self {
+        case .happy: return "😄"
+        case .neutral: return "😐"
+        case .stressed: return "😰"
+        case .tired: return "😴"
+        case .energetic: return "⚡"
+        }
+    }
+}
 
+// MARK: - Diary ViewModel
+@MainActor
+class DiaryViewModel: ObservableObject {
+    @Published var entries: [Date: SkinDiaryEntry] = [:]
+    @Published var selectedDate: Date?
+    @Published var showingPhotoPicker = false
+    
+    private let userDefaults = UserDefaults.standard
+    private let entriesKey = "SkinDiaryEntries"
+    
+    init() {
+        loadEntries()
+    }
+    
+    func getEntry(for date: Date) -> SkinDiaryEntry? {
+        let calendar = Calendar.current
+        let normalizedDate = calendar.startOfDay(for: date)
+        return entries[normalizedDate]
+    }
+    
+    func saveEntry(_ entry: SkinDiaryEntry) {
+        let calendar = Calendar.current
+        let normalizedDate = calendar.startOfDay(for: entry.date)
+        entries[normalizedDate] = entry
+        saveEntries()
+    }
+    
+    func createOrUpdateEntry(for date: Date, photoData: Data? = nil, skinCondition: SkinCondition = .normal, notes: String = "", mood: DiaryMood = .neutral) {
+        let calendar = Calendar.current
+        let normalizedDate = calendar.startOfDay(for: date)
+        
+        if let existingEntry = entries[normalizedDate] {
+            var updatedEntry = existingEntry
+            if let photoData = photoData {
+                updatedEntry.photoData = photoData
+            }
+            updatedEntry.skinCondition = skinCondition
+            updatedEntry.notes = notes
+            updatedEntry.mood = mood
+            entries[normalizedDate] = updatedEntry
+        } else {
+            let newEntry = SkinDiaryEntry(date: normalizedDate, photoData: photoData, skinCondition: skinCondition, notes: notes, mood: mood)
+            entries[normalizedDate] = newEntry
+        }
+        saveEntries()
+    }
+    
+    private func saveEntries() {
+        do {
+            let data = try JSONEncoder().encode(entries)
+            userDefaults.set(data, forKey: entriesKey)
+        } catch {
+            print("Failed to save diary entries: \(error)")
+        }
+    }
+    
+    private func loadEntries() {
+        guard let data = userDefaults.data(forKey: entriesKey) else { return }
+        do {
+            entries = try JSONDecoder().decode([Date: SkinDiaryEntry].self, from: data)
+        } catch {
+            print("Failed to load diary entries: \(error)")
+        }
+    }
+}
 
+// MARK: - Calendar View
+struct CalendarView: View {
+    @Binding var currentDate: Date
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var diaryViewModel = DiaryViewModel()
+    @State private var selectedDay: Date?
+    
+    private let calendar = Calendar.current
+    private let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter
+    }()
+    
+    private let monthFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM"
+        return formatter
+    }()
+    
+    var body: some View {
+        NavigationView {
+            ScrollView(.vertical, showsIndicators: true) {
+                VStack(spacing: 0) {
+                    // Header
+                    calendarHeader
+                    
+                    // Calendar Grid
+                    calendarGrid
+                    
+                    // Navigation Controls
+                    calendarNavigation
+                    
+                    // Skin Diary Panel
+                    if let selectedDay = selectedDay {
+                        skinDiaryPanel(for: selectedDay)
+                    }
+                    
+                    // Extra space for better scrolling
+                    Spacer(minLength: 50)
+                }
+                .padding(.horizontal, 20)
+            }
+            .background(Color(hex: "F8F8F8"))
+            .navigationTitle("Scans & Diary")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .foregroundColor(Color(hex: "8B5CF6"))
+                }
+            }
+        }
+    }
+    
+    // MARK: - Calendar Header
+    private var calendarHeader: some View {
+        VStack(spacing: 16) {
+            // Month and Year
+            Text(dateFormatter.string(from: currentDate))
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(Color(hex: "111111"))
+            
+            // Day headers
+            HStack(spacing: 0) {
+                ForEach(["M", "T", "W", "T", "F", "S", "S"], id: \.self) { day in
+                    Text(day)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(hex: "6B7280"))
+                        .frame(maxWidth: .infinity)
+                }
+            }
+        }
+        .padding(.top, 20)
+        .padding(.bottom, 16)
+    }
+    
+    // MARK: - Calendar Grid
+    private var calendarGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
+            ForEach(calendarDays, id: \.self) { date in
+                calendarDayView(for: date)
+            }
+        }
+    }
+    
+    // MARK: - Calendar Day View
+    private func calendarDayView(for date: Date) -> some View {
+        let day = calendar.component(.day, from: date)
+        let isCurrentMonth = calendar.isDate(date, equalTo: currentDate, toGranularity: .month)
+        let isToday = calendar.isDateInToday(date)
+        let isSelected = calendar.isDate(date, inSameDayAs: selectedDay ?? Date.distantPast)
+        let hasEntry = diaryViewModel.getEntry(for: date) != nil
+        
+        return Text("\(day)")
+            .font(.system(size: 16, weight: isToday ? .bold : .medium))
+            .foregroundColor(isCurrentMonth ? Color(hex: "111111") : Color(hex: "9CA3AF"))
+            .frame(width: 40, height: 40)
+                .background(
+                Circle()
+                    .fill(isToday ? Color(hex: "3B82F6") : 
+                          isSelected ? Color(hex: "8B5CF6") : 
+                          hasEntry ? Color(hex: "E5E7EB") : Color.clear)
+            )
+            .foregroundColor(isToday || isSelected ? .white : (isCurrentMonth ? Color(hex: "111111") : Color(hex: "9CA3AF")))
+            .overlay(
+                // Diary entry indicator
+                hasEntry ? 
+                Circle()
+                    .fill(Color(hex: "8B5CF6"))
+                    .frame(width: 6, height: 6)
+                    .offset(x: 12, y: 12) : nil
+            )
+            .onTapGesture {
+                selectedDay = date
+            }
+    }
+    
+    // MARK: - Calendar Navigation
+    private var calendarNavigation: some View {
+        HStack {
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    currentDate = calendar.date(byAdding: .month, value: -1, to: currentDate) ?? currentDate
+                }
+            }) {
+                HStack(spacing: 4) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 14, weight: .medium))
+                    Text(monthFormatter.string(from: calendar.date(byAdding: .month, value: -1, to: currentDate) ?? currentDate))
+                        .font(.system(size: 14, weight: .medium))
+                }
+                .foregroundColor(Color(hex: "6B7280"))
+            }
+            
+            Spacer()
+            
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    currentDate = calendar.date(byAdding: .month, value: 1, to: currentDate) ?? currentDate
+                }
+            }) {
+                HStack(spacing: 4) {
+                    Text(monthFormatter.string(from: calendar.date(byAdding: .month, value: 1, to: currentDate) ?? currentDate))
+                        .font(.system(size: 14, weight: .medium))
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .medium))
+                }
+                .foregroundColor(Color(hex: "6B7280"))
+            }
+        }
+        .padding(.top, 24)
+    }
+    
+    // MARK: - Calendar Days
+    private var calendarDays: [Date] {
+        let startOfMonth = calendar.dateInterval(of: .month, for: currentDate)?.start ?? currentDate
+        let endOfMonth = calendar.dateInterval(of: .month, for: currentDate)?.end ?? currentDate
+        
+        let startOfCalendar = calendar.dateInterval(of: .weekOfYear, for: startOfMonth)?.start ?? startOfMonth
+        let endOfCalendar = calendar.dateInterval(of: .weekOfYear, for: endOfMonth)?.end ?? endOfMonth
+        
+        var days: [Date] = []
+        var currentDate = startOfCalendar
+        
+        while currentDate < endOfCalendar {
+            days.append(currentDate)
+            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
+        }
+        
+        return days
+    }
+    
+    // MARK: - Skin Diary Panel
+    private func skinDiaryPanel(for date: Date) -> some View {
+        let entry = diaryViewModel.getEntry(for: date)
+        let dayFormatter = DateFormatter()
+        dayFormatter.dateFormat = "EEEE, MMMM d"
+        
+        return VStack(spacing: 16) {
+            // Header
+            HStack {
+                Text(dayFormatter.string(from: date))
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(Color(hex: "111111"))
+                
+                Spacer()
+                
+                Button(action: {
+                    selectedDay = nil
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(Color(hex: "9CA3AF"))
+                }
+            }
+            .padding(.top, 20)
+            
+            // Diary Content
+            if let entry = entry {
+                existingDiaryEntry(entry)
+            } else {
+                newDiaryEntry(for: date)
+            }
+        }
+        .padding(.horizontal, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 2)
+        )
+        .padding(.top, 20)
+    }
+    
+    // MARK: - Existing Diary Entry
+    private func existingDiaryEntry(_ entry: SkinDiaryEntry) -> some View {
+        VStack(spacing: 16) {
+            // Photo Section
+            if let photoData = entry.photoData, let uiImage = UIImage(data: photoData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 200)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            
+            // Skin Condition & Mood
+            HStack(spacing: 20) {
+                // Skin Condition
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Skin Condition")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(Color(hex: "6B7280"))
+                    
+                    HStack(spacing: 8) {
+                        Text(entry.skinCondition.emoji)
+                            .font(.system(size: 20))
+                        Text(entry.skinCondition.rawValue)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(hex: entry.skinCondition.color))
+                    }
+                }
+                
+                Spacer()
+                
+                // Mood
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("Mood")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(Color(hex: "6B7280"))
+                    
+                    HStack(spacing: 8) {
+                        Text(entry.mood.emoji)
+                            .font(.system(size: 20))
+                        Text(entry.mood.rawValue)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(hex: "111111"))
+                    }
+                }
+            }
+            
+            // Notes
+            if !entry.notes.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Notes")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(Color(hex: "6B7280"))
+                    
+                    Text(entry.notes)
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(hex: "111111"))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            
+            // Edit Button
+            Button(action: {
+                // TODO: Implement edit functionality
+            }) {
+                Text("Edit Entry")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(hex: "8B5CF6"))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color(hex: "8B5CF6"), lineWidth: 1)
+                    )
+            }
+        }
+        .padding(.bottom, 20)
+    }
+    
+    // MARK: - New Diary Entry
+    private func newDiaryEntry(for date: Date) -> some View {
+        @State var skinCondition: SkinCondition = .normal
+        @State var mood: DiaryMood = .neutral
+        @State var notes: String = ""
+        @State var selectedImage: UIImage?
+        
+        return VStack(spacing: 16) {
+            // Add Photo Section
+            Button(action: {
+                diaryViewModel.showingPhotoPicker = true
+            }) {
+                VStack(spacing: 8) {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(Color(hex: "8B5CF6"))
+                    
+                    Text("Add Photo")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(hex: "8B5CF6"))
+                }
+                .frame(height: 100)
+                .frame(maxWidth: .infinity)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(hex: "8B5CF6"), lineWidth: 2)
+                )
+            }
+            
+            // Skin Condition Selector
+            VStack(alignment: .leading, spacing: 8) {
+                Text("How is your skin today?")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(hex: "111111"))
+                
+                HStack(spacing: 12) {
+                    ForEach(SkinCondition.allCases, id: \.self) { condition in
+                        Button(action: {
+                            skinCondition = condition
+                        }) {
+                            VStack(spacing: 4) {
+                                Text(condition.emoji)
+                                    .font(.system(size: 24))
+                                
+                                Text(condition.rawValue)
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundColor(Color(hex: "6B7280"))
+                            }
+                            .frame(width: 50)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(skinCondition == condition ? Color(hex: condition.color).opacity(0.1) : Color.clear)
+                            )
+                        }
+                    }
+                }
+            }
+            
+            // Mood Selector
+            VStack(alignment: .leading, spacing: 8) {
+                Text("How are you feeling?")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(hex: "111111"))
+                
+                HStack(spacing: 12) {
+                    ForEach(DiaryMood.allCases, id: \.self) { moodOption in
+                        Button(action: {
+                            mood = moodOption
+                        }) {
+                            VStack(spacing: 4) {
+                                Text(moodOption.emoji)
+                                    .font(.system(size: 24))
+                                
+                                Text(moodOption.rawValue)
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundColor(Color(hex: "6B7280"))
+                            }
+                            .frame(width: 50)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(mood == moodOption ? Color(hex: "8B5CF6").opacity(0.1) : Color.clear)
+                            )
+                        }
+                    }
+                }
+            }
+            
+            // Notes Section
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Notes (Optional)")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(hex: "111111"))
+                
+                TextField("How did your skin feel today?", text: $notes, axis: .vertical)
+                    .font(.system(size: 14))
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color(hex: "F3F4F6"))
+                    )
+                    .lineLimit(3...6)
+            }
+            
+            // Save Button
+            Button(action: {
+                let imageData = selectedImage?.jpegData(compressionQuality: 0.8)
+                diaryViewModel.createOrUpdateEntry(for: date, photoData: imageData, skinCondition: skinCondition, notes: notes, mood: mood)
+                selectedDay = nil
+            }) {
+                Text("Save Entry")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(hex: "8B5CF6"))
+                    )
+            }
+        }
+        .padding(.bottom, 20)
+        .sheet(isPresented: $diaryViewModel.showingPhotoPicker) {
+            ImagePicker(selectedImage: $selectedImage)
+        }
+    }
+}
 
+// MARK: - Image Picker
+struct ImagePicker: UIViewControllerRepresentable {
+    @Binding var selectedImage: UIImage?
+    @Environment(\.dismiss) private var dismiss
+    
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.delegate = context.coordinator
+        picker.sourceType = .photoLibrary
+        return picker
+    }
+    
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: ImagePicker
+        
+        init(_ parent: ImagePicker) {
+            self.parent = parent
+        }
+        
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            if let image = info[.originalImage] as? UIImage {
+                parent.selectedImage = image
+            }
+            parent.dismiss()
+        }
+        
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.dismiss()
+        }
+    }
+}
 
+// MARK: - Skin Profile View
+struct SkinProfileView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var isEditing = false
+    @State private var showingSaveAlert = false
+    
+    // Survey data from UserDefaults
+    @State private var name: String = ""
+    @State private var gender: String = ""
+    @State private var age: String = ""
+    @State private var skinType: String = ""
+    @State private var skinSensitivity: String = ""
+    @State private var skinConcerns: [String] = []
+    
+    // Available options (matching survey options)
+    private let genderOptions = ["Male", "Female", "Other", "Prefer not to say"]
+    private let ageOptions = ["13-17", "18-24", "25-34", "35-44", "45-54", "55+"]
+    private let skinTypeOptions = ["Oily", "Dry", "Combination", "Normal", "Sensitive", "Acne Prone"]
+    private let sensitivityOptions = ["Low", "High"]
+    private let concernOptions = ["Acne or pimples", "Wrinkles and Fine lines", "Redness or Rosacea", "T-zone Oiliness", "Skin barrier repair", "Puffy eyes", "Enlarged pores"]
+    
+    var body: some View {
+        NavigationView {
+            ScrollView(.vertical, showsIndicators: true) {
+                VStack(spacing: 24) {
+                    // Header
+                    profileHeader
+                    
+                    // Profile Information
+                    profileInformationSection
+                    
+                    // Close Button
+                    closeButton
+                    
+                    Spacer(minLength: 50)
+                }
+                .padding(.horizontal, 20)
+            }
+            .background(Color(hex: "F8F8F8"))
+            .navigationTitle("My Skin Profile")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Close") {
+                        dismiss()
+                    }
+                    .foregroundColor(Color(hex: "8B5CF6"))
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(isEditing ? "Save" : "Edit") {
+                        if isEditing {
+                            saveProfile()
+                        } else {
+                            isEditing = true
+                        }
+                    }
+                    .foregroundColor(Color(hex: "8B5CF6"))
+                }
+            }
+        }
+        .onAppear {
+            loadProfileData()
+        }
+        .alert("Profile Updated", isPresented: $showingSaveAlert) {
+            Button("OK") {
+                isEditing = false
+            }
+        } message: {
+            Text("Your skin profile has been updated successfully.")
+        }
+    }
+    
+    // MARK: - Profile Header
+    private var profileHeader: some View {
+        VStack(spacing: 16) {
+            // Profile Icon
+            Circle()
+                .fill(Color(hex: "8B5CF6"))
+                .frame(width: 80, height: 80)
+                .overlay(
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 32))
+                        .foregroundColor(.white)
+                )
+            
+            Text("Skin Profile")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(Color(hex: "111111"))
+            
+            Text("Your personalized skin information")
+                .font(.system(size: 14))
+                .foregroundColor(Color(hex: "6B7280"))
+        }
+        .padding(.top, 20)
+    }
+    
+    // MARK: - Profile Information Section
+    private var profileInformationSection: some View {
+        VStack(spacing: 20) {
+            // Name
+            profileField(title: "Name", value: $name, isEditable: isEditing)
+            
+            // Gender
+            profileField(title: "Gender", value: $gender, isEditable: isEditing, options: genderOptions)
+            
+            // Age
+            profileField(title: "Age", value: $age, isEditable: isEditing, options: ageOptions)
+            
+            // Skin Type
+            profileField(title: "Skin Type", value: $skinType, isEditable: isEditing, options: skinTypeOptions)
+            
+            // Skin Sensitivity
+            profileField(title: "Skin Sensitivity", value: $skinSensitivity, isEditable: isEditing, options: sensitivityOptions)
+            
+            // Skin Concerns
+            skinConcernsSection
+        }
+    }
+    
+    // MARK: - Profile Field
+    private func profileField(title: String, value: Binding<String>, isEditable: Bool, options: [String]? = nil, keyboardType: UIKeyboardType = .default) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Color(hex: "6B7280"))
+            
+            if isEditable {
+                if let options = options {
+                    Menu {
+                        ForEach(options, id: \.self) { option in
+                            Button(option) {
+                                value.wrappedValue = option
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Text(value.wrappedValue.isEmpty ? "Select \(title)" : value.wrappedValue)
+                                .foregroundColor(value.wrappedValue.isEmpty ? Color(hex: "9CA3AF") : Color(hex: "111111"))
+                Spacer()
+                            Image(systemName: "chevron.down")
+                                .foregroundColor(Color(hex: "6B7280"))
+                        }
+                        .padding(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.white)
+                                .stroke(Color(hex: "E5E7EB"), lineWidth: 1)
+                        )
+                    }
+                } else {
+                    TextField("Enter \(title.lowercased())", text: value)
+                        .keyboardType(keyboardType)
+                        .padding(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.white)
+                                .stroke(Color(hex: "E5E7EB"), lineWidth: 1)
+                        )
+                }
+            } else {
+                Text(value.wrappedValue.isEmpty ? "Not specified" : value.wrappedValue)
+                    .font(.system(size: 16))
+                    .foregroundColor(value.wrappedValue.isEmpty ? Color(hex: "9CA3AF") : Color(hex: "111111"))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color(hex: "F3F4F6"))
+                    )
+            }
+        }
+    }
+    
+    // MARK: - Skin Concerns Section
+    private var skinConcernsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Skin Concerns")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Color(hex: "6B7280"))
+            
+            if isEditing {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
+                    ForEach(concernOptions, id: \.self) { concern in
+                        Button(action: {
+                            toggleConcern(concern)
+                        }) {
+                            HStack {
+                                Text(concern)
+                                    .font(.system(size: 14))
+                                    .foregroundColor(skinConcerns.contains(concern) ? .white : Color(hex: "6B7280"))
+                                
+                                Spacer()
+                                
+                                Image(systemName: skinConcerns.contains(concern) ? "checkmark" : "plus")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(skinConcerns.contains(concern) ? .white : Color(hex: "6B7280"))
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(skinConcerns.contains(concern) ? Color(hex: "8B5CF6") : Color.white)
+                                    .stroke(Color(hex: "E5E7EB"), lineWidth: 1)
+                            )
+                        }
+                    }
+                }
+            } else {
+                if skinConcerns.isEmpty {
+                    Text("No concerns specified")
+                        .font(.system(size: 16))
+                        .foregroundColor(Color(hex: "9CA3AF"))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color(hex: "F3F4F6"))
+                        )
+                } else {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
+                        ForEach(skinConcerns, id: \.self) { concern in
+                            Text(concern)
+                                .font(.system(size: 14))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(Color(hex: "8B5CF6"))
+                                )
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Close Button
+    private var closeButton: some View {
+        Button(action: {
+            dismiss()
+        }) {
+            Text("Close")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(hex: "8B5CF6"))
+                )
+            }
+            .padding(.top, 20)
+    }
+    
+    // MARK: - Helper Functions
+    private func toggleConcern(_ concern: String) {
+        if skinConcerns.contains(concern) {
+            skinConcerns.removeAll { $0 == concern }
+        } else {
+            skinConcerns.append(concern)
+        }
+    }
+    
+    private func loadProfileData() {
+        // Load survey data from UserDefaults, with survey-appropriate fallback data
+        name = UserDefaults.standard.string(forKey: "survey_name") ?? "User"
+        gender = UserDefaults.standard.string(forKey: "survey_gender") ?? "Not specified"
+        age = UserDefaults.standard.string(forKey: "survey_age") ?? "18-24"
+        skinType = UserDefaults.standard.string(forKey: "survey_skin_type") ?? "Normal"
+        skinSensitivity = UserDefaults.standard.string(forKey: "survey_skin_sensitivity") ?? "Low"
+        
+        // Load skin concerns with survey-appropriate fallback data
+        if let concernsData = UserDefaults.standard.data(forKey: "survey_skin_concerns"),
+           let concerns = try? JSONDecoder().decode([String].self, from: concernsData) {
+            skinConcerns = concerns
+        } else {
+            // Survey-appropriate skin concerns (from SkinMotivation enum)
+            skinConcerns = ["Acne or pimples", "T-zone Oiliness"]
+        }
+    }
+    
+    private func saveProfile() {
+        // Save updated data to UserDefaults
+        UserDefaults.standard.set(name, forKey: "survey_name")
+        UserDefaults.standard.set(gender, forKey: "survey_gender")
+        UserDefaults.standard.set(age, forKey: "survey_age")
+        UserDefaults.standard.set(skinType, forKey: "survey_skin_type")
+        UserDefaults.standard.set(skinSensitivity, forKey: "survey_skin_sensitivity")
+        
+        // Save skin concerns
+        if let concernsData = try? JSONEncoder().encode(skinConcerns) {
+            UserDefaults.standard.set(concernsData, forKey: "survey_skin_concerns")
+        }
+        
+        showingSaveAlert = true
+    }
+}
 
+// MARK: - Routine Preferences View
+struct RoutinePreferencesView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var isEditing = false
+    @State private var showingSaveAlert = false
+    
+    // Survey data from UserDefaults
+    @State private var budget: String = ""
+    @State private var isPregnantOrBreastfeeding: Bool = false
+    @State private var avoidIngredients: [String] = []
+    
+    // Available options
+    private let budgetOptions = ["Smart Savings", "Balanced Value", "Professional & Innovative", "Ultimate Collection"]
+    private let ingredientOptions = ["Sulfates (SLS, etc.)", "Fragrances / Perfumes", "Parabens", "Formaldehyde Releasers", "Drying Alcohols", "Comedogenics", "Artificial Colors", "None"]
+    
+    var body: some View {
+        NavigationView {
+            ScrollView(.vertical, showsIndicators: true) {
+                VStack(spacing: 24) {
+                    // Header
+                    routinePreferencesHeader
+                    
+                    // Routine Preferences Information
+                    routinePreferencesInformationSection
+                    
+                    // Close Button
+                    closeButton
+                    
+                    Spacer(minLength: 50)
+                }
+                .padding(.horizontal, 20)
+            }
+            .background(Color(hex: "F8F8F8"))
+            .navigationTitle("Routine Preferences")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Close") {
+                        dismiss()
+                    }
+                    .foregroundColor(Color(hex: "8B5CF6"))
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(isEditing ? "Save" : "Edit") {
+                        if isEditing {
+                            savePreferences()
+                        } else {
+                            isEditing = true
+                        }
+                    }
+                    .foregroundColor(Color(hex: "8B5CF6"))
+                }
+            }
+        }
+        .onAppear {
+            loadPreferencesData()
+        }
+        .alert("Preferences Updated", isPresented: $showingSaveAlert) {
+            Button("OK") {
+                isEditing = false
+            }
+        } message: {
+            Text("Your routine preferences have been updated successfully.")
+        }
+    }
+    
+    // MARK: - Header
+    private var routinePreferencesHeader: some View {
+        VStack(spacing: 16) {
+            // Profile Icon
+            ZStack {
+                Circle()
+                    .fill(Color(hex: "8B5CF6").opacity(0.1))
+                    .frame(width: 80, height: 80)
+                
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 32))
+                    .foregroundColor(Color(hex: "8B5CF6"))
+            }
+            
+            VStack(spacing: 8) {
+                Text("Routine Preferences")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(Color(hex: "1F2937"))
+                
+                Text("Customize your skincare routine preferences")
+                    .font(.system(size: 16))
+                    .foregroundColor(Color(hex: "6B7280"))
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding(.top, 20)
+    }
+    
+    // MARK: - Routine Preferences Information Section
+    private var routinePreferencesInformationSection: some View {
+        VStack(spacing: 20) {
+            // Budget
+            routinePreferencesField(title: "Budget", value: $budget, isEditable: isEditing, options: budgetOptions)
+            
+            // Pregnancy Status
+            pregnancyStatusField
+            
+            // Avoid Ingredients
+            avoidIngredientsSection
+        }
+        .padding(.vertical, 20)
+        .padding(.horizontal, 16)
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
+    }
+    
+    // MARK: - Pregnancy Status Field
+    private var pregnancyStatusField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Pregnancy Status")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Color(hex: "6B7280"))
+            
+            if isEditing {
+                Toggle("Currently pregnant or breastfeeding", isOn: $isPregnantOrBreastfeeding)
+                    .toggleStyle(SwitchToggleStyle(tint: Color(hex: "8B5CF6")))
+                    .font(.system(size: 16))
+            } else {
+                HStack {
+                    Text(isPregnantOrBreastfeeding ? "Currently pregnant or breastfeeding" : "Not pregnant or breastfeeding")
+                        .font(.system(size: 16))
+                        .foregroundColor(Color(hex: "111111"))
+                    Spacer()
+                }
+                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
+                .background(Color(hex: "F3F4F6"))
+                .cornerRadius(8)
+            }
+        }
+    }
+    
+    // MARK: - Avoid Ingredients Section
+    private var avoidIngredientsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Ingredients to Avoid")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Color(hex: "6B7280"))
+            
+            if isEditing {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
+                    ForEach(ingredientOptions, id: \.self) { ingredient in
+                        Button(action: {
+                            toggleIngredient(ingredient)
+                        }) {
+                            HStack {
+                                Text(ingredient)
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(avoidIngredients.contains(ingredient) ? .white : Color(hex: "8B5CF6"))
+                                
+                                Spacer()
+                                
+                                if avoidIngredients.contains(ingredient) {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundColor(.white)
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(avoidIngredients.contains(ingredient) ? Color(hex: "8B5CF6") : Color(hex: "8B5CF6").opacity(0.1))
+                            .cornerRadius(16)
+                        }
+                    }
+                }
+            } else {
+                if avoidIngredients.isEmpty {
+                    Text("No ingredients selected")
+                        .font(.system(size: 16))
+                        .foregroundColor(Color(hex: "9CA3AF"))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                        .background(Color(hex: "F3F4F6"))
+                        .cornerRadius(8)
+                } else {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
+                        ForEach(avoidIngredients, id: \.self) { ingredient in
+                            Text(ingredient)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color(hex: "8B5CF6"))
+                                .cornerRadius(16)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Close Button
+    private var closeButton: some View {
+        Button(action: {
+            dismiss()
+        }) {
+            Text("Close")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(Color(hex: "8B5CF6"))
+                .cornerRadius(12)
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 20)
+    }
+    
+    // MARK: - Helper Functions
+    private func routinePreferencesField(title: String, value: Binding<String>, isEditable: Bool, options: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Color(hex: "6B7280"))
+            
+            if isEditable {
+                Menu {
+                    ForEach(options, id: \.self) { option in
+                        Button(option) {
+                            value.wrappedValue = option
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Text(value.wrappedValue.isEmpty ? "Select \(title)" : value.wrappedValue)
+                            .foregroundColor(value.wrappedValue.isEmpty ? Color(hex: "9CA3AF") : Color(hex: "111111"))
+                        Spacer()
+                        Image(systemName: "chevron.down")
+                            .foregroundColor(Color(hex: "6B7280"))
+                    }
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 16)
+                    .background(Color.white)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color(hex: "D1D5DB"), lineWidth: 1)
+                    )
+                }
+            } else {
+                Text(value.wrappedValue.isEmpty ? "Not specified" : value.wrappedValue)
+                    .font(.system(size: 16))
+                    .foregroundColor(value.wrappedValue.isEmpty ? Color(hex: "9CA3AF") : Color(hex: "111111"))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 16)
+                    .background(Color(hex: "F3F4F6"))
+                    .cornerRadius(8)
+            }
+        }
+    }
+    
+    private func toggleIngredient(_ ingredient: String) {
+        if avoidIngredients.contains(ingredient) {
+            avoidIngredients.removeAll { $0 == ingredient }
+        } else {
+            avoidIngredients.append(ingredient)
+        }
+    }
+    
+    private func loadPreferencesData() {
+        // Load survey data from UserDefaults
+        budget = UserDefaults.standard.string(forKey: "survey_budget") ?? "Balanced Value"
+        isPregnantOrBreastfeeding = UserDefaults.standard.bool(forKey: "survey_pregnancy_status")
+        
+        // Load avoid ingredients
+        if let ingredientsData = UserDefaults.standard.data(forKey: "survey_avoid_ingredients"),
+           let ingredients = try? JSONDecoder().decode([String].self, from: ingredientsData) {
+            avoidIngredients = ingredients
+        } else {
+            // Default ingredients to avoid
+            avoidIngredients = ["Sulfates (SLS, etc.)", "Parabens"]
+        }
+    }
+    
+    private func savePreferences() {
+        // Save updated data to UserDefaults
+        UserDefaults.standard.set(budget, forKey: "survey_budget")
+        UserDefaults.standard.set(isPregnantOrBreastfeeding, forKey: "survey_pregnancy_status")
+        
+        // Save avoid ingredients
+        if let ingredientsData = try? JSONEncoder().encode(avoidIngredients) {
+            UserDefaults.standard.set(ingredientsData, forKey: "survey_avoid_ingredients")
+        }
+        
+        showingSaveAlert = true
+    }
+}
 
+// MARK: - Scan Data Models
+struct ProductScan: Identifiable, Codable {
+    let id = UUID()
+    let productId: String
+    let productName: String
+    let productBrand: String
+    let productImage: String
+    let scanDate: Date
+    let productCategory: String
+    let productPrice: String
+    let productRating: Double
+    let productDescription: String
+    let ingredients: [String]
+    let skinTypeCompatibility: [String]
+    let flaggedIngredients: [String]
+    
+    init(productId: String, productName: String, productBrand: String, productImage: String, scanDate: Date, productCategory: String, productPrice: String, productRating: Double, productDescription: String, ingredients: [String], skinTypeCompatibility: [String], flaggedIngredients: [String]) {
+        self.productId = productId
+        self.productName = productName
+        self.productBrand = productBrand
+        self.productImage = productImage
+        self.scanDate = scanDate
+        self.productCategory = productCategory
+        self.productPrice = productPrice
+        self.productRating = productRating
+        self.productDescription = productDescription
+        self.ingredients = ingredients
+        self.skinTypeCompatibility = skinTypeCompatibility
+        self.flaggedIngredients = flaggedIngredients
+    }
+}
 
+@MainActor
+class ScanHistoryViewModel: ObservableObject {
+    @Published var scans: [ProductScan] = []
+    
+    private let userDefaults = UserDefaults.standard
+    private let scansKey = "ProductScans"
+    
+    init() {
+        loadScans()
+    }
+    
+    func addScan(_ scan: ProductScan) {
+        scans.append(scan)
+        saveScans()
+    }
+    
+    func removeScan(_ scan: ProductScan) {
+        scans.removeAll { $0.id == scan.id }
+        saveScans()
+    }
+    
+    func clearAllScans() {
+        scans.removeAll()
+        saveScans()
+    }
+    
+    private func saveScans() {
+        do {
+            let data = try JSONEncoder().encode(scans)
+            userDefaults.set(data, forKey: scansKey)
+        } catch {
+            print("Failed to save scans: \(error)")
+        }
+    }
+    
+    private func loadScans() {
+        guard let data = userDefaults.data(forKey: scansKey) else { return }
+        do {
+            scans = try JSONDecoder().decode([ProductScan].self, from: data)
+        } catch {
+            print("Failed to load scans: \(error)")
+        }
+    }
+}
+
+// MARK: - My Scans View
+struct MyScansView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var scanViewModel = ScanHistoryViewModel()
+    @State private var showingClearAlert = false
+    @State private var selectedScan: ProductScan?
+    @State private var showingProductDetail = false
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 0) {
+                if scanViewModel.scans.isEmpty {
+                    emptyStateView
+                } else {
+                    scansListView
+                }
+            }
+            .background(Color(hex: "F8F8F8"))
+            .navigationTitle("My Scans")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
+            .toolbar(content: {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Close") {
+                        dismiss()
+                    }
+                    .foregroundColor(Color(hex: "8B5CF6"))
+                }
+                
+                if !scanViewModel.scans.isEmpty {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Clear All") {
+                            showingClearAlert = true
+                        }
+                        .foregroundColor(Color(hex: "8B5CF6"))
+                    }
+                }
+            })
+        }
+        .onAppear {
+            addDummyScansIfNeeded()
+        }
+        .alert("Clear All Scans", isPresented: $showingClearAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Clear All", role: .destructive) {
+                scanViewModel.clearAllScans()
+            }
+        } message: {
+            Text("Are you sure you want to clear all your scan history? This action cannot be undone.")
+        }
+        .sheet(isPresented: $showingProductDetail) {
+            if let selectedScan = selectedScan {
+                ProductDetailViewContent(product: convertScanToProduct(selectedScan))
+            }
+        }
+    }
+    
+    private var emptyStateView: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            
+            ZStack {
+                Circle()
+                    .fill(Color(hex: "8B5CF6").opacity(0.1))
+                    .frame(width: 120, height: 120)
+                
+                Image(systemName: "barcode.viewfinder")
+                    .font(.system(size: 48))
+                    .foregroundColor(Color(hex: "8B5CF6"))
+            }
+            
+            VStack(spacing: 12) {
+                Text("No Scans Yet")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(Color(hex: "1F2937"))
+                
+                Text("Start scanning products to see them here. Your scan history will help you track the products you've analyzed.")
+                    .font(.system(size: 16))
+                    .foregroundColor(Color(hex: "6B7280"))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+            }
+            
+            Spacer()
+        }
+    }
+    
+    private var scansListView: some View {
+        ScrollView(.vertical, showsIndicators: true) {
+            LazyVStack(spacing: 16) {
+                ForEach(scanViewModel.scans.sorted(by: { $0.scanDate > $1.scanDate })) { scan in
+                    scanCardView(scan)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 100)
+        }
+    }
+    
+    private func scanCardView(_ scan: ProductScan) -> some View {
+        Button(action: {
+            selectedScan = scan
+            showingProductDetail = true
+        }) {
+            HStack(spacing: 16) {
+                AsyncImage(url: URL(string: scan.productImage)) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Rectangle()
+                        .fill(Color(hex: "E5E7EB"))
+                        .overlay(
+                            Image(systemName: "photo")
+                                .foregroundColor(Color(hex: "9CA3AF"))
+                        )
+                }
+                .frame(width: 80, height: 80)
+                .cornerRadius(12)
+                .clipped()
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text(scan.productBrand)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(Color(hex: "8B5CF6"))
+                        
+                        Spacer()
+                        
+                        Text(scan.productPrice)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(Color(hex: "1F2937"))
+                    }
+                    
+                    Text(scan.productName)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Color(hex: "1F2937"))
+                        .lineLimit(2)
+                    
+                    HStack {
+                        HStack(spacing: 4) {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 12))
+                                .foregroundColor(Color(hex: "F59E0B"))
+                            
+                            Text(String(format: "%.1f", scan.productRating))
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(Color(hex: "6B7280"))
+                        }
+                        
+                        Spacer()
+                        
+                        Text(scan.scanDate.formatted(.dateTime.day().month().year()))
+                            .font(.system(size: 12))
+                            .foregroundColor(Color(hex: "9CA3AF"))
+                    }
+                    
+                    if !scan.flaggedIngredients.isEmpty {
+                        HStack(spacing: 4) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.system(size: 10))
+                                .foregroundColor(Color(hex: "EF4444"))
+                            
+                            Text("\(scan.flaggedIngredients.count) flagged ingredient\(scan.flaggedIngredients.count == 1 ? "" : "s")")
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(Color(hex: "EF4444"))
+                        }
+                    }
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(hex: "9CA3AF"))
+            }
+            .padding(16)
+            .background(Color.white)
+            .cornerRadius(16)
+            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    private func addDummyScansIfNeeded() {
+        if scanViewModel.scans.isEmpty {
+            let dummyScans = [
+                ProductScan(
+                    productId: "1",
+                    productName: "Hyaluronic Acid Serum",
+                    productBrand: "The Ordinary",
+                    productImage: "https://example.com/serum1.jpg",
+                    scanDate: Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date(),
+                    productCategory: "Serum",
+                    productPrice: "$12.90",
+                    productRating: 4.5,
+                    productDescription: "A hydrating serum with hyaluronic acid for plump, hydrated skin.",
+                    ingredients: ["Hyaluronic Acid", "Water", "Glycerin"],
+                    skinTypeCompatibility: ["Dry", "Normal", "Combination"],
+                    flaggedIngredients: ["Parabens"]
+                ),
+                ProductScan(
+                    productId: "2",
+                    productName: "Vitamin C Brightening Cream",
+                    productBrand: "CeraVe",
+                    productImage: "https://example.com/cream1.jpg",
+                    scanDate: Calendar.current.date(byAdding: .day, value: -5, to: Date()) ?? Date(),
+                    productCategory: "Moisturizer",
+                    productPrice: "$18.50",
+                    productRating: 4.2,
+                    productDescription: "Brightening moisturizer with vitamin C and ceramides.",
+                    ingredients: ["Vitamin C", "Ceramides", "Niacinamide"],
+                    skinTypeCompatibility: ["Normal", "Combination", "Oily"],
+                    flaggedIngredients: []
+                ),
+                ProductScan(
+                    productId: "3",
+                    productName: "Gentle Foaming Cleanser",
+                    productBrand: "Cetaphil",
+                    productImage: "https://example.com/cleanser1.jpg",
+                    scanDate: Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date(),
+                    productCategory: "Cleanser",
+                    productPrice: "$9.99",
+                    productRating: 4.7,
+                    productDescription: "Gentle foaming cleanser for sensitive skin.",
+                    ingredients: ["Water", "Glycerin", "Sodium Lauryl Sulfate"],
+                    skinTypeCompatibility: ["Sensitive", "Normal"],
+                    flaggedIngredients: ["Sodium Lauryl Sulfate"]
+                )
+            ]
+            
+            for scan in dummyScans {
+                scanViewModel.addScan(scan)
+            }
+        }
+    }
+    
+    private func convertScanToProduct(_ scan: ProductScan) -> Product {
+        // Extract price from string (remove $ and convert to Double)
+        let priceString = scan.productPrice.replacingOccurrences(of: "$", with: "")
+        let price = Double(priceString) ?? 0.0
+        
+        return Product(
+            name: scan.productName,
+            brand: scan.productBrand,
+            category: ProductCategory(rawValue: scan.productCategory) ?? .cleanser,
+            price: price,
+            currency: "$",
+            imageURL: scan.productImage,
+            description: scan.productDescription,
+            ingredients: scan.ingredients,
+            skinTypes: scan.skinTypeCompatibility.compactMap { SkinType(rawValue: $0) },
+            rating: scan.productRating,
+            reviewCount: Int.random(in: 50...500),
+            size: "50ml",
+            isCrueltyFree: true,
+            isVegan: false,
+            isRecommended: scan.productRating >= 4.0,
+            benefits: ["Hydrating", "Gentle"],
+            howToUse: "Apply to clean skin morning and evening",
+            warnings: scan.flaggedIngredients
+        )
+    }
+}
+
+// MARK: - Face Scan Model
+struct FaceScan: Identifiable, Codable {
+    let id = UUID()
+    let imageData: Data?
+    let scanDate: Date
+    let scanTime: Date
+    let analysisResults: [String]
+    let skinCondition: String
+    let recommendations: [String]
+    
+    init(imageData: Data?, scanDate: Date, scanTime: Date, analysisResults: [String] = [], skinCondition: String = "Normal", recommendations: [String] = []) {
+        self.imageData = imageData
+        self.scanDate = scanDate
+        self.scanTime = scanTime
+        self.analysisResults = analysisResults
+        self.skinCondition = skinCondition
+        self.recommendations = recommendations
+    }
+}
+
+// MARK: - Face Scans ViewModel
+@MainActor
+class FaceScansViewModel: ObservableObject {
+    @Published var faceScans: [FaceScan] = []
+    @Published var selectedDate: Date = Date()
+    
+    private let userDefaults = UserDefaults.standard
+    private let faceScansKey = "FaceScans"
+    
+    init() {
+        loadFaceScans()
+    }
+    
+    func addFaceScan(_ scan: FaceScan) {
+        faceScans.append(scan)
+        saveFaceScans()
+    }
+    
+    func removeFaceScan(_ scan: FaceScan) {
+        faceScans.removeAll { $0.id == scan.id }
+        saveFaceScans()
+    }
+    
+    func clearAllFaceScans() {
+        faceScans.removeAll()
+        saveFaceScans()
+    }
+    
+    func getFaceScansForDate(_ date: Date) -> [FaceScan] {
+        let calendar = Calendar.current
+        return faceScans.filter { scan in
+            calendar.isDate(scan.scanDate, inSameDayAs: date)
+        }
+    }
+    
+    func getFaceScansForMonth(_ date: Date) -> [FaceScan] {
+        let calendar = Calendar.current
+        return faceScans.filter { scan in
+            calendar.isDate(scan.scanDate, equalTo: date, toGranularity: .month)
+        }
+    }
+    
+    private func saveFaceScans() {
+        do {
+            let data = try JSONEncoder().encode(faceScans)
+            userDefaults.set(data, forKey: faceScansKey)
+        } catch {
+            print("Failed to save face scans: \(error)")
+        }
+    }
+    
+    private func loadFaceScans() {
+        guard let data = userDefaults.data(forKey: faceScansKey) else { return }
+        do {
+            faceScans = try JSONDecoder().decode([FaceScan].self, from: data)
+        } catch {
+            print("Failed to load face scans: \(error)")
+        }
+    }
+}
+
+// MARK: - Face Scans View
+struct FaceScansView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var faceScansViewModel = FaceScansViewModel()
+    @State private var showingClearAlert = false
+    @State private var selectedScan: FaceScan?
+    @State private var showingScanDetail = false
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 0) {
+                // Date Selector
+                dateSelectorView
+                
+                // Face Scans List
+                if faceScansViewModel.getFaceScansForDate(faceScansViewModel.selectedDate).isEmpty {
+                    emptyStateView
+                } else {
+                    faceScansListView
+                }
+            }
+            .background(Color(hex: "F8F8F8"))
+            .navigationTitle("Face Scans")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
+            .toolbar(content: {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Close") {
+                        dismiss()
+                    }
+                    .foregroundColor(Color(hex: "8B5CF6"))
+                }
+                
+                if !faceScansViewModel.faceScans.isEmpty {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Clear All") {
+                            showingClearAlert = true
+                        }
+                        .foregroundColor(Color(hex: "8B5CF6"))
+                    }
+                }
+            })
+        }
+        .onAppear {
+            addDummyFaceScansIfNeeded()
+        }
+        .alert("Clear All Face Scans", isPresented: $showingClearAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Clear All", role: .destructive) {
+                faceScansViewModel.clearAllFaceScans()
+            }
+        } message: {
+            Text("Are you sure you want to clear all your face scan history? This action cannot be undone.")
+        }
+        .sheet(isPresented: $showingScanDetail) {
+            if let selectedScan = selectedScan {
+                FaceScanDetailView(faceScan: selectedScan)
+            }
+        }
+    }
+    
+    private var dateSelectorView: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 16) {
+                ForEach(getDaysInMonth(), id: \.self) { date in
+                    dateButton(for: date)
+                }
+            }
+            .padding(.horizontal, 16)
+        }
+        .padding(.vertical, 12)
+        .background(Color.white)
+    }
+    
+    private func dateButton(for date: Date) -> some View {
+        let calendar = Calendar.current
+        let day = calendar.component(.day, from: date)
+        let isSelected = calendar.isDate(date, inSameDayAs: faceScansViewModel.selectedDate)
+        let hasScans = !faceScansViewModel.getFaceScansForDate(date).isEmpty
+        
+        return Button(action: {
+            faceScansViewModel.selectedDate = date
+        }) {
+            VStack(spacing: 4) {
+                Text("\(day)")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(isSelected ? .white : .primary)
+                
+                if hasScans {
+                    Circle()
+                        .fill(Color(hex: "8B5CF6"))
+                        .frame(width: 6, height: 6)
+                } else {
+                    Circle()
+                        .fill(Color.clear)
+                        .frame(width: 6, height: 6)
+                }
+            }
+            .frame(width: 40, height: 50)
+            .background(
+                Circle()
+                    .fill(isSelected ? Color(hex: "8B5CF6") : Color.clear)
+            )
+        }
+    }
+    
+    private var emptyStateView: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            
+            Image(systemName: "viewfinder")
+                .font(.system(size: 60))
+                .foregroundColor(Color(hex: "8B5CF6"))
+            
+            Text("No Scans for This Date")
+                .font(.title2)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+            
+            Text("Select a different date to view your face scans, or start scanning your face to track your skin's progress.")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+            
+            Spacer()
+        }
+    }
+    
+    private var faceScansListView: some View {
+        ScrollView(.vertical, showsIndicators: true) {
+            LazyVStack(spacing: 12) {
+                ForEach(faceScansViewModel.getFaceScansForDate(faceScansViewModel.selectedDate)) { scan in
+                    faceScanCardView(scan)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+        }
+    }
+    
+    private func faceScanCardView(_ scan: FaceScan) -> some View {
+        Button(action: {
+            selectedScan = scan
+            showingScanDetail = true
+        }) {
+            HStack(spacing: 16) {
+                // Face Image
+                if let imageData = scan.imageData,
+                   let uiImage = UIImage(data: imageData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 60, height: 60)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                } else {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 60, height: 60)
+                        .overlay(
+                            Image(systemName: "person.fill")
+                                .foregroundColor(.gray)
+                        )
+                }
+                
+                // Scan Info
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(formatDate(scan.scanDate))
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    
+                    Text(formatTime(scan.scanTime))
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                // Navigation Arrow
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.gray)
+                    .font(.system(size: 14, weight: .medium))
+            }
+            .padding(16)
+            .background(Color.white)
+            .cornerRadius(12)
+            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    private func getDaysInMonth() -> [Date] {
+        let calendar = Calendar.current
+        let now = Date()
+        let range = calendar.range(of: .day, in: .month, for: now)!
+        let days = range.compactMap { day -> Date? in
+            var components = calendar.dateComponents([.year, .month], from: now)
+            components.day = day
+            return calendar.date(from: components)
+        }
+        return days
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM d"
+        return formatter.string(from: date)
+    }
+    
+    private func formatTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
+    
+    private func addDummyFaceScansIfNeeded() {
+        if faceScansViewModel.faceScans.isEmpty {
+            let calendar = Calendar.current
+            let now = Date()
+            
+            // Create realistic face scan images
+            let realisticFaceImage1 = createRealisticFaceImage(style: "natural", name: "Morning")
+            let realisticFaceImage2 = createRealisticFaceImage(style: "glowing", name: "Evening")
+            let realisticFaceImage3 = createRealisticFaceImage(style: "fresh", name: "Afternoon")
+            let realisticFaceImage4 = createRealisticFaceImage(style: "relaxed", name: "Night")
+            let realisticFaceImage5 = createRealisticFaceImage(style: "weekend", name: "Weekend")
+            let realisticFaceImage6 = createRealisticFaceImage(style: "holiday", name: "Holiday")
+            let realisticFaceImage7 = createRealisticFaceImage(style: "special", name: "Special")
+            let realisticFaceImage8 = createRealisticFaceImage(style: "routine", name: "Routine")
+            
+            // Create dummy face scans for different dates and times
+            let dummyScans = [
+                // Today's scans
+                FaceScan(
+                    imageData: realisticFaceImage1,
+                    scanDate: now,
+                    scanTime: calendar.date(byAdding: .hour, value: -2, to: now) ?? now,
+                    analysisResults: ["Hydration: Good", "Texture: Smooth", "Tone: Even", "Pores: Normal"],
+                    skinCondition: "Normal",
+                    recommendations: ["Continue current routine", "Add vitamin C serum", "Use SPF daily"]
+                ),
+                FaceScan(
+                    imageData: realisticFaceImage2,
+                    scanDate: now,
+                    scanTime: calendar.date(byAdding: .hour, value: -6, to: now) ?? now,
+                    analysisResults: ["Hydration: Excellent", "Texture: Very Smooth", "Tone: Even", "Pores: Minimized"],
+                    skinCondition: "Excellent",
+                    recommendations: ["Maintain current routine", "Consider adding retinol", "Keep hydrated"]
+                ),
+                
+                // Yesterday
+                FaceScan(
+                    imageData: realisticFaceImage3,
+                    scanDate: calendar.date(byAdding: .day, value: -1, to: now) ?? now,
+                    scanTime: calendar.date(byAdding: .hour, value: -1, to: now) ?? now,
+                    analysisResults: ["Hydration: Good", "Texture: Smooth", "Tone: Slightly Uneven", "Pores: Visible"],
+                    skinCondition: "Good",
+                    recommendations: ["Increase hydration", "Use gentle exfoliant", "Apply moisturizer"]
+                ),
+                
+                // 2 days ago
+                FaceScan(
+                    imageData: realisticFaceImage4,
+                    scanDate: calendar.date(byAdding: .day, value: -2, to: now) ?? now,
+                    scanTime: calendar.date(byAdding: .hour, value: -3, to: now) ?? now,
+                    analysisResults: ["Hydration: Fair", "Texture: Rough", "Tone: Uneven", "Pores: Enlarged"],
+                    skinCondition: "Needs Attention",
+                    recommendations: ["Increase water intake", "Use hydrating mask", "Avoid harsh products"]
+                ),
+                
+                // 3 days ago
+                FaceScan(
+                    imageData: realisticFaceImage5,
+                    scanDate: calendar.date(byAdding: .day, value: -3, to: now) ?? now,
+                    scanTime: calendar.date(byAdding: .hour, value: -4, to: now) ?? now,
+                    analysisResults: ["Hydration: Excellent", "Texture: Very Smooth", "Tone: Even", "Pores: Minimized"],
+                    skinCondition: "Excellent",
+                    recommendations: ["Maintain current routine", "Consider adding retinol", "Keep consistent"]
+                ),
+                
+                // 5 days ago
+                FaceScan(
+                    imageData: realisticFaceImage6,
+                    scanDate: calendar.date(byAdding: .day, value: -5, to: now) ?? now,
+                    scanTime: calendar.date(byAdding: .hour, value: -2, to: now) ?? now,
+                    analysisResults: ["Hydration: Good", "Texture: Smooth", "Tone: Even", "Pores: Normal"],
+                    skinCondition: "Normal",
+                    recommendations: ["Continue current routine", "Add vitamin C serum", "Use gentle cleanser"]
+                ),
+                
+                // 7 days ago
+                FaceScan(
+                    imageData: realisticFaceImage7,
+                    scanDate: calendar.date(byAdding: .day, value: -7, to: now) ?? now,
+                    scanTime: calendar.date(byAdding: .hour, value: -1, to: now) ?? now,
+                    analysisResults: ["Hydration: Fair", "Texture: Rough", "Tone: Uneven", "Pores: Enlarged"],
+                    skinCondition: "Needs Attention",
+                    recommendations: ["Increase hydration", "Use gentle exfoliant", "Apply night cream"]
+                ),
+                
+                // 10 days ago
+                FaceScan(
+                    imageData: realisticFaceImage8,
+                    scanDate: calendar.date(byAdding: .day, value: -10, to: now) ?? now,
+                    scanTime: calendar.date(byAdding: .hour, value: -3, to: now) ?? now,
+                    analysisResults: ["Hydration: Good", "Texture: Smooth", "Tone: Even", "Pores: Normal"],
+                    skinCondition: "Normal",
+                    recommendations: ["Continue current routine", "Add vitamin C serum", "Use SPF daily"]
+                )
+            ]
+            
+            for scan in dummyScans {
+                faceScansViewModel.addFaceScan(scan)
+            }
+        }
+    }
+    
+    private func createRealisticFaceImage(style: String, name: String) -> Data? {
+        let size = CGSize(width: 300, height: 300)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        
+        let image = renderer.image { context in
+            let cgContext = context.cgContext
+            
+            // Background - soft gradient based on style
+            let backgroundColor: UIColor
+            switch style {
+            case "natural":
+                backgroundColor = UIColor(red: 0.98, green: 0.96, blue: 0.94, alpha: 1.0)
+            case "glowing":
+                backgroundColor = UIColor(red: 0.99, green: 0.97, blue: 0.95, alpha: 1.0)
+            case "fresh":
+                backgroundColor = UIColor(red: 0.97, green: 0.98, blue: 0.96, alpha: 1.0)
+            case "relaxed":
+                backgroundColor = UIColor(red: 0.96, green: 0.95, blue: 0.97, alpha: 1.0)
+            case "weekend":
+                backgroundColor = UIColor(red: 0.98, green: 0.97, blue: 0.95, alpha: 1.0)
+            case "holiday":
+                backgroundColor = UIColor(red: 0.99, green: 0.98, blue: 0.96, alpha: 1.0)
+            case "special":
+                backgroundColor = UIColor(red: 0.97, green: 0.96, blue: 0.98, alpha: 1.0)
+            case "routine":
+                backgroundColor = UIColor(red: 0.98, green: 0.97, blue: 0.96, alpha: 1.0)
+            default:
+                backgroundColor = UIColor(red: 0.98, green: 0.96, blue: 0.94, alpha: 1.0)
+            }
+            
+            backgroundColor.setFill()
+            cgContext.fill(CGRect(origin: .zero, size: size))
+            
+            // Face outline - more realistic oval
+            let faceRect = CGRect(x: 75, y: 60, width: 150, height: 180)
+            let facePath = UIBezierPath(ovalIn: faceRect)
+            
+            // Realistic skin tone with subtle variations
+            let skinTone: UIColor
+            switch style {
+            case "natural", "routine":
+                skinTone = UIColor(red: 0.96, green: 0.92, blue: 0.88, alpha: 1.0)
+            case "glowing", "special":
+                skinTone = UIColor(red: 0.98, green: 0.94, blue: 0.90, alpha: 1.0)
+            case "fresh", "holiday":
+                skinTone = UIColor(red: 0.97, green: 0.93, blue: 0.89, alpha: 1.0)
+            case "relaxed", "weekend":
+                skinTone = UIColor(red: 0.95, green: 0.91, blue: 0.87, alpha: 1.0)
+            default:
+                skinTone = UIColor(red: 0.96, green: 0.92, blue: 0.88, alpha: 1.0)
+            }
+            
+            skinTone.setFill()
+            facePath.fill()
+            
+            // Subtle face contour
+            UIColor(red: 0.94, green: 0.90, blue: 0.86, alpha: 0.3).setStroke()
+            facePath.lineWidth = 1
+            facePath.stroke()
+            
+            // Hair - more realistic
+            let hairRect = CGRect(x: 70, y: 50, width: 160, height: 40)
+            let hairPath = UIBezierPath(ovalIn: hairRect)
+            
+            let hairColor: UIColor
+            switch style {
+            case "natural", "routine":
+                hairColor = UIColor(red: 0.6, green: 0.4, blue: 0.2, alpha: 0.9)
+            case "glowing", "special":
+                hairColor = UIColor(red: 0.7, green: 0.5, blue: 0.3, alpha: 0.9)
+            case "fresh", "holiday":
+                hairColor = UIColor(red: 0.65, green: 0.45, blue: 0.25, alpha: 0.9)
+            case "relaxed", "weekend":
+                hairColor = UIColor(red: 0.55, green: 0.35, blue: 0.15, alpha: 0.9)
+            default:
+                hairColor = UIColor(red: 0.6, green: 0.4, blue: 0.2, alpha: 0.9)
+            }
+            
+            hairColor.setFill()
+            hairPath.fill()
+            
+            // Eyes - more detailed
+            let leftEyeRect = CGRect(x: 105, y: 110, width: 20, height: 12)
+            let rightEyeRect = CGRect(x: 175, y: 110, width: 20, height: 12)
+            let leftEyePath = UIBezierPath(ovalIn: leftEyeRect)
+            let rightEyePath = UIBezierPath(ovalIn: rightEyeRect)
+            
+            UIColor.white.setFill()
+            leftEyePath.fill()
+            rightEyePath.fill()
+            
+            // Eye pupils - blue eyes like in the photo
+            let leftPupilRect = CGRect(x: 110, y: 113, width: 10, height: 6)
+            let rightPupilRect = CGRect(x: 180, y: 113, width: 10, height: 6)
+            UIColor(red: 0.2, green: 0.4, blue: 0.8, alpha: 1.0).setFill()
+            cgContext.fill(leftPupilRect)
+            cgContext.fill(rightPupilRect)
+            
+            // Eyebrows - more natural
+            let leftEyebrowPath = UIBezierPath()
+            leftEyebrowPath.move(to: CGPoint(x: 100, y: 100))
+            leftEyebrowPath.addQuadCurve(to: CGPoint(x: 120, y: 98), controlPoint: CGPoint(x: 110, y: 95))
+            
+            let rightEyebrowPath = UIBezierPath()
+            rightEyebrowPath.move(to: CGPoint(x: 180, y: 98))
+            rightEyebrowPath.addQuadCurve(to: CGPoint(x: 200, y: 100), controlPoint: CGPoint(x: 190, y: 95))
+            
+            hairColor.withAlphaComponent(0.8).setStroke()
+            leftEyebrowPath.lineWidth = 3
+            rightEyebrowPath.lineWidth = 3
+            leftEyebrowPath.stroke()
+            rightEyebrowPath.stroke()
+            
+            // Nose - more subtle
+            let nosePath = UIBezierPath()
+            nosePath.move(to: CGPoint(x: 150, y: 130))
+            nosePath.addQuadCurve(to: CGPoint(x: 145, y: 160), controlPoint: CGPoint(x: 142, y: 145))
+            nosePath.addQuadCurve(to: CGPoint(x: 155, y: 160), controlPoint: CGPoint(x: 158, y: 145))
+            nosePath.addQuadCurve(to: CGPoint(x: 150, y: 130), controlPoint: CGPoint(x: 150, y: 145))
+            nosePath.close()
+            
+            UIColor(red: 0.94, green: 0.90, blue: 0.86, alpha: 0.4).setFill()
+            nosePath.fill()
+            UIColor(red: 0.92, green: 0.88, blue: 0.84, alpha: 0.6).setStroke()
+            nosePath.lineWidth = 1
+            nosePath.stroke()
+            
+            // Mouth - natural pink
+            let mouthRect = CGRect(x: 130, y: 180, width: 40, height: 16)
+            let mouthPath = UIBezierPath(ovalIn: mouthRect)
+            UIColor(red: 0.9, green: 0.6, blue: 0.6, alpha: 1.0).setFill()
+            mouthPath.fill()
+            
+            // Cheeks - subtle blush
+            let leftCheekRect = CGRect(x: 90, y: 140, width: 25, height: 20)
+            let rightCheekRect = CGRect(x: 185, y: 140, width: 25, height: 20)
+            let leftCheekPath = UIBezierPath(ovalIn: leftCheekRect)
+            let rightCheekPath = UIBezierPath(ovalIn: rightCheekRect)
+            
+            UIColor(red: 1.0, green: 0.8, blue: 0.8, alpha: 0.3).setFill()
+            leftCheekPath.fill()
+            rightCheekPath.fill()
+            
+            // Add subtle glow effect for certain styles
+            if style == "glowing" || style == "special" {
+                let glowRect = CGRect(x: 80, y: 55, width: 140, height: 190)
+                let glowPath = UIBezierPath(ovalIn: glowRect)
+                UIColor(red: 1.0, green: 0.95, blue: 0.9, alpha: 0.2).setFill()
+                glowPath.fill()
+            }
+            
+            // Add name tag with better styling
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 12, weight: .medium),
+                .foregroundColor: UIColor.white
+            ]
+            let textSize = name.size(withAttributes: attributes)
+            let textRect = CGRect(
+                x: (size.width - textSize.width - 12) / 2,
+                y: size.height - 35,
+                width: textSize.width + 12,
+                height: textSize.height + 6
+            )
+            
+            // Text background with rounded corners
+            let textBgPath = UIBezierPath(roundedRect: textRect, cornerRadius: 6)
+            UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 0.8).setFill()
+            textBgPath.fill()
+            
+            // Text
+            let textDrawRect = CGRect(
+                x: textRect.origin.x + 6,
+                y: textRect.origin.y + 3,
+                width: textSize.width,
+                height: textSize.height
+            )
+            name.draw(in: textDrawRect, withAttributes: attributes)
+        }
+        
+        return image.pngData()
+    }
+    
+    private func createDummyFaceImage(color: UIColor, name: String) -> Data? {
+        let size = CGSize(width: 200, height: 200)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        
+        let image = renderer.image { context in
+            let cgContext = context.cgContext
+            
+            // Background gradient
+            let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                                    colors: [color.withAlphaComponent(0.1).cgColor, color.withAlphaComponent(0.3).cgColor] as CFArray,
+                                    locations: [0.0, 1.0])!
+            cgContext.drawLinearGradient(gradient, start: CGPoint(x: 0, y: 0), end: CGPoint(x: size.width, y: size.height), options: [])
+            
+            // Face outline (oval shape)
+            let faceRect = CGRect(x: 50, y: 40, width: 100, height: 120)
+            let facePath = UIBezierPath(ovalIn: faceRect)
+            
+            // Face skin color (light beige)
+            UIColor(red: 0.95, green: 0.9, blue: 0.85, alpha: 1.0).setFill()
+            facePath.fill()
+            
+            // Face border
+            color.setStroke()
+            facePath.lineWidth = 2
+            facePath.stroke()
+            
+            // Hair
+            let hairRect = CGRect(x: 45, y: 35, width: 110, height: 30)
+            let hairPath = UIBezierPath(ovalIn: hairRect)
+            color.withAlphaComponent(0.8).setFill()
+            hairPath.fill()
+            
+            // Eyes
+            let leftEyeRect = CGRect(x: 65, y: 75, width: 12, height: 8)
+            let rightEyeRect = CGRect(x: 123, y: 75, width: 12, height: 8)
+            let leftEyePath = UIBezierPath(ovalIn: leftEyeRect)
+            let rightEyePath = UIBezierPath(ovalIn: rightEyeRect)
+            
+            UIColor.white.setFill()
+            leftEyePath.fill()
+            rightEyePath.fill()
+            
+            // Eye pupils
+            let leftPupilRect = CGRect(x: 68, y: 77, width: 6, height: 4)
+            let rightPupilRect = CGRect(x: 126, y: 77, width: 6, height: 4)
+            UIColor.black.setFill()
+            context.fill(leftPupilRect)
+            context.fill(rightPupilRect)
+            
+            // Eyebrows
+            let leftEyebrowPath = UIBezierPath()
+            leftEyebrowPath.move(to: CGPoint(x: 60, y: 70))
+            leftEyebrowPath.addQuadCurve(to: CGPoint(x: 75, y: 68), controlPoint: CGPoint(x: 67, y: 65))
+            
+            let rightEyebrowPath = UIBezierPath()
+            rightEyebrowPath.move(to: CGPoint(x: 125, y: 68))
+            rightEyebrowPath.addQuadCurve(to: CGPoint(x: 140, y: 70), controlPoint: CGPoint(x: 133, y: 65))
+            
+            color.withAlphaComponent(0.7).setStroke()
+            leftEyebrowPath.lineWidth = 2
+            rightEyebrowPath.lineWidth = 2
+            leftEyebrowPath.stroke()
+            rightEyebrowPath.stroke()
+            
+            // Nose
+            let nosePath = UIBezierPath()
+            nosePath.move(to: CGPoint(x: 100, y: 90))
+            nosePath.addQuadCurve(to: CGPoint(x: 95, y: 110), controlPoint: CGPoint(x: 92, y: 100))
+            nosePath.addQuadCurve(to: CGPoint(x: 105, y: 110), controlPoint: CGPoint(x: 108, y: 100))
+            nosePath.addQuadCurve(to: CGPoint(x: 100, y: 90), controlPoint: CGPoint(x: 100, y: 100))
+            nosePath.close()
+            
+            color.withAlphaComponent(0.3).setFill()
+            nosePath.fill()
+            color.withAlphaComponent(0.6).setStroke()
+            nosePath.lineWidth = 1
+            nosePath.stroke()
+            
+            // Mouth
+            let mouthRect = CGRect(x: 85, y: 125, width: 30, height: 12)
+            let mouthPath = UIBezierPath(ovalIn: mouthRect)
+            UIColor(red: 0.8, green: 0.4, blue: 0.4, alpha: 1.0).setFill()
+            mouthPath.fill()
+            
+            // Cheeks (subtle blush)
+            let leftCheekRect = CGRect(x: 55, y: 100, width: 15, height: 10)
+            let rightCheekRect = CGRect(x: 130, y: 100, width: 15, height: 10)
+            let leftCheekPath = UIBezierPath(ovalIn: leftCheekRect)
+            let rightCheekPath = UIBezierPath(ovalIn: rightCheekRect)
+            
+            UIColor(red: 1.0, green: 0.7, blue: 0.7, alpha: 0.3).setFill()
+            leftCheekPath.fill()
+            rightCheekPath.fill()
+            
+            // Add name text with background
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 11, weight: .semibold),
+                .foregroundColor: UIColor.white
+            ]
+            let textSize = name.size(withAttributes: attributes)
+            let textRect = CGRect(
+                x: (size.width - textSize.width - 8) / 2,
+                y: size.height - 30,
+                width: textSize.width + 8,
+                height: textSize.height + 4
+            )
+            
+            // Text background
+            let textBgPath = UIBezierPath(roundedRect: textRect, cornerRadius: 4)
+            color.setFill()
+            textBgPath.fill()
+            
+            // Text
+            let textDrawRect = CGRect(
+                x: textRect.origin.x + 4,
+                y: textRect.origin.y + 2,
+                width: textSize.width,
+                height: textSize.height
+            )
+            name.draw(in: textDrawRect, withAttributes: attributes)
+        }
+        
+        return image.pngData()
+    }
+}
+
+// MARK: - Face Scan Detail View
+struct FaceScanDetailView: View {
+    @Environment(\.dismiss) private var dismiss
+    let faceScan: FaceScan
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                ScrollView(.vertical, showsIndicators: true) {
+                    VStack(spacing: 20) {
+                        // Face Image
+                    if let imageData = faceScan.imageData,
+                       let uiImage = UIImage(data: imageData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxHeight: 300)
+                            .cornerRadius(12)
+                    } else {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(height: 300)
+                            .overlay(
+                                Image(systemName: "person.fill")
+                                    .font(.system(size: 60))
+                                    .foregroundColor(.gray)
+                            )
+                    }
+                    
+                    // Scan Information
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Date and Time
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Scan Details")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            
+                            HStack {
+                                Text("Date:")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Text(formatDate(faceScan.scanDate))
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                            }
+                            
+                            HStack {
+                                Text("Time:")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Text(formatTime(faceScan.scanTime))
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                            }
+                        }
+                        .padding(16)
+                        .background(Color.white)
+                        .cornerRadius(12)
+                        
+                        // Analysis Results
+                        if !faceScan.analysisResults.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Analysis Results")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                
+                                ForEach(faceScan.analysisResults, id: \.self) { result in
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(Color(hex: "8B5CF6"))
+                                        Text(result)
+                                            .font(.subheadline)
+                                            .foregroundColor(.primary)
+                                        Spacer()
+                                    }
+                                }
+                            }
+                            .padding(16)
+                            .background(Color.white)
+                            .cornerRadius(12)
+                        }
+                        
+                        // Recommendations
+                        if !faceScan.recommendations.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Recommendations")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                
+                                ForEach(faceScan.recommendations, id: \.self) { recommendation in
+                                    HStack {
+                                        Image(systemName: "lightbulb.fill")
+                                            .foregroundColor(.orange)
+                                        Text(recommendation)
+                                            .font(.subheadline)
+                                            .foregroundColor(.primary)
+                                        Spacer()
+                                    }
+                                }
+                            }
+                            .padding(16)
+                            .background(Color.white)
+                            .cornerRadius(12)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    }
+                    .padding(.vertical, 16)
+                }
+                .background(Color(hex: "F8F8F8"))
+                
+                // Floating Close Button
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.black.opacity(0.6))
+                                    .frame(width: 40, height: 40)
+                                
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .padding(.top, 10)
+                        .padding(.trailing, 16)
+                    }
+                    Spacer()
+                }
+            }
+            .navigationTitle("Face Scan Details")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
+            .toolbar(content: {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Close") {
+                        dismiss()
+                    }
+                    .foregroundColor(Color(hex: "8B5CF6"))
+                    .font(.system(size: 16, weight: .medium))
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(Color(hex: "8B5CF6"))
+                    }
+                }
+            })
+        }
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM d, yyyy"
+        return formatter.string(from: date)
+    }
+    
+    private func formatTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
+}
