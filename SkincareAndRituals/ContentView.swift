@@ -5,10 +5,16 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView {
-            if surveyViewModel.isOnboardingComplete {
-                SurveyView(viewModel: surveyViewModel)
+            if surveyViewModel.isNewUser {
+                // New user flow: Show onboarding and survey
+                if surveyViewModel.isOnboardingComplete {
+                    SurveyView(viewModel: surveyViewModel)
+                } else {
+                    OnboardingView(viewModel: surveyViewModel)
+                }
             } else {
-                OnboardingView(viewModel: surveyViewModel)
+                // Existing user flow: Go directly to main app
+                MainTabContainerView()
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())

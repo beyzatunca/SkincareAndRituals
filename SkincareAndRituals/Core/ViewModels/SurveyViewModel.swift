@@ -6,6 +6,22 @@ class SurveyViewModel: ObservableObject {
     @Published var surveyResponse = SurveyResponse()
     @Published var currentQuestionIndex = 0
     @Published var isOnboardingComplete = false
+    @Published var isNewUser = true // Flag to control user flow
+    @Published var navigateToMainPage = false // Flag to navigate to main app after face analysis
+    
+    init() {
+        // Check if user has completed onboarding before
+        checkUserStatus()
+    }
+    
+    private func checkUserStatus() {
+        let userDefaults = UserDefaults.standard
+        let hasCompletedOnboarding = userDefaults.bool(forKey: "has_completed_onboarding")
+        isNewUser = !hasCompletedOnboarding
+        
+        // For testing purposes, you can set this to false to test existing user flow
+        isNewUser = false // Set to false for testing with existing user flow
+    }
     
     // Survey questions
     private let questions: [SurveyQuestion] = [
@@ -80,9 +96,13 @@ class SurveyViewModel: ObservableObject {
         // Save survey data to UserDefaults for My Skin Profile
         saveSurveyDataToUserDefaults()
         
-        // For now, we'll just mark onboarding as complete
-        // In a real app, you'd navigate to results or main app
-        isOnboardingComplete = false // Reset for demo purposes
+        // Mark onboarding as completed
+        let userDefaults = UserDefaults.standard
+        userDefaults.set(true, forKey: "has_completed_onboarding")
+        isNewUser = false // User is no longer new after completing survey
+        
+        // Navigate to main app
+        isOnboardingComplete = true
     }
     
     private func saveSurveyDataToUserDefaults() {

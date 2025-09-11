@@ -596,6 +596,8 @@ struct SurveyView: View {
                         ) {
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 if viewModel.isLastQuestion {
+                                    // Complete survey first, then show face analysis
+                                    viewModel.completeSurvey()
                                     showingFaceAnalysis = true
                                 } else {
                                     viewModel.nextQuestion()
@@ -616,7 +618,7 @@ struct SurveyView: View {
         }
         .navigationBarHidden(true)
         .fullScreenCover(isPresented: $showingFaceAnalysis) {
-            FaceAnalysisView()
+            FaceAnalysisView(surveyViewModel: viewModel)
         }
     }
 }
@@ -630,6 +632,7 @@ struct FaceAnalysisView: View {
     @StateObject private var viewModel = FaceAnalysisViewModel()
     @Environment(\.dismiss) private var dismiss
     @State private var showingSkinReport = false
+    @ObservedObject var surveyViewModel: SurveyViewModel
     
     var body: some View {
         GeometryReader { geometry in
@@ -684,7 +687,7 @@ struct FaceAnalysisView: View {
             Text("Please enable camera access in Settings to analyze your skin.")
         }
         .fullScreenCover(isPresented: $viewModel.showingSkinReport) {
-            SkinReportView()
+            SkinReportView(surveyViewModel: surveyViewModel)
         }
     }
     
@@ -1503,7 +1506,6 @@ final class SkinReportViewModel: ObservableObject {
     @Published var hasEditedAtLeastOne: Bool = false
     @Published var showingFeedbackSheet: Bool = false
     @Published var showingSuccessOverlay: Bool = false
-    @Published var navigateToMainPage: Bool = false
     
     private let userProfileStore = UserProfileStore()
     
@@ -1551,7 +1553,7 @@ final class SkinReportViewModel: ObservableObject {
         // Navigate to main page after 2 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             self.showingSuccessOverlay = false
-            self.navigateToMainPage = true
+            // Navigation will be handled by SurveyViewModel
         }
     }
     
@@ -1569,7 +1571,7 @@ final class SkinReportViewModel: ObservableObject {
         // Navigate to main page after 2 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             self.showingSuccessOverlay = false
-            self.navigateToMainPage = true
+            // Navigation will be handled by SurveyViewModel
         }
     }
     
@@ -1582,6 +1584,7 @@ final class SkinReportViewModel: ObservableObject {
     func handleFeedbackSatisfied() {
         showingFeedbackSheet = false
         acceptAutoResultsAndSave()
+        // Navigation will be handled by SurveyViewModel
     }
     
     func handleFeedbackNotSatisfied() {
@@ -1881,6 +1884,7 @@ struct FireworkParticle: Identifiable {
 struct SkinReportView: View {
     @StateObject private var viewModel = SkinReportViewModel()
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject var surveyViewModel: SurveyViewModel
     
     var body: some View {
         ZStack {
@@ -1963,6 +1967,10 @@ struct SkinReportView: View {
                     ) {
                         if viewModel.isEditing {
                             viewModel.saveEditedResults()
+                            // Navigate to main app after saving
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                surveyViewModel.navigateToMainPage = true
+                            }
                         } else {
                             viewModel.showFeedbackSheet()
                         }
@@ -1990,6 +1998,10 @@ struct SkinReportView: View {
             FeedbackSheetView(
                 onSatisfied: {
                     viewModel.handleFeedbackSatisfied()
+                    // Navigate to main app after feedback
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        surveyViewModel.navigateToMainPage = true
+                    }
                 },
                 onNotSatisfied: {
                     viewModel.handleFeedbackNotSatisfied()
@@ -2007,9 +2019,348 @@ struct SkinReportView: View {
             }
         )
         .animation(.easeInOut(duration: 0.3), value: viewModel.showingSuccessOverlay)
-        .fullScreenCover(isPresented: $viewModel.navigateToMainPage) {
+        .fullScreenCover(isPresented: $surveyViewModel.navigateToMainPage) {
             MainTabContainerView()
         }
+    }
+}
+
+// MARK: - Routine Step Model
+struct RoutineStep: Identifiable {
+    let id = UUID()
+    let name: String
+    let icon: String
+    var isCompleted: Bool
+    
+    static let morningSteps = [
+        RoutineStep(name: "Cleanser", icon: "drop.fill", isCompleted: true),
+        RoutineStep(name: "Serum", icon: "eyedropper", isCompleted: true),
+        RoutineStep(name: "Moisturizer", icon: "jar.fill", isCompleted: true),
+        RoutineStep(name: "SPF", icon: "sun.max.fill", isCompleted: true)
+    ]
+    
+    static let eveningSteps = [
+        RoutineStep(name: "Cleanser", icon: "drop.fill", isCompleted: false),
+        RoutineStep(name: "Serum", icon: "eyedropper", isCompleted: false),
+        RoutineStep(name: "Moisturizer", icon: "jar.fill", isCompleted: false),
+        RoutineStep(name: "Night Cream", icon: "moon.fill", isCompleted: false)
+    ]
+}
+
+// MARK: - Routine Checkpoint View
+struct RoutineCheckpointView: View {
+    @ObservedObject var routineTracker: RoutineTrackerViewModel
+    @State private var selectedTab: RoutineCheckpoint.RoutineType = .morning
+    @State private var routineSteps: [RoutineStep] = RoutineStep.morningSteps
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            headerSection
+            
+            // Main Content
+            mainContentSection
+            
+            // Bottom Section
+            bottomSection
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
+        )
+    }
+    
+    // MARK: - Header Section
+    private var headerSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Today's Routine")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(hex: "1F2937"))
+                
+                Spacer()
+                
+                // Progress dots
+                HStack(spacing: 6) {
+                    ForEach(0..<2) { index in
+                        Circle()
+                            .fill(index == 0 ? Color(hex: "10B981") : Color(hex: "E5E7EB"))
+                            .frame(width: 8, height: 8)
+                    }
+                }
+            }
+            
+            // Tab Selector
+            HStack(spacing: 0) {
+                ForEach(RoutineCheckpoint.RoutineType.allCases, id: \.self) { routineType in
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            selectedTab = routineType
+                            routineSteps = routineType == .morning ? RoutineStep.morningSteps : RoutineStep.eveningSteps
+                        }
+                    }) {
+                        Text(routineType.rawValue.replacingOccurrences(of: " Routine", with: ""))
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(selectedTab == routineType ? Color(hex: "1F2937") : Color(hex: "6B7280"))
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(selectedTab == routineType ? Color(hex: "D1FAE5") : Color.clear)
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color(hex: "F3F4F6"))
+            )
+        }
+    }
+    
+    // MARK: - Main Content Section
+    private var mainContentSection: some View {
+        HStack(spacing: 20) {
+            // Left Side - Routine Steps
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(routineSteps) { step in
+                    routineStepRow(step: step)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            
+            // Right Side - Progress Circle
+            progressCircleView
+        }
+        .padding(.vertical, 20)
+    }
+    
+    // MARK: - Routine Step Row
+    private func routineStepRow(step: RoutineStep) -> some View {
+        Button(action: {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                if let index = routineSteps.firstIndex(where: { $0.id == step.id }) {
+                    routineSteps[index].isCompleted.toggle()
+                }
+            }
+        }) {
+            HStack(spacing: 12) {
+                // Icon with checkmark
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(step.isCompleted ? Color(hex: "D1FAE5") : Color(hex: "F3F4F6"))
+                        .frame(width: 32, height: 32)
+                    
+                    Image(systemName: step.icon)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(step.isCompleted ? Color(hex: "10B981") : Color(hex: "9CA3AF"))
+                    
+                    if step.isCompleted {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 12))
+                            .foregroundColor(Color(hex: "10B981"))
+                            .background(Color.white)
+                            .clipShape(Circle())
+                            .offset(x: 12, y: -12)
+                    }
+                }
+                
+                Text(step.name)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(step.isCompleted ? Color(hex: "10B981") : Color(hex: "374151"))
+                
+                Spacer()
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    // MARK: - Progress Circle View
+    private var progressCircleView: some View {
+        let completedCount = routineSteps.filter { $0.isCompleted }.count
+        let totalCount = routineSteps.count
+        let progress = totalCount > 0 ? Double(completedCount) / Double(totalCount) : 0.0
+        
+        return ZStack {
+            // Background circle
+            Circle()
+                .stroke(Color(hex: "E5E7EB"), lineWidth: 8)
+                .frame(width: 80, height: 80)
+            
+            // Progress circle
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(Color(hex: "10B981"), style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .frame(width: 80, height: 80)
+                .rotationEffect(.degrees(-90))
+                .animation(.easeInOut(duration: 0.3), value: progress)
+            
+            // Progress text
+            VStack(spacing: 2) {
+                Text("\(completedCount)/\(totalCount)")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(hex: "1F2937"))
+                
+                Text("steps")
+                    .font(.caption)
+                    .foregroundColor(Color(hex: "6B7280"))
+            }
+        }
+    }
+    
+    // MARK: - Bottom Section
+    private var bottomSection: some View {
+        VStack(spacing: 16) {
+            // Bottom navigation buttons
+            HStack(spacing: 12) {
+                compactBottomButton(title: "Spotify", icon: "music.note", gradientColors: [Color(hex: "1DB954"), Color(hex: "1ED760")])
+                compactBottomButton(title: "Radio", icon: "radio", gradientColors: [Color(hex: "8B5CF6"), Color(hex: "A855F7")])
+                compactBottomButton(title: "Daily news", icon: "newspaper", gradientColors: [Color(hex: "3B82F6"), Color(hex: "60A5FA")])
+                compactBottomButton(title: "Mindfulness", icon: "brain.head.profile", gradientColors: [Color(hex: "6366F1"), Color(hex: "818CF8")])
+            }
+        }
+    }
+    
+    // MARK: - Compact Bottom Button with Internal Text
+    private func compactBottomButton(title: String, icon: String, gradientColors: [Color]) -> some View {
+        Button(action: {
+            // Handle button action
+        }) {
+            VStack(spacing: 4) {
+                // Icon container
+                ZStack {
+                    // Background
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: gradientColors),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 50, height: 50)
+                        .shadow(
+                            color: gradientColors.first?.opacity(0.3) ?? Color.clear,
+                            radius: 6,
+                            x: 0,
+                            y: 3
+                        )
+                    
+                    // Icon
+                    Image(systemName: icon)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+                
+                // Text inside the button area
+                Text(title)
+                    .font(.system(size: 8, weight: .medium))
+                    .foregroundColor(Color(hex: "6B7280"))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .frame(width: 60)
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
+        .scaleEffect(1.0)
+        .animation(.easeInOut(duration: 0.1), value: false)
+    }
+    
+    // MARK: - Modern Bottom Button (Legacy)
+    private func modernBottomButton(title: String, icon: String, gradientColors: [Color]) -> some View {
+        Button(action: {
+            // Handle button action
+        }) {
+            VStack(spacing: 6) {
+                // Icon with subtle shadow
+                ZStack {
+                    Circle()
+                        .fill(Color.white.opacity(0.2))
+                        .frame(width: 28, height: 28)
+                        .blur(radius: 1)
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+                
+                // Title with better typography
+                Text(title)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .frame(minHeight: 24) // Fixed height for text
+            }
+            .frame(maxWidth: .infinity, minHeight: 80) // Fixed minimum height
+            .padding(.vertical, 12)
+            .padding(.horizontal, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: gradientColors),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .shadow(
+                        color: gradientColors.first?.opacity(0.3) ?? Color.clear,
+                        radius: 8,
+                        x: 0,
+                        y: 4
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color.white.opacity(0.3),
+                                Color.clear
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+        .scaleEffect(1.0)
+        .animation(.easeInOut(duration: 0.1), value: false)
+    }
+    
+    // MARK: - Legacy Bottom Button (kept for compatibility)
+    private func bottomButton(title: String, icon: String, color: Color) -> some View {
+        Button(action: {
+            // Handle button action
+        }) {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.white)
+                
+                Text(title)
+                    .font(.caption2)
+                    .foregroundColor(.white)
+                    .fontWeight(.medium)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(color)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
@@ -2031,10 +2382,17 @@ struct MainPageView: View {
                 )
                 .ignoresSafeArea()
                 
+                VStack(spacing: 0) {
+                    // Greeting Header
+                    greetingHeader
+                
                                             ScrollView {
                                 VStack(spacing: 20) {
                                     // Personalized Routine Panel
                                     RoutinePanelView()
+                            
+                            // Routine Checkpoint Panel
+                            RoutineCheckpointView(routineTracker: viewModel.routineTracker)
                                     
                                     // Environmental Panels
                                     LazyVGrid(columns: [
@@ -2049,6 +2407,7 @@ struct MainPageView: View {
                                 }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 16)
+                    }
                 }
             }
             .navigationTitle("Skincare & Rituals")
@@ -2058,6 +2417,162 @@ struct MainPageView: View {
             viewModel.fetchEnvironmentalData()
         }
     }
+    
+    // MARK: - Greeting Header
+    private var greetingHeader: some View {
+        VStack(spacing: 8) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(getGreetingMessage())
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(Color(hex: "2D3748"))
+                    
+                    Text("Ready for your skincare routine?")
+                        .font(.subheadline)
+                        .foregroundColor(Color(hex: "6B7280"))
+                }
+                
+                Spacer()
+                
+                // Decorative icon
+                Image(systemName: getGreetingIcon())
+                    .font(.system(size: 24))
+                    .foregroundColor(Color(hex: "8B5CF6"))
+                    .padding(12)
+                    .background(
+                        Circle()
+                            .fill(Color.white.opacity(0.3))
+                    )
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+            .padding(.bottom, 16)
+        }
+        .background(
+            Rectangle()
+                .fill(Color.white.opacity(0.1))
+                .blur(radius: 1)
+        )
+    }
+    
+    // MARK: - Helper Functions
+    private func getGreetingMessage() -> String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        
+        switch hour {
+        case 5..<12:
+            return "Good Morning, Beyza"
+        case 12..<17:
+            return "Good Afternoon, Beyza"
+        case 17..<22:
+            return "Good Evening, Beyza"
+        default:
+            return "Good Night, Beyza"
+        }
+    }
+    
+    private func getGreetingIcon() -> String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        
+        switch hour {
+        case 5..<12:
+            return "sun.max.fill"
+        case 12..<17:
+            return "sun.max"
+        case 17..<22:
+            return "sunset.fill"
+        default:
+            return "moon.stars.fill"
+        }
+    }
+}
+
+// MARK: - Routine Checkpoint Model
+struct RoutineCheckpoint: Identifiable, Codable {
+    let id = UUID()
+    let date: Date
+    let routineType: RoutineType
+    var isCompleted: Bool
+    
+    enum RoutineType: String, CaseIterable, Codable {
+        case morning = "Morning Routine"
+        case evening = "Evening Routine"
+        
+        var icon: String {
+            switch self {
+            case .morning:
+                return "sun.max.fill"
+            case .evening:
+                return "moon.stars.fill"
+            }
+        }
+        
+        var color: String {
+            switch self {
+            case .morning:
+                return "F59E0B"
+            case .evening:
+                return "8B5CF6"
+            }
+        }
+    }
+}
+
+// MARK: - Routine Tracker View Model
+final class RoutineTrackerViewModel: ObservableObject {
+    @Published var todayCheckpoints: [RoutineCheckpoint] = []
+    
+    private let userDefaults = UserDefaults.standard
+    private let checkpointsKey = "routine_checkpoints"
+    
+    init() {
+        loadTodayCheckpoints()
+    }
+    
+    func toggleRoutine(_ routineType: RoutineCheckpoint.RoutineType) {
+        let today = Calendar.current.startOfDay(for: Date())
+        
+        if let index = todayCheckpoints.firstIndex(where: { 
+            Calendar.current.isDate($0.date, inSameDayAs: today) && $0.routineType == routineType 
+        }) {
+            todayCheckpoints[index].isCompleted.toggle()
+        } else {
+            let newCheckpoint = RoutineCheckpoint(
+                date: today,
+                routineType: routineType,
+                isCompleted: true
+            )
+            todayCheckpoints.append(newCheckpoint)
+        }
+        
+        saveCheckpoints()
+    }
+    
+    func isRoutineCompleted(_ routineType: RoutineCheckpoint.RoutineType) -> Bool {
+        let today = Calendar.current.startOfDay(for: Date())
+        return todayCheckpoints.contains { 
+            Calendar.current.isDate($0.date, inSameDayAs: today) && 
+            $0.routineType == routineType && 
+            $0.isCompleted 
+        }
+    }
+    
+    private func loadTodayCheckpoints() {
+        if let data = userDefaults.data(forKey: checkpointsKey),
+           let checkpoints = try? JSONDecoder().decode([RoutineCheckpoint].self, from: data) {
+            let today = Calendar.current.startOfDay(for: Date())
+            todayCheckpoints = checkpoints.filter { 
+                Calendar.current.isDate($0.date, inSameDayAs: today) 
+            }
+        }
+    }
+    
+    private func saveCheckpoints() {
+        if let data = try? JSONEncoder().encode(todayCheckpoints) {
+            userDefaults.set(data, forKey: checkpointsKey)
+        }
+    }
 }
 
 // MARK: - Main Page View Model
@@ -2065,6 +2580,7 @@ final class MainPageViewModel: ObservableObject {
     @Published var uvIndex: Int = 5
     @Published var humidity: Int = 45
     @Published var pollutionLevel: Int = 25
+    @Published var routineTracker = RoutineTrackerViewModel()
     
     func fetchEnvironmentalData() {
         // TODO: Implement real API calls
@@ -2688,7 +3204,11 @@ struct ProductCardViewContent: View {
                 
                 // Badges
                 badgesSection
+                
+                // Spacer to ensure consistent height
+                Spacer(minLength: 0)
             }
+            .frame(height: 320) // Fixed height for all cards
             .padding(16)
             .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -2773,12 +3293,11 @@ struct ProductCardViewContent: View {
             Spacer()
             
             if product.isRecommended {
-                Text("Önerilen")
-                    .font(.caption)
-                    .fontWeight(.medium)
+                Text("Recommended")
+                    .font(.system(size: 10, weight: .medium))
                     .foregroundColor(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
                     .background(Color(hex: "10B981"))
                     .clipShape(Capsule())
             }
@@ -2927,11 +3446,10 @@ struct ProductDetailViewContent: View {
                 
                 if product.isRecommended {
                     Text("Recommended")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
                         .background(Color(hex: "10B981"))
                         .clipShape(Capsule())
                 }
