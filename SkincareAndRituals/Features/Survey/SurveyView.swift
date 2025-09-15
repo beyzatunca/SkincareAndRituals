@@ -2020,7 +2020,7 @@ struct SkinReportView: View {
         )
         .animation(.easeInOut(duration: 0.3), value: viewModel.showingSuccessOverlay)
         .fullScreenCover(isPresented: $surveyViewModel.navigateToMainPage) {
-            MainTabContainerView()
+            MainTabContainerView(surveyViewModel: surveyViewModel)
         }
     }
 }
@@ -2035,14 +2035,14 @@ struct RoutineStep: Identifiable {
     static let morningSteps = [
         RoutineStep(name: "Cleanser", icon: "drop.fill", isCompleted: true),
         RoutineStep(name: "Serum", icon: "eyedropper", isCompleted: true),
-        RoutineStep(name: "Moisturizer", icon: "jar.fill", isCompleted: true),
+        RoutineStep(name: "Moisturizer", icon: "leaf.fill", isCompleted: true),
         RoutineStep(name: "SPF", icon: "sun.max.fill", isCompleted: true)
     ]
     
     static let eveningSteps = [
         RoutineStep(name: "Cleanser", icon: "drop.fill", isCompleted: false),
         RoutineStep(name: "Serum", icon: "eyedropper", isCompleted: false),
-        RoutineStep(name: "Moisturizer", icon: "jar.fill", isCompleted: false),
+        RoutineStep(name: "Moisturizer", icon: "leaf.fill", isCompleted: false),
         RoutineStep(name: "Night Cream", icon: "moon.fill", isCompleted: false)
     ]
 }
@@ -2151,7 +2151,7 @@ struct RoutineCheckpointView: View {
         }) {
             HStack(spacing: 12) {
                 // Icon with checkmark
-                ZStack {
+            ZStack {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(step.isCompleted ? Color(hex: "D1FAE5") : Color(hex: "F3F4F6"))
                         .frame(width: 32, height: 32)
@@ -2321,13 +2321,13 @@ struct RoutineCheckpointView: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
+                LinearGradient(
+                    gradient: Gradient(colors: [
                                 Color.white.opacity(0.3),
                                 Color.clear
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                         ),
                         lineWidth: 1
                     )
@@ -2367,19 +2367,14 @@ struct RoutineCheckpointView: View {
 // MARK: - Main Page View
 struct MainPageView: View {
     @StateObject private var viewModel = MainPageViewModel()
+    @ObservedObject var surveyViewModel: SurveyViewModel
     
     var body: some View {
         NavigationView {
             ZStack {
-                // Background gradient
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color(red: 0.9, green: 0.85, blue: 0.95), // Lavender
-                        Color(red: 0.95, green: 0.9, blue: 0.85)  // Peach-pink
-                    ]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
+                // Transparent blur background
+                Rectangle()
+                    .fill(.ultraThinMaterial)
                 .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
@@ -2388,19 +2383,21 @@ struct MainPageView: View {
                 
                                             ScrollView {
                                 VStack(spacing: 20) {
-                                    // Personalized Routine Panel
+                                    // Add Routine Panel - Only show for new users
+                                    if surveyViewModel.isNewUser {
                                     RoutinePanelView()
+                                    }
                             
-                            // Routine Checkpoint Panel
-                            RoutineCheckpointView(routineTracker: viewModel.routineTracker)
+                                    // Today's Routine Panel - Show for both new and existing users
+                                    RoutineCheckpointView(routineTracker: viewModel.routineTracker)
                                     
-                                    // Environmental Panels
-                                    LazyVGrid(columns: [
-                                        GridItem(.flexible()),
-                                        GridItem(.flexible())
-                                    ], spacing: 16) {
+                                    // Environmental Panels - Show for both new and existing users
+                                    HStack(spacing: 16) {
                                         UVIndexPanelView(uvIndex: viewModel.uvIndex)
+                                            .frame(maxWidth: .infinity)
+                                        
                                         HumidityPanelView(humidity: viewModel.humidity)
+                                            .frame(maxWidth: .infinity)
                                     }
                                     
                                     PollutionPanelView(pollutionLevel: viewModel.pollutionLevel)
@@ -2674,7 +2671,7 @@ struct UVIndexPanelView: View {
     private var uvColor: Color {
         switch uvIndex {
         case 0...2: return .green
-        case 3...5: return .yellow
+        case 3...5: return Color(hex: "CA8A04") // Daha da koyu sarı
         case 6...7: return .orange
         case 8...10: return .red
         default: return .purple
@@ -2715,6 +2712,7 @@ struct UVIndexPanelView: View {
                 .lineLimit(3)
         }
         .padding(16)
+        .frame(height: 120)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(uvColor.opacity(0.1))
@@ -2762,6 +2760,7 @@ struct HumidityPanelView: View {
                 .lineLimit(3)
         }
         .padding(16)
+        .frame(height: 120)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.blue.opacity(0.1))
@@ -2789,7 +2788,7 @@ struct PollutionPanelView: View {
     private var pollutionColor: Color {
         switch pollutionLevel {
         case 0...50: return .green
-        case 51...100: return .yellow
+        case 51...100: return Color(hex: "CA8A04") // Daha da koyu sarı
         case 101...150: return .orange
         case 151...200: return .red
         case 201...300: return .purple
@@ -2966,6 +2965,7 @@ struct TabButton: View {
 struct MainTabContainerView: View {
     @AppStorage("lastTab") private var lastSelectedTab: String = AppTab.home.rawValue
     @State private var selectedTab: AppTab = .home
+    @ObservedObject var surveyViewModel: SurveyViewModel
     
     var body: some View {
         ZStack {
@@ -2983,7 +2983,7 @@ struct MainTabContainerView: View {
             VStack(spacing: 0) {
                 // Content area
                 TabView(selection: $selectedTab) {
-                    MainPageView()
+                    MainPageView(surveyViewModel: surveyViewModel)
                         .tag(AppTab.home)
                     
                     ProductsViewContent()
@@ -3984,11 +3984,7 @@ struct ProfileViewContent: View {
     private var profileSectionsView: some View {
         VStack(spacing: 32) {
             ForEach(ProfileSection.allCases) { section in
-                if section == .getInvolved {
-                    socialMediaSectionView
-                } else {
-                    profileSectionView(section: section)
-                }
+                profileSectionView(section: section)
             }
         }
         .padding(.horizontal, 16)
@@ -4071,89 +4067,7 @@ struct ProfileViewContent: View {
         )
     }
     
-    // MARK: - Social Media Section View
-    private var socialMediaSectionView: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Section Header
-            Text("GET INVOLVED")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(Color(hex: "6B7280"))
-                .padding(.horizontal, 4)
-            
-            VStack(spacing: 0) {
-                // Share Lóvi item
-                Button(action: {
-                    viewModel.handleAction(.shareLovi)
-                }) {
-                    HStack(spacing: 16) {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 20))
-                            .foregroundColor(Color(hex: "6B7280"))
-                            .frame(width: 24, height: 24)
-                        
-                        Text("Share Lóvi")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(hex: "111111"))
-                        
-                        Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color(hex: "6B7280"))
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
-                    .background(Color.white)
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                // Divider
-                Rectangle()
-                    .fill(Color(hex: "E5E7EB"))
-                    .frame(height: 1)
-                    .padding(.leading, 60)
-                
-                // Social Media Platforms
-                HStack(spacing: 20) {
-                    ForEach(SocialMediaPlatform.allCases) { platform in
-                        socialMediaButton(platform: platform)
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 20)
-                .background(Color.white)
-            }
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
-        }
-    }
     
-    // MARK: - Social Media Button
-    private func socialMediaButton(platform: SocialMediaPlatform) -> some View {
-        Button(action: {
-            if let url = URL(string: platform.url) {
-                UIApplication.shared.open(url)
-            }
-        }) {
-            VStack(spacing: 8) {
-                ZStack {
-                    Circle()
-                        .fill(Color(hex: platform.color))
-                        .frame(width: 50, height: 50)
-                    
-                    Image(systemName: platform.icon)
-                        .font(.system(size: 20))
-                        .foregroundColor(.white)
-                }
-                
-                Text(platform.rawValue)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(Color(hex: "6B7280"))
-            }
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
     
     // MARK: - Log Out Button
     private var logOutButton: some View {
@@ -4201,15 +4115,9 @@ struct ProfileViewContent: View {
         case .appSettings:
             // Open app settings
             print("Open App Settings")
-        case .suggestFeature:
-            // Show suggest feature
-            print("Show Suggest Feature")
         case .contactUs:
             // Open contact us
             print("Open Contact Us")
-        case .shareLovi:
-            // Share app
-            print("Share App")
         case .privacyPolicy:
             // Show privacy policy
             print("Show Privacy Policy")
@@ -4253,9 +4161,7 @@ enum ProfileAction: String, CaseIterable {
     case subscriptionManagement = "Subscription Management"
     case frequentlyAskedQuestions = "Frequently Asked Questions"
     case appSettings = "App Settings"
-    case suggestFeature = "Suggest a Feature"
     case contactUs = "Contact us"
-    case shareLovi = "Share Lóvi"
     case privacyPolicy = "Privacy policy"
     case moneyBackPolicy = "Money-back Policy"
     case termsOfUse = "Terms of Use"
@@ -4271,9 +4177,7 @@ enum ProfileAction: String, CaseIterable {
         case .subscriptionManagement: return "person.crop.circle.badge.checkmark"
         case .frequentlyAskedQuestions: return "questionmark.circle"
         case .appSettings: return "gearshape"
-        case .suggestFeature: return "lightbulb"
         case .contactUs: return "bubble.left.and.bubble.right"
-        case .shareLovi: return "square.and.arrow.up"
         case .privacyPolicy: return "hand.raised"
         case .moneyBackPolicy: return "dollarsign.circle"
         case .termsOfUse: return "doc.text"
@@ -4282,48 +4186,11 @@ enum ProfileAction: String, CaseIterable {
     }
 }
 
-// MARK: - Social Media Platform
-enum SocialMediaPlatform: String, CaseIterable, Identifiable {
-    case instagram = "Instagram"
-    case tiktok = "TikTok"
-    case facebook = "Facebook"
-    case snapchat = "Snapchat"
-    
-    var id: String { rawValue }
-    
-    var icon: String {
-        switch self {
-        case .instagram: return "camera"
-        case .tiktok: return "music.note"
-        case .facebook: return "person.2"
-        case .snapchat: return "camera.viewfinder"
-        }
-    }
-    
-    var color: String {
-        switch self {
-        case .instagram: return "E4405F"
-        case .tiktok: return "000000"
-        case .facebook: return "1877F2"
-        case .snapchat: return "FFFC00"
-        }
-    }
-    
-    var url: String {
-        switch self {
-        case .instagram: return "https://instagram.com/skincareandrituals"
-        case .tiktok: return "https://tiktok.com/@skincareandrituals"
-        case .facebook: return "https://facebook.com/skincareandrituals"
-        case .snapchat: return "https://snapchat.com/add/skincareandrituals"
-        }
-    }
-}
 
 // MARK: - Profile Section
 enum ProfileSection: String, CaseIterable, Identifiable {
     case personal = "PERSONAL"
     case needHelp = "NEED HELP?"
-    case getInvolved = "GET INVOLVED"
     case legal = "LEGAL"
     
     var id: String { rawValue }
@@ -4343,12 +4210,7 @@ enum ProfileSection: String, CaseIterable, Identifiable {
             return [
                 ProfileMenuItem(title: "Frequently Asked Questions", icon: ProfileAction.frequentlyAskedQuestions.icon, action: .frequentlyAskedQuestions),
                 ProfileMenuItem(title: "App Settings", icon: ProfileAction.appSettings.icon, action: .appSettings),
-                ProfileMenuItem(title: "Suggest a Feature", icon: ProfileAction.suggestFeature.icon, action: .suggestFeature),
                 ProfileMenuItem(title: "Contact us", icon: ProfileAction.contactUs.icon, action: .contactUs)
-            ]
-        case .getInvolved:
-            return [
-                ProfileMenuItem(title: "Share Lóvi", icon: ProfileAction.shareLovi.icon, action: .shareLovi)
             ]
         case .legal:
             return [
@@ -4435,8 +4297,6 @@ class ProfileViewModel: ObservableObject {
         switch action {
         case .logOut:
             showingLogOutAlert = true
-        case .shareLovi:
-            shareApp()
         case .contactUs:
             openContactUs()
         case .appSettings:
@@ -4447,17 +4307,6 @@ class ProfileViewModel: ObservableObject {
         }
     }
     
-    private func shareApp() {
-        let activityViewController = UIActivityViewController(
-            activityItems: ["Check out Skincare & Rituals app!"],
-            applicationActivities: nil
-        )
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first {
-            window.rootViewController?.present(activityViewController, animated: true)
-        }
-    }
     
     private func openContactUs() {
         if let url = URL(string: "mailto:support@skincareandrituals.com") {
@@ -5096,10 +4945,10 @@ struct SkinProfileView: View {
     @State private var skinConcerns: [String] = []
     
     // Available options (matching survey options)
-    private let genderOptions = ["Male", "Female", "Other", "Prefer not to say"]
+    private let genderOptions = ["Female", "Male", "Prefer not to say"]
     private let ageOptions = ["13-17", "18-24", "25-34", "35-44", "45-54", "55+"]
-    private let skinTypeOptions = ["Oily", "Dry", "Combination", "Normal", "Sensitive", "Acne Prone"]
-    private let sensitivityOptions = ["Low", "High"]
+    private let skinTypeOptions = ["Oily", "Dry", "Combination", "Normal"]
+    private let sensitivityOptions = ["Sensitive", "Not sensitive"]
     private let concernOptions = ["Acne or pimples", "Wrinkles and Fine lines", "Redness or Rosacea", "T-zone Oiliness", "Skin barrier repair", "Puffy eyes", "Enlarged pores"]
     
     var body: some View {
@@ -5353,7 +5202,7 @@ struct SkinProfileView: View {
         gender = UserDefaults.standard.string(forKey: "survey_gender") ?? "Not specified"
         age = UserDefaults.standard.string(forKey: "survey_age") ?? "18-24"
         skinType = UserDefaults.standard.string(forKey: "survey_skin_type") ?? "Normal"
-        skinSensitivity = UserDefaults.standard.string(forKey: "survey_skin_sensitivity") ?? "Low"
+        skinSensitivity = UserDefaults.standard.string(forKey: "survey_skin_sensitivity") ?? "Not sensitive"
         
         // Load skin concerns with survey-appropriate fallback data
         if let concernsData = UserDefaults.standard.data(forKey: "survey_skin_concerns"),

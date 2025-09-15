@@ -112,7 +112,7 @@ class SurveyViewModel: ObservableObject {
         userDefaults.set(surveyResponse.name, forKey: "survey_name")
         userDefaults.set(surveyResponse.age.rawValue, forKey: "survey_age")
         userDefaults.set(surveyResponse.skinType.rawValue, forKey: "survey_skin_type")
-        userDefaults.set(surveyResponse.isSensitive ? "High" : "Low", forKey: "survey_skin_sensitivity")
+        userDefaults.set(surveyResponse.isSensitive ? "Sensitive" : "Not sensitive", forKey: "survey_skin_sensitivity")
         
         // Save skin concerns as JSON
         let concernsArray = Array(surveyResponse.skinConcerns).map { $0.rawValue }

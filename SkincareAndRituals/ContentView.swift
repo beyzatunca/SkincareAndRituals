@@ -14,7 +14,7 @@ struct ContentView: View {
                 }
             } else {
                 // Existing user flow: Go directly to main app
-                MainTabContainerView()
+                MainTabContainerView(surveyViewModel: surveyViewModel)
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())

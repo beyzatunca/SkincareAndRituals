@@ -4,6 +4,8 @@ import SwiftUI
 struct ProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
     @State private var showingActionSheet = false
+    @State private var showingAppSettings = false
+    @State private var showingMySkinProfile = false
     
     var body: some View {
         NavigationView {
@@ -36,10 +38,13 @@ struct ProfileView: View {
         } message: {
             Text("Are you sure you want to log out?")
         }
-        .onChange(of: viewModel.selectedAction) { action in
-            if let action = action {
-                handleAction(action)
-            }
+        .sheet(isPresented: $showingAppSettings, onDismiss: {
+            showingAppSettings = false
+        }) {
+            AppSettingsView()
+        }
+        .sheet(isPresented: $showingMySkinProfile) {
+            MySkinProfileView()
         }
     }
     
@@ -119,9 +124,7 @@ struct ProfileView: View {
     private var profileSectionsView: some View {
         VStack(spacing: 32) {
             ForEach(ProfileSection.allCases) { section in
-                if section == .getInvolved {
-                    socialMediaSectionView
-                } else {
+                if section != .getInvolved {
                     profileSectionView(section: section)
                 }
             }
@@ -152,44 +155,52 @@ struct ProfileView: View {
     
     // MARK: - Profile Menu Item View
     private func profileMenuItemView(item: ProfileMenuItem, isLast: Bool) -> some View {
-        Button(action: {
-            viewModel.handleAction(item.action)
-        }) {
-            HStack(spacing: 16) {
-                // Icon
-                Image(systemName: item.icon)
-                    .font(.system(size: 20))
-                    .foregroundColor(Color(hex: "6B7280"))
-                    .frame(width: 24, height: 24)
-                
-                // Title
-                Text(item.title)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color(hex: "111111"))
-                
-                Spacer()
-                
-                // Badge
-                if let badge = item.badge {
-                    Text(badge)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color(hex: "8B5CF6"))
-                        .clipShape(Capsule())
-                }
-                
-                // Chevron
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(Color(hex: "6B7280"))
+        HStack(spacing: 16) {
+            // Icon
+            Image(systemName: item.icon)
+                .font(.system(size: 20))
+                .foregroundColor(Color(hex: "6B7280"))
+                .frame(width: 24, height: 24)
+            
+            // Title
+            Text(item.title)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.primary)
+            
+            Spacer()
+            
+            // Badge
+            if let badge = item.badge {
+                Text(badge)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color(hex: "8B5CF6"))
+                    .cornerRadius(12)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
-            .background(Color.white)
+            
+            // Arrow
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Color(hex: "9CA3AF"))
         }
-        .buttonStyle(PlainButtonStyle())
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        .onTapGesture {
+            print("🔴 Button tapped: \(item.action.rawValue)")
+            if item.action == .appSettings || item.action == .mySkinProfile {
+                // Handle App Settings and My Skin Profile directly in ProfileView
+                print("🔴 Calling ProfileView.handleAction for: \(item.action.rawValue)")
+                handleAction(item.action)
+            } else {
+                print("🔴 Calling ProfileViewModel.handleAction for: \(item.action.rawValue)")
+                viewModel.handleAction(item.action)
+            }
+        }
         .overlay(
             // Divider
             VStack {
@@ -204,89 +215,6 @@ struct ProfileView: View {
         )
     }
     
-    // MARK: - Social Media Section View
-    private var socialMediaSectionView: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Section Header
-            Text("GET INVOLVED")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(Color(hex: "6B7280"))
-                .padding(.horizontal, 4)
-            
-            VStack(spacing: 0) {
-                // Share Lóvi item
-                Button(action: {
-                    viewModel.handleAction(.shareLovi)
-                }) {
-                    HStack(spacing: 16) {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 20))
-                            .foregroundColor(Color(hex: "6B7280"))
-                            .frame(width: 24, height: 24)
-                        
-                        Text("Share Lóvi")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(hex: "111111"))
-                        
-                        Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color(hex: "6B7280"))
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
-                    .background(Color.white)
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                // Divider
-                Rectangle()
-                    .fill(Color(hex: "E5E7EB"))
-                    .frame(height: 1)
-                    .padding(.leading, 60)
-                
-                // Social Media Platforms
-                HStack(spacing: 20) {
-                    ForEach(SocialMediaPlatform.allCases) { platform in
-                        socialMediaButton(platform: platform)
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 20)
-                .background(Color.white)
-            }
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
-        }
-    }
-    
-    // MARK: - Social Media Button
-    private func socialMediaButton(platform: SocialMediaPlatform) -> some View {
-        Button(action: {
-            if let url = URL(string: platform.url) {
-                UIApplication.shared.open(url)
-            }
-        }) {
-            VStack(spacing: 8) {
-                ZStack {
-                    Circle()
-                        .fill(Color(hex: platform.color))
-                        .frame(width: 50, height: 50)
-                    
-                    Image(systemName: platform.icon)
-                        .font(.system(size: 20))
-                        .foregroundColor(.white)
-                }
-                
-                Text(platform.rawValue)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(Color(hex: "6B7280"))
-            }
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
     
     // MARK: - Log Out Button
     private var logOutButton: some View {
@@ -310,8 +238,16 @@ struct ProfileView: View {
     private func handleAction(_ action: ProfileAction) {
         switch action {
         case .mySkinProfile:
-            // Navigate to skin profile
-            print("Navigate to My Skin Profile")
+            // Navigate to skin profile - ensure state is reset first
+            print("🟡 MySkinProfile action - current state: \(showingMySkinProfile)")
+            if showingMySkinProfile {
+                print("🟡 Resetting showingMySkinProfile to false")
+                showingMySkinProfile = false
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                print("🟡 Setting showingMySkinProfile to true")
+                showingMySkinProfile = true
+            }
         case .routinePreferences:
             // Navigate to routine preferences
             print("Navigate to Routine Preferences")
@@ -331,11 +267,13 @@ struct ProfileView: View {
             // Show FAQ
             print("Show FAQ")
         case .appSettings:
-            // Open app settings
-            print("Open App Settings")
-        case .suggestFeature:
-            // Show suggest feature
-            print("Show Suggest Feature")
+            // Open app settings - ensure state is reset first
+            if showingAppSettings {
+                showingAppSettings = false
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                showingAppSettings = true
+            }
         case .contactUs:
             // Open contact us
             print("Open Contact Us")
