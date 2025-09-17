@@ -3,13 +3,13 @@ import Foundation
 // MARK: - Survey Models
 struct SurveyResponse: Codable {
     var name: String = ""
-    var age: AgeRange = .age18to24
-    var skinType: SkinType = .normal
+    var age: AgeRange?
+    var skinType: SkinType?
     var isSensitive: Bool = false
     var skinConcerns: Set<SkinMotivation> = []
     var avoidIngredients: Set<AvoidIngredient> = []
     var isPregnantOrBreastfeeding: Bool = false
-    var budget: BudgetRange = .balancedValue
+    var budget: BudgetRange?
 }
 
 // MARK: - Age Range
@@ -32,8 +32,6 @@ enum SkinType: String, CaseIterable, Codable {
     case dry = "Dry"
     case combination = "Combination"
     case normal = "Normal"
-    case sensitive = "Sensitive"
-    case acneProne = "Acne Prone"
     
     var displayName: String {
         return self.rawValue
@@ -49,10 +47,6 @@ enum SkinType: String, CaseIterable, Codable {
             return "Oily T-zone with dry cheeks"
         case .normal:
             return "Balanced, clear, and healthy appearance"
-        case .sensitive:
-            return "Easily irritated, reactive to products"
-        case .acneProne:
-            return "Prone to breakouts and blemishes"
         }
     }
 }

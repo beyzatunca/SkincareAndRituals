@@ -216,13 +216,13 @@ struct NavigationHeader: View {
             
             VStack(spacing: geometry.size.height * 0.006) {
                 Text(title)
-                    .font(.system(size: geometry.size.height * 0.02, weight: .bold))
+                    .font(.system(size: geometry.size.height * 0.025, weight: .bold))
                     .foregroundColor(AppTheme.textPrimary)
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
                 
                 Text(subtitle)
-                    .font(.system(size: geometry.size.height * 0.012))
+                    .font(.system(size: geometry.size.height * 0.018))
                     .foregroundColor(AppTheme.textSecondary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)

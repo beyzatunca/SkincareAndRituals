@@ -39,14 +39,15 @@ struct OnboardingView: View {
                             .padding(.horizontal, AppTheme.Spacing.lg)
                     }
                     
-                    // Features Section
-                    VStack(spacing: AppTheme.Spacing.sm) {
+                    Spacer()
+                    
+                    // Features Section - Centered between title and button
+                    VStack(spacing: AppTheme.Spacing.lg) {
                         FeatureRow(icon: "person.crop.circle", title: "Personalized Analysis", subtitle: "Tailored to your skin type and concerns", geometry: geometry)
                         FeatureRow(icon: "sparkles", title: "Expert Recommendations", subtitle: "Curated by skincare professionals", geometry: geometry)
                         FeatureRow(icon: "heart", title: "Simple & Effective", subtitle: "Easy-to-follow routines that work", geometry: geometry)
                     }
                     .padding(.horizontal, AppTheme.Spacing.lg)
-                    .padding(.top, geometry.size.height * 0.03)
                     
                     Spacer()
                     
@@ -78,28 +79,37 @@ struct FeatureRow: View {
     let geometry: GeometryProxy
     
     var body: some View {
-        HStack(spacing: AppTheme.Spacing.sm) {
-            Image(systemName: icon)
-                .font(.system(size: geometry.size.height * 0.025))
-                .foregroundColor(AppTheme.primaryColor)
-                .frame(width: geometry.size.height * 0.025)
+        HStack(spacing: AppTheme.Spacing.md) {
+            // Icon with circular background
+            ZStack {
+                Circle()
+                    .fill(AppTheme.primaryColor.opacity(0.1))
+                    .frame(width: 50, height: 50)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundColor(AppTheme.primaryColor)
+            }
             
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.system(size: geometry.size.height * 0.018, weight: .semibold))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundColor(AppTheme.textPrimary)
                 
                 Text(subtitle)
-                    .font(.system(size: geometry.size.height * 0.014))
+                    .font(.system(size: 14, weight: .regular))
                     .foregroundColor(AppTheme.textSecondary)
+                    .multilineTextAlignment(.leading)
             }
             
             Spacer()
         }
-        .padding(AppTheme.Spacing.sm)
+        .padding(.vertical, AppTheme.Spacing.md)
+        .padding(.horizontal, AppTheme.Spacing.lg)
         .background(
-            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
-                .fill(AppTheme.surfaceColor.opacity(0.5))
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
         )
     }
 }

@@ -62,7 +62,7 @@ struct AgeQuestionView: View {
                             viewModel.surveyResponse.age = ageRange
                         }) {
                             Text(ageRange.displayName)
-                                .font(.system(size: geometry.size.height * 0.022, weight: .semibold))
+                                .font(.system(size: geometry.size.height * 0.018, weight: .semibold))
                                 .foregroundColor(viewModel.surveyResponse.age == ageRange ? AppTheme.primaryColor : AppTheme.textPrimary)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: geometry.size.height * 0.06)
@@ -107,7 +107,7 @@ struct SkinTypeQuestionView: View {
                         }) {
                             VStack(spacing: geometry.size.height * 0.008) {
                                 Text(skinType.displayName)
-                                    .font(.system(size: geometry.size.height * 0.022, weight: .semibold))
+                                    .font(.system(size: geometry.size.height * 0.018, weight: .semibold))
                                     .foregroundColor(viewModel.surveyResponse.skinType == skinType ? AppTheme.primaryColor : AppTheme.textPrimary)
                                 
                                 Text(skinType.description)
@@ -160,7 +160,7 @@ struct SensitivityQuestionView: View {
                             
                             VStack(alignment: .leading, spacing: geometry.size.height * 0.005) {
                                 Text("Sensitive")
-                                    .font(.system(size: geometry.size.height * 0.022, weight: .semibold))
+                                    .font(.system(size: geometry.size.height * 0.018, weight: .semibold))
                                     .foregroundColor(AppTheme.textPrimary)
                                 
                                 Text("My skin is easily irritated by products")
@@ -187,7 +187,7 @@ struct SensitivityQuestionView: View {
                             
                             VStack(alignment: .leading, spacing: geometry.size.height * 0.005) {
                                 Text("Not Sensitive")
-                                    .font(.system(size: geometry.size.height * 0.022, weight: .semibold))
+                                    .font(.system(size: geometry.size.height * 0.018, weight: .semibold))
                                     .foregroundColor(AppTheme.textPrimary)
                                 
                                 Text("My skin tolerates most products well")
@@ -260,7 +260,7 @@ struct SkinConcernOptionCard: View {
                 HStack(spacing: geometry.size.height * 0.008) {
                     VStack(alignment: .leading, spacing: geometry.size.height * 0.003) {
                         Text(concern.displayName)
-                            .font(.system(size: geometry.size.height * 0.015, weight: .semibold))
+                            .font(.system(size: geometry.size.height * 0.018, weight: .semibold))
                             .foregroundColor(isSelected ? AppTheme.primaryColor : AppTheme.textPrimary)
                             .multilineTextAlignment(.leading)
                             .lineLimit(nil)
@@ -317,7 +317,7 @@ struct AvoidIngredientsQuestionView: View {
                             HStack(spacing: geometry.size.height * 0.008) {
                                 VStack(alignment: .leading, spacing: geometry.size.height * 0.003) {
                                     Text(ingredient.displayName)
-                                        .font(.system(size: geometry.size.height * 0.015, weight: .semibold))
+                                        .font(.system(size: geometry.size.height * 0.018, weight: .semibold))
                                         .foregroundColor(viewModel.surveyResponse.avoidIngredients.contains(ingredient) ? AppTheme.primaryColor : AppTheme.textPrimary)
                                         .multilineTextAlignment(.leading)
                                         .lineLimit(2)
@@ -463,7 +463,7 @@ struct BudgetQuestionView: View {
                                 HStack {
                                     VStack(alignment: .leading, spacing: geometry.size.height * 0.005) {
                                         Text(budget.displayName)
-                                            .font(.system(size: geometry.size.height * 0.022, weight: .semibold))
+                                            .font(.system(size: geometry.size.height * 0.018, weight: .semibold))
                                             .foregroundColor(viewModel.surveyResponse.budget == budget ? AppTheme.primaryColor : AppTheme.textPrimary)
                                         
                                         Text(budget.priceRange)

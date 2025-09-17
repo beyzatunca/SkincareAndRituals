@@ -6,11 +6,13 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             if surveyViewModel.isNewUser {
-                // New user flow: Show onboarding and survey
+                // New user flow: Show onboarding, survey, and face analysis
                 if surveyViewModel.isOnboardingComplete {
-                    SurveyView(viewModel: surveyViewModel)
+                    MainTabContainerView(surveyViewModel: surveyViewModel)
+                } else if surveyViewModel.showFaceAnalysis {
+                    FaceAnalysisView(surveyViewModel: surveyViewModel)
                 } else {
-                    OnboardingView(viewModel: surveyViewModel)
+                    SurveyView(viewModel: surveyViewModel)
                 }
             } else {
                 // Existing user flow: Go directly to main app
@@ -18,6 +20,15 @@ struct ContentView: View {
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .onAppear {
+            print("🔴 ContentView appeared - isNewUser: \(surveyViewModel.isNewUser), showFaceAnalysis: \(surveyViewModel.showFaceAnalysis), isOnboardingComplete: \(surveyViewModel.isOnboardingComplete)")
+        }
+        .onChange(of: surveyViewModel.showFaceAnalysis) { newValue in
+            print("🔴 showFaceAnalysis changed to: \(newValue)")
+        }
+        .onChange(of: surveyViewModel.isOnboardingComplete) { newValue in
+            print("🔴 isOnboardingComplete changed to: \(newValue)")
+        }
     }
 }
 

@@ -8,6 +8,7 @@ class SurveyViewModel: ObservableObject {
     @Published var isOnboardingComplete = false
     @Published var isNewUser = true // Flag to control user flow
     @Published var navigateToMainPage = false // Flag to navigate to main app after face analysis
+    @Published var showFaceAnalysis = false // Flag to show face analysis after survey completion
     
     init() {
         // Check if user has completed onboarding before
@@ -19,8 +20,8 @@ class SurveyViewModel: ObservableObject {
         let hasCompletedOnboarding = userDefaults.bool(forKey: "has_completed_onboarding")
         isNewUser = !hasCompletedOnboarding
         
-        // For testing purposes, you can set this to false to test existing user flow
-        isNewUser = false // Set to false for testing with existing user flow
+        // For testing purposes, you can set this to true to test new user flow
+        isNewUser = true // Set to true for testing with new user flow
     }
     
     // Survey questions
@@ -52,7 +53,13 @@ class SurveyViewModel: ObservableObject {
         case .textInput:
             return !surveyResponse.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         case .singleChoice:
-            return true // Age and skin type have default values
+            if currentQuestion.id == 2 { // Age question
+                return surveyResponse.age != nil
+            } else if currentQuestion.id == 3 { // Skin type question
+                return surveyResponse.skinType != nil
+            } else {
+                return true
+            }
         case .multipleChoice:
             if currentQuestion.id == 4 { // Sensitivity question
                 return true // Always can proceed
@@ -61,12 +68,12 @@ class SurveyViewModel: ObservableObject {
             } else if currentQuestion.id == 6 { // Avoid ingredients question
                 return !surveyResponse.avoidIngredients.isEmpty
             } else if currentQuestion.id == 7 { // Pregnancy question
-                return true // Always can proceed (has default value)
+                return true // Always can proceed
             } else {
                 return true
             }
         case .budgetSelection:
-            return true // Budget has default value
+            return surveyResponse.budget != nil
         }
     }
     
@@ -96,13 +103,28 @@ class SurveyViewModel: ObservableObject {
         // Save survey data to UserDefaults for My Skin Profile
         saveSurveyDataToUserDefaults()
         
-        // Mark onboarding as completed
+        // Show face analysis for new users before marking onboarding as completed
+        if isNewUser {
+            print("🔴 Setting showFaceAnalysis = true")
+            showFaceAnalysis = true
+            // Don't set isNewUser = false here, let completeFaceAnalysis() handle it
+        } else {
+            print("🔴 Setting isOnboardingComplete = true")
+            // Navigate directly to main app for existing users
+            isOnboardingComplete = true
+        }
+        
+        // Mark onboarding as completed in UserDefaults but keep isNewUser true until face analysis is done
         let userDefaults = UserDefaults.standard
         userDefaults.set(true, forKey: "has_completed_onboarding")
-        isNewUser = false // User is no longer new after completing survey
-        
-        // Navigate to main app
+    }
+    
+    func completeFaceAnalysis() {
+        // Face analysis completed, navigate to main app
+        print("🔴 Face analysis completed, navigating to main app")
+        showFaceAnalysis = false
         isOnboardingComplete = true
+        isNewUser = false // Now user is no longer new after completing face analysis
     }
     
     private func saveSurveyDataToUserDefaults() {
@@ -110,8 +132,17 @@ class SurveyViewModel: ObservableObject {
         
         // Save basic info
         userDefaults.set(surveyResponse.name, forKey: "survey_name")
-        userDefaults.set(surveyResponse.age.rawValue, forKey: "survey_age")
-        userDefaults.set(surveyResponse.skinType.rawValue, forKey: "survey_skin_type")
+        
+        // Save age if selected
+        if let age = surveyResponse.age {
+            userDefaults.set(age.rawValue, forKey: "survey_age")
+        }
+        
+        // Save skin type if selected
+        if let skinType = surveyResponse.skinType {
+            userDefaults.set(skinType.rawValue, forKey: "survey_skin_type")
+        }
+        
         userDefaults.set(surveyResponse.isSensitive ? "Sensitive" : "Not sensitive", forKey: "survey_skin_sensitivity")
         
         // Save skin concerns as JSON
@@ -126,8 +157,10 @@ class SurveyViewModel: ObservableObject {
             userDefaults.set(avoidIngredientsData, forKey: "survey_avoid_ingredients")
         }
         
-        // Save budget
-        userDefaults.set(surveyResponse.budget.rawValue, forKey: "survey_budget")
+        // Save budget if selected
+        if let budget = surveyResponse.budget {
+            userDefaults.set(budget.rawValue, forKey: "survey_budget")
+        }
         
         // Save pregnancy status
         userDefaults.set(surveyResponse.isPregnantOrBreastfeeding, forKey: "survey_pregnancy_status")

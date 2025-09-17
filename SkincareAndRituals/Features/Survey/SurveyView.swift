@@ -84,7 +84,7 @@ extension Product {
             imageURL: nil,
             description: "Gentle foaming cleanser for sensitive skin. Moisturizes while cleansing the skin.",
             ingredients: ["Ceramides", "Hyaluronic Acid", "Niacinamide"],
-            skinTypes: [.normal, .dry, .sensitive],
+            skinTypes: [.normal, .dry],
             rating: 4.5,
             reviewCount: 1247,
             size: "236ml",
@@ -107,7 +107,7 @@ extension Product {
             imageURL: nil,
             description: "Salicylic acid cleanser for acne-prone skin.",
             ingredients: ["Salicylic Acid", "Coconut-derived Surfactants"],
-            skinTypes: [.oily, .combination, .acneProne],
+            skinTypes: [.oily, .combination],
             rating: 4.2,
             reviewCount: 892,
             size: "150ml",
@@ -154,7 +154,7 @@ extension Product {
             imageURL: nil,
             description: "Hyaluronik asit ile yoğun nemlendirme sağlayan krem.",
             ingredients: ["Hyaluronic Acid", "Squalane", "Ceramides"],
-            skinTypes: [.normal, .dry, .sensitive],
+            skinTypes: [.normal, .dry],
             rating: 4.4,
             reviewCount: 743,
             size: "50ml",
@@ -201,7 +201,7 @@ extension Product {
             imageURL: nil,
             description: "Gözenekleri küçültmek ve yağ kontrolü için niacinamide serumu.",
             ingredients: ["Niacinamide", "Zinc PCA"],
-            skinTypes: [.oily, .combination, .acneProne],
+            skinTypes: [.oily, .combination],
             rating: 4.1,
             reviewCount: 3247,
             size: "30ml",
@@ -225,7 +225,7 @@ extension Product {
             imageURL: nil,
             description: "Günlük kullanım için hafif ve hızlı emilen güneş koruyucu.",
             ingredients: ["Zinc Oxide", "Octinoxate", "Hyaluronic Acid"],
-            skinTypes: [.normal, .dry, .sensitive],
+            skinTypes: [.normal, .dry],
             rating: 4.7,
             reviewCount: 1567,
             size: "48g",
@@ -248,7 +248,7 @@ extension Product {
             imageURL: nil,
             description: "Akne eğilimli ciltler için berrak çinko oksit güneş koruyucu.",
             ingredients: ["Zinc Oxide", "Helioplex Technology"],
-            skinTypes: [.oily, .combination, .acneProne],
+            skinTypes: [.oily, .combination],
             rating: 4.0,
             reviewCount: 892,
             size: "88ml",
@@ -295,7 +295,7 @@ extension Product {
             imageURL: nil,
             description: "Gül yaprağı ve cadı fındığı ile doğal tonik.",
             ingredients: ["Witch Hazel", "Rose Petal", "Aloe Vera"],
-            skinTypes: [.normal, .dry, .sensitive],
+            skinTypes: [.normal, .dry],
             rating: 4.2,
             reviewCount: 1847,
             size: "355ml",
@@ -367,7 +367,7 @@ extension Product {
             imageURL: nil,
             description: "Göz altı torbaları ve koyu halkalar için kafein serumu.",
             ingredients: ["Caffeine", "EGCG", "Hyaluronic Acid"],
-            skinTypes: [.normal, .dry, .sensitive],
+            skinTypes: [.normal, .dry],
             rating: 4.0,
             reviewCount: 1847,
             size: "30ml",
@@ -529,7 +529,6 @@ import Vision
 
 struct SurveyView: View {
     @ObservedObject var viewModel: SurveyViewModel
-    @State private var showingFaceAnalysis = false
     
     var body: some View {
         GeometryReader { geometry in
@@ -596,9 +595,8 @@ struct SurveyView: View {
                         ) {
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 if viewModel.isLastQuestion {
-                                    // Complete survey first, then show face analysis
+                                    // Complete survey - this will handle face analysis flow
                                     viewModel.completeSurvey()
-                                    showingFaceAnalysis = true
                                 } else {
                                     viewModel.nextQuestion()
                                 }
@@ -617,9 +615,6 @@ struct SurveyView: View {
             }
         }
         .navigationBarHidden(true)
-        .fullScreenCover(isPresented: $showingFaceAnalysis) {
-            FaceAnalysisView(surveyViewModel: viewModel)
-        }
     }
 }
 
