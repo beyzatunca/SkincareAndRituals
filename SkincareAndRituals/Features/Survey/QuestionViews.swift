@@ -1,5 +1,385 @@
 import SwiftUI
 
+// MARK: - Modern Question Views
+
+struct ModernNameQuestionView: View {
+    @ObservedObject var viewModel: SurveyViewModel
+    let geometry: GeometryProxy
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            // Elegant illustration
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.darkCharcoal.opacity(0.15))
+                        .frame(width: 80, height: 80)
+                    
+                    Image(systemName: "person.crop.circle.fill")
+                        .font(.system(size: 32, weight: .medium))
+                        .foregroundColor(AppTheme.darkCharcoal.opacity(0.8))
+                }
+            }
+            
+            // Modern text field
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Your Name")
+                    .font(AppTheme.Typography.surveyOption)
+                    .foregroundColor(AppTheme.textSecondary)
+                
+                TextField("Enter your name", text: $viewModel.surveyResponse.name)
+                    .font(AppTheme.Typography.surveyOption)
+                    .foregroundColor(AppTheme.darkCharcoal)
+                    .padding(16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(AppTheme.creamWhite)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(AppTheme.softPink.opacity(0.3), lineWidth: 1)
+                            )
+                    )
+                    .textInputAutocapitalization(.words)
+            }
+        }
+    }
+}
+
+struct ModernAgeQuestionView: View {
+    @ObservedObject var viewModel: SurveyViewModel
+    let geometry: GeometryProxy
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            // Elegant illustration
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.darkCharcoal.opacity(0.15))
+                        .frame(width: 80, height: 80)
+                    
+                    Image(systemName: "calendar.circle.fill")
+                        .font(.system(size: 32, weight: .medium))
+                        .foregroundColor(AppTheme.darkCharcoal.opacity(0.8))
+                }
+            }
+            
+            // Modern age options
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 12) {
+                ForEach(AgeRange.allCases, id: \.self) { ageRange in
+                    ModernSelectionCard(
+                        title: ageRange.displayName,
+                        isSelected: viewModel.surveyResponse.age == ageRange
+                    ) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            viewModel.surveyResponse.age = ageRange
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct ModernSkinTypeQuestionView: View {
+    @ObservedObject var viewModel: SurveyViewModel
+    let geometry: GeometryProxy
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            // Elegant illustration
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.darkCharcoal.opacity(0.15))
+                        .frame(width: 80, height: 80)
+                    
+                    Image(systemName: "face.smiling")
+                        .font(.system(size: 32, weight: .medium))
+                        .foregroundColor(.yellow)
+                }
+            }
+            
+            // Modern skin type options
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 12) {
+                ForEach(SkinType.allCases, id: \.self) { skinType in
+                    ModernSelectionCard(
+                        title: skinType.displayName,
+                        isSelected: viewModel.surveyResponse.skinType == skinType
+                    ) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            viewModel.surveyResponse.skinType = skinType
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct ModernSensitivityQuestionView: View {
+    @ObservedObject var viewModel: SurveyViewModel
+    let geometry: GeometryProxy
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            // Elegant illustration
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.darkCharcoal.opacity(0.15))
+                        .frame(width: 80, height: 80)
+                    
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 32, weight: .medium))
+                        .foregroundColor(.yellow)
+                        .background(
+                            Image(systemName: "exclamationmark")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.black)
+                        )
+                }
+            }
+            
+            // Modern sensitivity options
+            VStack(spacing: 12) {
+                ModernSelectionCard(
+                    title: "Yes, my skin is sensitive",
+                    isSelected: viewModel.surveyResponse.isSensitive
+                ) {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        viewModel.surveyResponse.isSensitive = true
+                    }
+                }
+                
+                ModernSelectionCard(
+                    title: "No, my skin is not sensitive",
+                    isSelected: !viewModel.surveyResponse.isSensitive
+                ) {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        viewModel.surveyResponse.isSensitive = false
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct ModernSkinConcernsQuestionView: View {
+    @ObservedObject var viewModel: SurveyViewModel
+    let geometry: GeometryProxy
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            // Elegant illustration
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.darkCharcoal.opacity(0.15))
+                        .frame(width: 80, height: 80)
+                    
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: 32, weight: .medium))
+                        .foregroundColor(.red)
+                }
+            }
+            
+            // Modern skin concerns options
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 12) {
+                ForEach(SkinMotivation.allCases, id: \.self) { concern in
+                    ModernSelectionCard(
+                        title: concern.displayName,
+                        isSelected: viewModel.surveyResponse.skinConcerns.contains(concern)
+                    ) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            if viewModel.surveyResponse.skinConcerns.contains(concern) {
+                                viewModel.surveyResponse.skinConcerns.remove(concern)
+                            } else {
+                                viewModel.surveyResponse.skinConcerns.insert(concern)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct ModernAvoidIngredientsQuestionView: View {
+    @ObservedObject var viewModel: SurveyViewModel
+    let geometry: GeometryProxy
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            // Elegant illustration
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.darkCharcoal.opacity(0.15))
+                        .frame(width: 80, height: 80)
+                    
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 32, weight: .medium))
+                        .foregroundColor(Color(hex: "#8B4A4A"))
+                }
+            }
+            
+            // Modern avoid ingredients options
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 12) {
+                ForEach(AvoidIngredient.allCases, id: \.self) { ingredient in
+                    ModernSelectionCard(
+                        title: ingredient.displayName,
+                        isSelected: viewModel.surveyResponse.avoidIngredients.contains(ingredient)
+                    ) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            if viewModel.surveyResponse.avoidIngredients.contains(ingredient) {
+                                viewModel.surveyResponse.avoidIngredients.remove(ingredient)
+                            } else {
+                                viewModel.surveyResponse.avoidIngredients.insert(ingredient)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct ModernPregnancyQuestionView: View {
+    @ObservedObject var viewModel: SurveyViewModel
+    let geometry: GeometryProxy
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            // Elegant illustration
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.darkCharcoal.opacity(0.15))
+                        .frame(width: 80, height: 80)
+                    
+                    Image(systemName: "figure.and.child.holdinghands")
+                        .font(.system(size: 32, weight: .medium))
+                        .foregroundColor(Color(hex: "#8B7355"))
+                }
+            }
+            
+            // Modern pregnancy options
+            VStack(spacing: 12) {
+                ModernSelectionCard(
+                    title: "Yes, I am pregnant or breastfeeding",
+                    isSelected: viewModel.surveyResponse.isPregnantOrBreastfeeding
+                ) {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        viewModel.surveyResponse.isPregnantOrBreastfeeding = true
+                    }
+                }
+                
+                ModernSelectionCard(
+                    title: "No, I am not pregnant or breastfeeding",
+                    isSelected: !viewModel.surveyResponse.isPregnantOrBreastfeeding
+                ) {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        viewModel.surveyResponse.isPregnantOrBreastfeeding = false
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct ModernBudgetQuestionView: View {
+    @ObservedObject var viewModel: SurveyViewModel
+    let geometry: GeometryProxy
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            // Elegant illustration
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.darkCharcoal.opacity(0.15))
+                        .frame(width: 80, height: 80)
+                    
+                    Image(systemName: "creditcard")
+                        .font(.system(size: 32, weight: .medium))
+                        .foregroundColor(AppTheme.darkCharcoal.opacity(0.8))
+                }
+            }
+            
+            // Modern budget options
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 12) {
+                ForEach(BudgetRange.allCases, id: \.self) { budget in
+                    ModernSelectionCard(
+                        title: budget.displayName,
+                        isSelected: viewModel.surveyResponse.budget == budget
+                    ) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            viewModel.surveyResponse.budget = budget
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Modern Selection Card Component
+
+struct ModernSelectionCard: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                Text(title)
+                    .font(AppTheme.Typography.surveyOption)
+                    .foregroundColor(isSelected ? .white : AppTheme.darkCharcoal)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 60)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(isSelected ? AppTheme.darkSoftPink : AppTheme.darkCharcoal.opacity(0.08))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(isSelected ? Color.clear : AppTheme.softPink.opacity(0.3), lineWidth: 1)
+                    )
+                    .shadow(
+                        color: isSelected ? AppTheme.darkSoftPink.opacity(0.3) : AppTheme.darkCharcoal.opacity(0.05),
+                        radius: isSelected ? 8 : 4,
+                        x: 0,
+                        y: isSelected ? 4 : 2
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+        .scaleEffect(isSelected ? 1.02 : 1.0)
+        .animation(.easeInOut(duration: 0.2), value: isSelected)
+    }
+}
+
 // MARK: - Name Question View
 struct NameQuestionView: View {
     @ObservedObject var viewModel: SurveyViewModel
@@ -86,7 +466,7 @@ struct SkinTypeQuestionView: View {
             VStack(spacing: geometry.size.height * 0.015) {
                 Image(systemName: "face.smiling")
                     .font(.system(size: geometry.size.height * 0.08, weight: .light))
-                    .foregroundColor(AppTheme.primaryColor)
+                    .foregroundColor(.yellow)
                     .padding(geometry.size.height * 0.02)
                     .background(
                         Circle()
@@ -136,9 +516,14 @@ struct SensitivityQuestionView: View {
         VStack(spacing: geometry.size.height * 0.03) {
             // Illustration
             VStack(spacing: geometry.size.height * 0.015) {
-                Image(systemName: "exclamationmark.triangle")
+                Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: geometry.size.height * 0.08, weight: .light))
-                    .foregroundColor(AppTheme.primaryColor)
+                    .foregroundColor(.yellow)
+                    .background(
+                        Image(systemName: "exclamationmark")
+                            .font(.system(size: geometry.size.height * 0.05, weight: .bold))
+                            .foregroundColor(.black)
+                    )
                     .padding(geometry.size.height * 0.02)
                     .background(
                         Circle()
@@ -218,7 +603,7 @@ struct SkinConcernsQuestionView: View {
             VStack(spacing: geometry.size.height * 0.008) {
                 Image(systemName: "face.smiling")
                     .font(.system(size: geometry.size.height * 0.05, weight: .light))
-                    .foregroundColor(AppTheme.primaryColor)
+                    .foregroundColor(.yellow)
                     .padding(geometry.size.height * 0.012)
                     .background(
                         Circle()
@@ -294,7 +679,12 @@ struct AvoidIngredientsQuestionView: View {
             VStack(spacing: geometry.size.height * 0.008) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: geometry.size.height * 0.05, weight: .light))
-                    .foregroundColor(AppTheme.primaryColor)
+                    .foregroundColor(.yellow)
+                    .background(
+                        Image(systemName: "exclamationmark")
+                            .font(.system(size: geometry.size.height * 0.03, weight: .bold))
+                            .foregroundColor(.black)
+                    )
                     .padding(geometry.size.height * 0.012)
                     .background(
                         Circle()
@@ -357,7 +747,7 @@ struct PregnancyQuestionView: View {
             VStack(spacing: geometry.size.height * 0.008) {
                 Image(systemName: "heart.fill")
                     .font(.system(size: geometry.size.height * 0.05, weight: .light))
-                    .foregroundColor(AppTheme.primaryColor)
+                    .foregroundColor(.red)
                     .padding(geometry.size.height * 0.012)
                     .background(
                         Circle()
@@ -441,7 +831,7 @@ struct BudgetQuestionView: View {
         VStack(spacing: geometry.size.height * 0.03) {
             // Illustration
             VStack(spacing: geometry.size.height * 0.015) {
-                Image(systemName: "eurosign.circle.fill")
+                Image(systemName: "creditcard")
                     .font(.system(size: geometry.size.height * 0.08, weight: .light))
                     .foregroundColor(AppTheme.primaryColor)
                     .padding(geometry.size.height * 0.02)

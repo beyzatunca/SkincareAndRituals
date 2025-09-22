@@ -2,43 +2,70 @@ import SwiftUI
 
 // MARK: - App Theme
 struct AppTheme {
-    // MARK: - Colors
-    static let primaryColor = Color("PrimaryColor")
-    static let secondaryColor = Color("SecondaryColor")
-    static let accentColor = Color("AccentColor")
-    static let backgroundColor = Color("BackgroundColor")
-    static let surfaceColor = Color("SurfaceColor")
-    static let textPrimary = Color("TextPrimary")
-    static let textSecondary = Color("TextSecondary")
-    static let successColor = Color("SuccessColor")
-    static let warningColor = Color("WarningColor")
-    static let errorColor = Color("ErrorColor")
+    // MARK: - Modern Color Palette
+    static let darkCharcoal = Color(hex: "#332c2b")      // Dark charcoal
+    static let warmBeige = Color(hex: "#e3c0b9")         // Warm beige
+    static let softPink = Color(hex: "#ecc7cf")          // Soft pink
+    static let darkSoftPink = Color(hex: "#d4a5b0")      // Dark soft pink (2 tones darker)
+    static let creamWhite = Color(hex: "#CFC9C1")        // New background color
     
-    // MARK: - Gradients
+    // MARK: - Legacy Colors (for compatibility)
+    static let primaryColor = Color(hex: "#332c2b")      // Dark charcoal
+    static let secondaryColor = Color(hex: "#e3c0b9")    // Warm beige
+    static let accentColor = Color(hex: "#ecc7cf")       // Soft pink
+    static let backgroundColor = Color(hex: "#CFC9C1")   // New background color
+    static let surfaceColor = Color(hex: "#CFC9C1")      // New background color
+    static let textPrimary = Color(hex: "#332c2b")       // Dark charcoal
+    static let textSecondary = Color(hex: "#332c2b").opacity(0.7) // Dark charcoal with opacity
+    static let successColor = Color.green
+    static let warningColor = Color.orange
+    static let errorColor = Color.red
+    
+    // MARK: - Modern Gradients
     static let primaryGradient = LinearGradient(
-        colors: [primaryColor, secondaryColor],
+        colors: [creamWhite, softPink.opacity(0.3)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
     
     static let backgroundGradient = LinearGradient(
-        colors: [backgroundColor, surfaceColor],
+        colors: [creamWhite, warmBeige.opacity(0.2)],
         startPoint: .top,
         endPoint: .bottom
     )
     
-    // MARK: - Typography
+    static let cardGradient = LinearGradient(
+        colors: [creamWhite, softPink.opacity(0.1)],
+        startPoint: .top,
+        endPoint: .bottom
+    )
+    
+    static let accentGradient = LinearGradient(
+        colors: [softPink, warmBeige],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
+    
+    // MARK: - Modern Typography
     struct Typography {
-        static let largeTitle = Font.system(size: 34, weight: .bold, design: .rounded)
-        static let title1 = Font.system(size: 28, weight: .bold, design: .rounded)
-        static let title2 = Font.system(size: 22, weight: .semibold, design: .rounded)
-        static let title3 = Font.system(size: 20, weight: .semibold, design: .rounded)
-        static let headline = Font.system(size: 17, weight: .semibold, design: .rounded)
-        static let body = Font.system(size: 17, weight: .regular, design: .rounded)
-        static let callout = Font.system(size: 16, weight: .medium, design: .rounded)
-        static let subheadline = Font.system(size: 15, weight: .medium, design: .rounded)
-        static let footnote = Font.system(size: 13, weight: .regular, design: .rounded)
-        static let caption = Font.system(size: 12, weight: .regular, design: .rounded)
+        // Serif fonts for elegant headings
+        static let largeTitle = Font.system(size: 36, weight: .bold, design: .serif)
+        static let title1 = Font.system(size: 28, weight: .bold, design: .serif)
+        static let title2 = Font.system(size: 24, weight: .semibold, design: .serif)
+        static let title3 = Font.system(size: 20, weight: .medium, design: .serif)
+        
+        // Sans-serif for body text
+        static let headline = Font.system(size: 18, weight: .semibold, design: .default)
+        static let body = Font.system(size: 16, weight: .regular, design: .default)
+        static let callout = Font.system(size: 15, weight: .medium, design: .default)
+        static let subheadline = Font.system(size: 14, weight: .medium, design: .default)
+        static let footnote = Font.system(size: 12, weight: .regular, design: .default)
+        static let caption = Font.system(size: 11, weight: .regular, design: .default)
+        
+        // Special fonts for survey
+        static let surveyTitle = Font.custom("Didot", size: 32).weight(.bold)
+        static let surveySubtitle = Font.custom("HelveticaNeue-Italic", size: 16)
+        static let surveyOption = Font.custom("HelveticaNeue-Italic", size: 16)
     }
     
     // MARK: - Spacing

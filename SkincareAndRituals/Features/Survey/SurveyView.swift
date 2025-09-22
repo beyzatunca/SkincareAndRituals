@@ -533,16 +533,18 @@ struct SurveyView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Background
+                // Modern Background
                 AppTheme.backgroundGradient
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Navigation Header
-                    NavigationHeader(
+                    // Modern Header with Progress
+                    ModernSurveyHeader(
                         title: viewModel.currentQuestion.title,
                         subtitle: viewModel.currentQuestion.subtitle,
                         progress: viewModel.progress,
+                        currentQuestion: viewModel.currentQuestionIndex + 1,
+                        totalQuestions: viewModel.totalQuestions,
                         showBackButton: viewModel.currentQuestionIndex > 0,
                         onBack: {
                             withAnimation(.easeInOut(duration: 0.3)) {
@@ -551,70 +553,191 @@ struct SurveyView: View {
                         },
                         geometry: geometry
                     )
-                    .padding(.top, geometry.size.height * 0.02)
                     
-                    // Question Content with ScrollView
-                    ScrollView(.vertical, showsIndicators: true) {
-                        VStack(spacing: geometry.size.height * 0.015) {
-                            switch viewModel.currentQuestion.type {
-                            case .textInput:
-                                NameQuestionView(viewModel: viewModel, geometry: geometry)
-                            case .singleChoice:
-                                if viewModel.currentQuestion.id == 2 {
-                                    AgeQuestionView(viewModel: viewModel, geometry: geometry)
-                                } else {
-                                    SkinTypeQuestionView(viewModel: viewModel, geometry: geometry)
-                                }
-                                                    case .multipleChoice:
-                            if viewModel.currentQuestion.id == 4 {
-                                SensitivityQuestionView(viewModel: viewModel, geometry: geometry)
-                            } else if viewModel.currentQuestion.id == 5 {
-                                SkinConcernsQuestionView(viewModel: viewModel, geometry: geometry)
-                            } else if viewModel.currentQuestion.id == 6 {
-                                AvoidIngredientsQuestionView(viewModel: viewModel, geometry: geometry)
-                            } else if viewModel.currentQuestion.id == 7 {
-                                PregnancyQuestionView(viewModel: viewModel, geometry: geometry)
+                    // Question Content
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(spacing: 24) {
+                            // Modern Question Card
+                            ModernQuestionCard(
+                                viewModel: viewModel,
+                                geometry: geometry
+                            )
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                        .padding(.bottom, 100)
+                    }
+                    
+                    Spacer()
+                    
+                    // Modern Bottom Button
+                    ModernBottomButton(
+                        title: viewModel.isLastQuestion ? "Complete Survey" : "Continue",
+                        isEnabled: viewModel.canProceed,
+                        isLastQuestion: viewModel.isLastQuestion
+                    ) {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            if viewModel.isLastQuestion {
+                                viewModel.completeSurvey()
                             } else {
-                                SkinConcernsQuestionView(viewModel: viewModel, geometry: geometry)
+                                viewModel.nextQuestion()
                             }
-                            case .budgetSelection:
-                                BudgetQuestionView(viewModel: viewModel, geometry: geometry)
-                            }
-                        }
-                        .padding(.horizontal, AppTheme.Spacing.lg)
-                        .padding(.top, geometry.size.height * 0.015)
-                        .padding(.bottom, geometry.size.height * 0.15) // More padding for scroll
-                    }
-                    .frame(maxHeight: geometry.size.height * 0.6) // Limit scroll area height
-                    
-                    // Bottom Button
-                    VStack(spacing: AppTheme.Spacing.sm) {
-                        PrimaryButton(
-                            viewModel.isLastQuestion ? "Complete Survey" : "Next",
-                            isEnabled: viewModel.canProceed
-                        ) {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                if viewModel.isLastQuestion {
-                                    // Complete survey - this will handle face analysis flow
-                                    viewModel.completeSurvey()
-                                } else {
-                                    viewModel.nextQuestion()
-                                }
-                            }
-                        }
-                        
-                        if !viewModel.isLastQuestion {
-                            Text("Question \(viewModel.currentQuestionIndex + 1) of \(viewModel.totalQuestions)")
-                                .font(.system(size: geometry.size.height * 0.015))
-                                .foregroundColor(AppTheme.textSecondary)
                         }
                     }
-                    .padding(.horizontal, AppTheme.Spacing.lg)
-                    .padding(.bottom, geometry.size.height * 0.03)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 40)
                 }
             }
         }
         .navigationBarHidden(true)
+    }
+}
+
+// MARK: - Modern Survey Components
+
+struct ModernSurveyHeader: View {
+    let title: String
+    let subtitle: String
+    let progress: Double
+    let currentQuestion: Int
+    let totalQuestions: Int
+    let showBackButton: Bool
+    let onBack: () -> Void
+    let geometry: GeometryProxy
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            // Top Navigation
+            HStack {
+                if showBackButton {
+                    Button(action: onBack) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(AppTheme.darkCharcoal)
+                            .frame(width: 32, height: 32)
+                            .background(
+                                Circle()
+                                    .fill(AppTheme.creamWhite)
+                                    .shadow(color: AppTheme.darkCharcoal.opacity(0.1), radius: 4, x: 0, y: 2)
+                            )
+                    }
+                } else {
+                    Spacer()
+                        .frame(width: 32, height: 32)
+                }
+                
+                Spacer()
+                
+                // Progress Indicator
+                HStack(spacing: 4) {
+                    ForEach(0..<totalQuestions, id: \.self) { index in
+                        Circle()
+                            .fill(index < currentQuestion ? AppTheme.softPink : AppTheme.softPink.opacity(0.3))
+                            .frame(width: 6, height: 6)
+                    }
+                }
+                
+                Spacer()
+                
+                // Close button placeholder
+                Spacer()
+                    .frame(width: 32, height: 32)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+            
+            // Title and Subtitle
+            VStack(spacing: 8) {
+                Text(title)
+                    .font(AppTheme.Typography.surveyTitle)
+                    .foregroundColor(AppTheme.darkCharcoal)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                
+                Text(subtitle)
+                    .font(AppTheme.Typography.surveySubtitle)
+                    .foregroundColor(AppTheme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(3)
+            }
+            .padding(.horizontal, 20)
+        }
+        .padding(.bottom, 10)
+    }
+}
+
+struct ModernQuestionCard: View {
+    @ObservedObject var viewModel: SurveyViewModel
+    let geometry: GeometryProxy
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Question Content
+            VStack(spacing: 24) {
+                switch viewModel.currentQuestion.type {
+                case .textInput:
+                    ModernNameQuestionView(viewModel: viewModel, geometry: geometry)
+                case .singleChoice:
+                    if viewModel.currentQuestion.id == 2 {
+                        ModernAgeQuestionView(viewModel: viewModel, geometry: geometry)
+                    } else {
+                        ModernSkinTypeQuestionView(viewModel: viewModel, geometry: geometry)
+                    }
+                case .multipleChoice:
+                    if viewModel.currentQuestion.id == 4 {
+                        ModernSensitivityQuestionView(viewModel: viewModel, geometry: geometry)
+                    } else if viewModel.currentQuestion.id == 5 {
+                        ModernSkinConcernsQuestionView(viewModel: viewModel, geometry: geometry)
+                    } else if viewModel.currentQuestion.id == 6 {
+                        ModernAvoidIngredientsQuestionView(viewModel: viewModel, geometry: geometry)
+                    } else if viewModel.currentQuestion.id == 7 {
+                        ModernPregnancyQuestionView(viewModel: viewModel, geometry: geometry)
+                    } else {
+                        ModernSkinConcernsQuestionView(viewModel: viewModel, geometry: geometry)
+                    }
+                case .budgetSelection:
+                    ModernBudgetQuestionView(viewModel: viewModel, geometry: geometry)
+                }
+            }
+            .padding(24)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(AppTheme.cardGradient)
+                .shadow(color: AppTheme.darkCharcoal.opacity(0.08), radius: 20, x: 0, y: 8)
+        )
+    }
+}
+
+struct ModernBottomButton: View {
+    let title: String
+    let isEnabled: Bool
+    let isLastQuestion: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Text(title)
+                    .font(AppTheme.Typography.headline)
+                    .foregroundColor(.white)
+                
+                if !isLastQuestion {
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(isEnabled ? AppTheme.softPink : AppTheme.darkCharcoal.opacity(0.3))
+            )
+        }
+        .disabled(!isEnabled)
+        .scaleEffect(isEnabled ? 1.0 : 0.98)
+        .animation(.easeInOut(duration: 0.2), value: isEnabled)
     }
 }
 

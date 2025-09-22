@@ -7,10 +7,10 @@ struct ContentView: View {
         NavigationView {
             if surveyViewModel.isNewUser {
                 // New user flow: Show onboarding, survey, and face analysis
-                if surveyViewModel.isOnboardingComplete {
-                    MainTabContainerView(surveyViewModel: surveyViewModel)
-                } else if surveyViewModel.showFaceAnalysis {
+                if surveyViewModel.showFaceAnalysis {
                     FaceAnalysisView(surveyViewModel: surveyViewModel)
+                } else if surveyViewModel.isOnboardingComplete {
+                    MainTabContainerView(surveyViewModel: surveyViewModel)
                 } else {
                     SurveyView(viewModel: surveyViewModel)
                 }
