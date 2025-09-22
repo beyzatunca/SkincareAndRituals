@@ -122,9 +122,14 @@ class SurveyViewModel: ObservableObject {
     func completeFaceAnalysis() {
         // Face analysis completed, navigate to main app
         print("🔴 Face analysis completed, navigating to main app")
+        print("🔴 Before: showFaceAnalysis = \(showFaceAnalysis), isOnboardingComplete = \(isOnboardingComplete), isNewUser = \(isNewUser)")
+        
+        // Set all flags at once to prevent navigation conflicts
         showFaceAnalysis = false
         isOnboardingComplete = true
-        isNewUser = false // Now user is no longer new after completing face analysis
+        isNewUser = false
+        
+        print("🔴 After: showFaceAnalysis = \(showFaceAnalysis), isOnboardingComplete = \(isOnboardingComplete), isNewUser = \(isNewUser)")
     }
     
     func goBackToSurvey() {

@@ -575,15 +575,15 @@ struct SurveyView: View {
                         title: viewModel.isLastQuestion ? "Complete Survey" : "Continue",
                         isEnabled: viewModel.canProceed,
                         isLastQuestion: viewModel.isLastQuestion
-                    ) {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            if viewModel.isLastQuestion {
-                                viewModel.completeSurvey()
-                            } else {
-                                viewModel.nextQuestion()
+                        ) {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                if viewModel.isLastQuestion {
+                                    viewModel.completeSurvey()
+                                } else {
+                                    viewModel.nextQuestion()
+                                }
                             }
                         }
-                    }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 40)
                 }
@@ -611,11 +611,11 @@ struct ModernSurveyHeader: View {
             HStack {
                 if showBackButton {
                     Button(action: onBack) {
-                        Image(systemName: "chevron.left")
+                    Image(systemName: "chevron.left")
                             .font(.system(size: 18, weight: .medium))
                             .foregroundColor(AppTheme.darkCharcoal)
                             .frame(width: 32, height: 32)
-                            .background(
+                    .background(
                                 Circle()
                                     .fill(AppTheme.creamWhite)
                                     .shadow(color: AppTheme.darkCharcoal.opacity(0.1), radius: 4, x: 0, y: 2)
@@ -626,14 +626,14 @@ struct ModernSurveyHeader: View {
                         .frame(width: 32, height: 32)
                 }
                 
-                Spacer()
+                    Spacer()
                 
                 // Progress Indicator
-                HStack(spacing: 4) {
+        HStack(spacing: 4) {
                     ForEach(0..<totalQuestions, id: \.self) { index in
-                        Circle()
+                Circle()
                             .fill(index < currentQuestion ? AppTheme.softPink : AppTheme.softPink.opacity(0.3))
-                            .frame(width: 6, height: 6)
+                    .frame(width: 6, height: 6)
                     }
                 }
                 
@@ -642,8 +642,8 @@ struct ModernSurveyHeader: View {
                 // Close button placeholder
                 Spacer()
                     .frame(width: 32, height: 32)
-            }
-            .padding(.horizontal, 20)
+                }
+                .padding(.horizontal, 20)
             .padding(.top, 10)
             
             // Title and Subtitle
@@ -656,9 +656,9 @@ struct ModernSurveyHeader: View {
                 
                 Text(subtitle)
                     .font(AppTheme.Typography.surveySubtitle)
-                    .foregroundColor(AppTheme.textSecondary)
+                .foregroundColor(AppTheme.textSecondary)
                     .multilineTextAlignment(.center)
-                    .lineLimit(3)
+                .lineLimit(3)
             }
             .padding(.horizontal, 20)
         }
@@ -671,7 +671,7 @@ struct ModernQuestionCard: View {
     let geometry: GeometryProxy
     
     var body: some View {
-        VStack(spacing: 0) {
+            VStack(spacing: 0) {
             // Question Content
             VStack(spacing: 24) {
                 switch viewModel.currentQuestion.type {
@@ -680,7 +680,7 @@ struct ModernQuestionCard: View {
                 case .singleChoice:
                     if viewModel.currentQuestion.id == 2 {
                         ModernAgeQuestionView(viewModel: viewModel, geometry: geometry)
-                    } else {
+            } else {
                         ModernSkinTypeQuestionView(viewModel: viewModel, geometry: geometry)
                     }
                 case .multipleChoice:
@@ -692,7 +692,7 @@ struct ModernQuestionCard: View {
                         ModernAvoidIngredientsQuestionView(viewModel: viewModel, geometry: geometry)
                     } else if viewModel.currentQuestion.id == 7 {
                         ModernPregnancyQuestionView(viewModel: viewModel, geometry: geometry)
-                    } else {
+            } else {
                         ModernSkinConcernsQuestionView(viewModel: viewModel, geometry: geometry)
                     }
                 case .budgetSelection:
@@ -701,8 +701,8 @@ struct ModernQuestionCard: View {
             }
             .padding(24)
         }
-        .background(
-            RoundedRectangle(cornerRadius: 20)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
                 .fill(AppTheme.cardGradient)
                 .shadow(color: AppTheme.darkCharcoal.opacity(0.08), radius: 20, x: 0, y: 8)
         )
@@ -717,18 +717,18 @@ struct ModernBottomButton: View {
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 8) {
-                Text(title)
+                    HStack(spacing: 8) {
+            Text(title)
                     .font(AppTheme.Typography.headline)
-                    .foregroundColor(.white)
+                                .foregroundColor(.white)
                 
                 if !isLastQuestion {
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.white)
                 }
             }
-            .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity)
             .frame(height: 56)
             .background(
                 RoundedRectangle(cornerRadius: 16)
