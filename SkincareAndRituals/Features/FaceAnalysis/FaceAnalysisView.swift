@@ -115,53 +115,33 @@ struct FaceAnalysisView: View {
     // MARK: - Modern Camera Preview View
     private func modernCameraPreviewView(geometry: GeometryProxy) -> some View {
         VStack(spacing: 24) {
-            // Modern Camera Preview Card
-            VStack(spacing: 0) {
-                ZStack {
-                    if viewModel.capturedImage != nil {
-                        // Show captured image with face landmarks
-                        Image(uiImage: viewModel.capturedImage!)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: geometry.size.width * 0.85, height: geometry.size.width * 0.85 * 1.2)
-                            .clipped()
-                            .cornerRadius(20)
-                            .overlay(
-                                // Face landmark points overlay
-                                FaceLandmarkPointsOverlay()
-                            )
-                    } else {
-                        // Show sample face image for design purposes
-                        ZStack {
-                            // Sample face image background
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(AppTheme.cardGradient)
-                                .frame(width: geometry.size.width * 0.85, height: geometry.size.width * 0.85 * 1.2)
-                                .shadow(color: AppTheme.darkCharcoal.opacity(0.08), radius: 20, x: 0, y: 8)
-                            
-                            // Sample face content
-                            VStack(spacing: 20) {
-                                ZStack {
-                                    Circle()
-                                        .fill(AppTheme.darkCharcoal.opacity(0.15))
-                                        .frame(width: 80, height: 80)
-                                    
-                                    Image(systemName: "person.crop.circle.fill")
-                                        .font(.system(size: 32, weight: .medium))
-                                        .foregroundColor(AppTheme.darkCharcoal.opacity(0.8))
-                                }
-                                
-                                Text("Position your face in the frame")
-                                    .font(AppTheme.Typography.surveyOption)
-                                    .foregroundColor(AppTheme.textSecondary)
-                                    .multilineTextAlignment(.center)
-                            }
-                            .overlay(
-                                // Face landmark points overlay for demo
-                                FaceLandmarkPointsOverlay()
-                            )
-                        }
+            // Modern Camera Preview Card - Survey akışındaki ModernQuestionCard stilinde
+            VStack(spacing: 24) {
+                // Camera Icon - Survey akışındaki icon stilinde
+                VStack(spacing: 16) {
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.darkCharcoal.opacity(0.15))
+                            .frame(width: 80, height: 80)
+                        
+                        Image(systemName: "camera.fill")
+                            .font(.system(size: 32, weight: .medium))
+                            .foregroundColor(AppTheme.darkCharcoal.opacity(0.8))
                     }
+                }
+                
+                // Camera Access Text
+                VStack(spacing: 8) {
+                    Text("Enable Camera Access")
+                        .font(AppTheme.Typography.title2)
+                        .foregroundColor(AppTheme.darkCharcoal)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("Camera access is required to analyze your skin.")
+                        .font(AppTheme.Typography.surveyOption)
+                        .foregroundColor(AppTheme.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(3)
                 }
             }
             .padding(24)
@@ -172,7 +152,7 @@ struct FaceAnalysisView: View {
             )
             .padding(.horizontal, 20)
             
-            // Tips Card
+            // Tips Card - Survey akışındaki stil
             VStack(spacing: 12) {
                 HStack(spacing: 8) {
                     Image(systemName: "lightbulb.fill")
@@ -215,7 +195,7 @@ struct FaceAnalysisView: View {
     // MARK: - Modern Bottom Controls View
     private func modernBottomControlsView(geometry: GeometryProxy) -> some View {
         VStack(spacing: 20) {
-            // Modern Control Buttons
+            // Modern Control Buttons - Survey akışındaki stil
             HStack(spacing: 40) {
                 // Left button (Refresh/Retake)
                 Button(action: {
@@ -238,7 +218,7 @@ struct FaceAnalysisView: View {
                 }
                 .accessibilityLabel("Refresh")
                 
-                // Center capture button - Modern gradient
+                // Center capture button - Survey akışındaki ModernBottomButton stilinde
                 Button(action: {
                     if viewModel.capturedImage != nil {
                         viewModel.confirmPhoto()
@@ -248,7 +228,7 @@ struct FaceAnalysisView: View {
                 }) {
                     ZStack {
                         Circle()
-                            .fill(AppTheme.accentGradient)
+                            .fill(AppTheme.softPink)
                             .frame(width: 80, height: 80)
                             .shadow(color: AppTheme.softPink.opacity(0.3), radius: 12, x: 0, y: 6)
                         
@@ -279,7 +259,7 @@ struct FaceAnalysisView: View {
             }
             .padding(.horizontal, 20)
             
-            // Analyze Button (if image is captured)
+            // Analyze Button - Survey akışındaki ModernBottomButton stilinde
             if viewModel.capturedImage != nil {
                 Button(action: {
                     viewModel.startAnalysis()
@@ -291,6 +271,10 @@ struct FaceAnalysisView: View {
                         
                         Text("Analyze My Skin")
                             .font(AppTheme.Typography.headline)
+                            .foregroundColor(.white)
+                        
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                     }
                     .frame(maxWidth: .infinity)
@@ -559,18 +543,22 @@ struct ConsentSheet: View {
     // MARK: - Modern Analysis Completion View
     private func modernAnalysisCompletionView(geometry: GeometryProxy) -> some View {
         VStack(spacing: 24) {
-            // Success message
-            VStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(AppTheme.darkCharcoal.opacity(0.15))
-                        .frame(width: 80, height: 80)
-                    
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 32, weight: .medium))
-                        .foregroundColor(.green)
+            // Success message - Survey akışındaki ModernQuestionCard stilinde
+            VStack(spacing: 24) {
+                // Success Icon - Survey akışındaki icon stilinde
+                VStack(spacing: 16) {
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.darkCharcoal.opacity(0.15))
+                            .frame(width: 80, height: 80)
+                        
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 32, weight: .medium))
+                            .foregroundColor(.green)
+                    }
                 }
                 
+                // Success Text
                 VStack(spacing: 8) {
                     Text("Analysis Complete!")
                         .font(AppTheme.Typography.title2)
@@ -578,15 +566,21 @@ struct ConsentSheet: View {
                         .multilineTextAlignment(.center)
                     
                     Text("Your skin analysis has been completed successfully.")
-                        .font(AppTheme.Typography.surveySubtitle)
+                        .font(AppTheme.Typography.surveyOption)
                         .foregroundColor(AppTheme.textSecondary)
                         .multilineTextAlignment(.center)
                         .lineLimit(3)
                 }
             }
+            .padding(24)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(AppTheme.cardGradient)
+                    .shadow(color: AppTheme.darkCharcoal.opacity(0.08), radius: 20, x: 0, y: 8)
+            )
             .padding(.horizontal, 20)
             
-            // Continue to app button
+            // Continue to app button - Survey akışındaki ModernBottomButton stilinde
             Button(action: {
                 surveyViewModel.completeFaceAnalysis()
             }) {
@@ -608,13 +602,6 @@ struct ConsentSheet: View {
             }
             .padding(.horizontal, 20)
         }
-        .padding(24)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(AppTheme.cardGradient)
-                .shadow(color: AppTheme.darkCharcoal.opacity(0.08), radius: 20, x: 0, y: 8)
-        )
-        .padding(.horizontal, 20)
         .transition(.opacity.combined(with: .scale))
         .animation(.easeInOut(duration: 0.5), value: viewModel.analysisCompleted)
     }

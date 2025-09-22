@@ -127,6 +127,16 @@ class SurveyViewModel: ObservableObject {
         isNewUser = false // Now user is no longer new after completing face analysis
     }
     
+    func goBackToSurvey() {
+        // Go back to the last question of the survey
+        print("🔴 Going back to survey from face analysis")
+        print("🔴 Before: showFaceAnalysis = \(showFaceAnalysis), currentQuestionIndex = \(currentQuestionIndex)")
+        showFaceAnalysis = false
+        // Set current question to the last question (index 7 for question 8)
+        currentQuestionIndex = totalQuestions - 1
+        print("🔴 After: showFaceAnalysis = \(showFaceAnalysis), currentQuestionIndex = \(currentQuestionIndex), totalQuestions = \(totalQuestions)")
+    }
+    
     private func saveSurveyDataToUserDefaults() {
         let userDefaults = UserDefaults.standard
         
