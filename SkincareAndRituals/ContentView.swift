@@ -7,25 +7,25 @@ struct ContentView: View {
     
     var body: some View {
         Group {
-            if surveyViewModel.isNewUser {
-                // New user flow: Show onboarding, survey, and face analysis
-                if surveyViewModel.showFaceAnalysis {
-                    NavigationView {
-                        FaceAnalysisView(surveyViewModel: surveyViewModel)
-                    }
-                    .navigationViewStyle(StackNavigationViewStyle())
-                } else if surveyViewModel.isOnboardingComplete {
-                    // This should only happen after face analysis is complete
-                    MainAppView()
-                } else {
-                    NavigationView {
-                        SurveyView(viewModel: surveyViewModel)
-                    }
-                    .navigationViewStyle(StackNavigationViewStyle())
+        if surveyViewModel.isNewUser {
+            // New user flow: Show onboarding, survey, and face analysis
+            if surveyViewModel.showFaceAnalysis {
+                NavigationView {
+                    FaceAnalysisView(surveyViewModel: surveyViewModel)
                 }
-            } else {
-                // Existing user flow: Go directly to main app
+                .navigationViewStyle(StackNavigationViewStyle())
+            } else if surveyViewModel.isOnboardingComplete {
+                // This should only happen after face analysis is complete
                 MainAppView()
+            } else {
+                NavigationView {
+                    SurveyView(viewModel: surveyViewModel)
+                }
+                .navigationViewStyle(StackNavigationViewStyle())
+            }
+        } else {
+            // Existing user flow: Go directly to main app
+            MainAppView()
             }
         }
     }
@@ -34,70 +34,7 @@ struct ContentView: View {
 // MARK: - Main App View
 struct MainAppView: View {
     var body: some View {
-        VStack(spacing: 30) {
-            // Header
-            VStack(spacing: 10) {
-                Text("Skincare & Rituals")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-                
-                Text("Your Personal Skincare Journey")
-                    .font(.title3)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            
-            // Main content area
-            VStack(spacing: 20) {
-                // Welcome message
-                Text("Welcome to your personalized skincare experience!")
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                
-                // Action buttons
-                VStack(spacing: 15) {
-                    Button(action: {
-                        print("🔴 Start Your Routine button tapped")
-                    }) {
-                        HStack {
-                            Image(systemName: "play.circle.fill")
-                                .font(.title2)
-                            Text("Start Your Routine")
-                                .font(.headline)
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                    }
-                    
-                    Button(action: {
-                        print("🔴 Explore Products button tapped")
-                    }) {
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .font(.title2)
-                            Text("Explore Products")
-                                .font(.headline)
-                        }
-                        .foregroundColor(.blue)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color.blue.opacity(0.1))
-                        .cornerRadius(10)
-                    }
-                }
-                .padding(.horizontal)
-            }
-            
-            Spacer()
-        }
-        .padding()
-        .background(Color(.systemBackground))
+        SkincareRitualsHomeView()
     }
 }
 
@@ -860,6 +797,377 @@ struct FaceAnalysisView: View {
         // Stop capture session synchronously to avoid concurrency issues
         if captureSession.isRunning {
             captureSession.stopRunning()
+        }
+    }
+}
+
+// MARK: - Skincare & Rituals Home View
+struct SkincareRitualsHomeView: View {
+    @State private var selectedTab = 0
+    
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+                // Background gradient
+                AppTheme.backgroundGradient
+                    .ignoresSafeArea()
+                
+                // Content based on selected tab
+                Group {
+                    switch selectedTab {
+                    case 0: // Home
+                        homeContent(geometry: geometry)
+                    case 1: // Products
+                        ProductsView(selectedTab: $selectedTab)
+                    case 2: // Scan
+                        scanContent(geometry: geometry)
+                    case 3: // Sparkles
+                        sparklesContent(geometry: geometry)
+                    case 4: // Profile
+                        profileContent(geometry: geometry)
+                    default:
+                        homeContent(geometry: geometry)
+                    }
+                }
+                
+                // Bottom Navigation
+                VStack {
+                    Spacer()
+                    BottomNavigationView(selectedTab: $selectedTab)
+                        .background(
+                            Rectangle()
+                                .fill(Color.white)
+                                .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: -5)
+                        )
+                }
+            }
+        }
+    }
+    
+    // MARK: - Home Content
+    private func homeContent(geometry: GeometryProxy) -> some View {
+        VStack(spacing: 0) {
+            // Header
+            VStack(spacing: AppTheme.Spacing.md) {
+                Text("Skincare & Rituals")
+                    .font(AppTheme.Typography.largeTitle)
+                    .foregroundColor(AppTheme.textPrimary)
+                    .padding(.top, geometry.size.height * 0.05)
+            }
+            
+            ScrollView {
+                VStack(spacing: AppTheme.Spacing.lg) {
+                    // Add Routine Panel
+                    AddRoutineCard()
+                    
+                    // Environmental Factors
+                    HStack(spacing: AppTheme.Spacing.md) {
+                        UVIndexCard()
+                        HumidityCard()
+                    }
+                    
+                    // Pollution Level Panel
+                    PollutionLevelCard()
+                }
+                .padding(.horizontal, AppTheme.Spacing.lg)
+                .padding(.bottom, 100) // Space for bottom navigation
+            }
+        }
+    }
+    
+    // MARK: - Scan Content
+    private func scanContent(geometry: GeometryProxy) -> some View {
+        VStack(spacing: AppTheme.Spacing.lg) {
+            Text("Scan Products")
+                .font(AppTheme.Typography.largeTitle)
+                .foregroundColor(AppTheme.textPrimary)
+                .padding(.top, geometry.size.height * 0.1)
+            
+            Spacer()
+            
+            VStack(spacing: AppTheme.Spacing.lg) {
+                Image(systemName: "viewfinder")
+                    .font(.system(size: 80))
+                    .foregroundColor(AppTheme.primaryColor)
+                
+                Text("Point your camera at a skincare product to analyze its ingredients")
+                    .font(AppTheme.Typography.body)
+                    .foregroundColor(AppTheme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+            }
+            
+            Spacer()
+        }
+    }
+    
+    // MARK: - Sparkles Content
+    private func sparklesContent(geometry: GeometryProxy) -> some View {
+        VStack(spacing: AppTheme.Spacing.lg) {
+            Text("Recommendations")
+                .font(AppTheme.Typography.largeTitle)
+                .foregroundColor(AppTheme.textPrimary)
+                .padding(.top, geometry.size.height * 0.1)
+            
+            Spacer()
+            
+            VStack(spacing: AppTheme.Spacing.lg) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 80))
+                    .foregroundColor(AppTheme.primaryColor)
+                
+                Text("AI-powered skincare recommendations based on your skin analysis")
+                    .font(AppTheme.Typography.body)
+                    .foregroundColor(AppTheme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+            }
+            
+            Spacer()
+        }
+    }
+    
+    // MARK: - Profile Content
+    private func profileContent(geometry: GeometryProxy) -> some View {
+        VStack(spacing: AppTheme.Spacing.lg) {
+            Text("Profile")
+                .font(AppTheme.Typography.largeTitle)
+                .foregroundColor(AppTheme.textPrimary)
+                .padding(.top, geometry.size.height * 0.1)
+            
+            Spacer()
+            
+            VStack(spacing: AppTheme.Spacing.lg) {
+                Image(systemName: "person.fill")
+                    .font(.system(size: 80))
+                    .foregroundColor(AppTheme.primaryColor)
+                
+                Text("Manage your skincare profile and preferences")
+                    .font(AppTheme.Typography.body)
+                    .foregroundColor(AppTheme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+            }
+            
+            Spacer()
+        }
+    }
+}
+
+// MARK: - Add Routine Card
+struct AddRoutineCard: View {
+    var body: some View {
+        HStack(spacing: AppTheme.Spacing.lg) {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                Text("AI skin analysis results & your concerns will be used to prepare a personalized skincare routine just for you.")
+                    .font(AppTheme.Typography.body)
+                    .foregroundColor(AppTheme.textPrimary)
+                    .multilineTextAlignment(.leading)
+                
+                Button(action: {
+                    // Add routine action
+                }) {
+                    Text("Add Routine")
+                        .font(AppTheme.Typography.headline)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, AppTheme.Spacing.lg)
+                        .padding(.vertical, AppTheme.Spacing.md)
+                        .background(
+                            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                                .fill(AppTheme.primaryColor)
+                        )
+                }
+            }
+            
+            Spacer()
+            
+            // Decorative icon
+            VStack(spacing: 4) {
+                Image(systemName: "drop.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(AppTheme.primaryColor)
+                
+                Image(systemName: "square.fill")
+                    .font(.system(size: 16))
+                    .foregroundColor(AppTheme.softPink)
+                
+                Image(systemName: "triangle.fill")
+                    .font(.system(size: 12))
+                    .foregroundColor(AppTheme.warmBeige)
+            }
+        }
+        .padding(AppTheme.Spacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
+                .fill(AppTheme.softPink.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
+                        .stroke(AppTheme.softPink.opacity(0.3), lineWidth: 1)
+                )
+        )
+    }
+}
+
+// MARK: - UV Index Card
+struct UVIndexCard: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            HStack {
+                Image(systemName: "sun.max.fill")
+                    .font(.system(size: 16))
+                    .foregroundColor(.orange)
+                
+                Text("UV Index")
+                    .font(AppTheme.Typography.subheadline)
+                    .foregroundColor(AppTheme.textPrimary)
+            }
+            
+            Text("6")
+                .font(.system(size: 32, weight: .bold))
+                .foregroundColor(.orange)
+            
+            Text("High UV – Wear sunscreen and limit sun exposure.")
+                .font(AppTheme.Typography.caption)
+                .foregroundColor(AppTheme.textSecondary)
+                .multilineTextAlignment(.leading)
+        }
+        .padding(AppTheme.Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                .fill(Color.orange.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                        .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                )
+        )
+    }
+}
+
+// MARK: - Humidity Card
+struct HumidityCard: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            HStack {
+                Image(systemName: "drop.fill")
+                    .font(.system(size: 16))
+                    .foregroundColor(.blue)
+                
+                Text("Humidity")
+                    .font(AppTheme.Typography.subheadline)
+                    .foregroundColor(AppTheme.textPrimary)
+            }
+            
+            Text("40%")
+                .font(.system(size: 32, weight: .bold))
+                .foregroundColor(.blue)
+            
+            Text("Moderate humidity – Balanced skin condition.")
+                .font(AppTheme.Typography.caption)
+                .foregroundColor(AppTheme.textSecondary)
+                .multilineTextAlignment(.leading)
+        }
+        .padding(AppTheme.Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                .fill(Color.blue.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                        .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                )
+        )
+    }
+}
+
+// MARK: - Pollution Level Card
+struct PollutionLevelCard: View {
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                HStack {
+                    Image(systemName: "building.2.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(.green)
+                    
+                    Text("Pollution Level")
+                        .font(AppTheme.Typography.subheadline)
+                        .foregroundColor(AppTheme.textPrimary)
+                }
+                
+                HStack(alignment: .bottom, spacing: AppTheme.Spacing.sm) {
+                    Text("13")
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundColor(.green)
+                    
+                    Text("Good")
+                        .font(AppTheme.Typography.caption)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, AppTheme.Spacing.sm)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(Color.green)
+                        )
+                }
+                
+                Text("Low pollution – Minimal impact on skin.")
+                    .font(AppTheme.Typography.caption)
+                    .foregroundColor(AppTheme.textSecondary)
+                    .multilineTextAlignment(.leading)
+            }
+            
+            Spacer()
+        }
+        .padding(AppTheme.Spacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
+                .fill(Color.green.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
+                        .stroke(Color.green.opacity(0.3), lineWidth: 1)
+                )
+        )
+    }
+}
+
+// MARK: - Bottom Navigation
+struct BottomNavigationView: View {
+    @Binding var selectedTab: Int
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(0..<5) { index in
+                Button(action: {
+                    selectedTab = index
+                }) {
+                    VStack(spacing: 4) {
+                        Image(systemName: tabIcon(for: index))
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(selectedTab == index ? AppTheme.primaryColor : AppTheme.textSecondary)
+                        
+                        if selectedTab == index {
+                            Circle()
+                                .fill(AppTheme.primaryColor)
+                                .frame(width: 6, height: 6)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, AppTheme.Spacing.md)
+                }
+            }
+        }
+        .background(Color.white)
+    }
+    
+    private func tabIcon(for index: Int) -> String {
+        switch index {
+        case 0: return "house.fill"
+        case 1: return "drop.fill"
+        case 2: return "viewfinder"
+        case 3: return "sparkles"
+        case 4: return "person.fill"
+        default: return "circle"
         }
     }
 }
@@ -2305,4 +2613,480 @@ struct ConsentSheet: View {
 
     #Preview {
         ContentView()
+    }
+
+
+// MARK: - Product Detail View
+struct ProductDetailView: View {
+    let product: Product
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+                    // Product Header
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                        Text(product.brand)
+                            .font(AppTheme.Typography.headline)
+                            .foregroundColor(AppTheme.primaryColor)
+                        
+                        Text(product.name)
+                            .font(AppTheme.Typography.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(AppTheme.textPrimary)
+                        
+                        Text(product.description)
+                            .font(AppTheme.Typography.body)
+                            .foregroundColor(AppTheme.textSecondary)
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+                    
+                    // Product Image Placeholder
+                    VStack(spacing: AppTheme.Spacing.md) {
+                        Image(systemName: product.category.icon)
+                            .font(.system(size: 80))
+                            .foregroundColor(AppTheme.primaryColor)
+                        
+                        Text(product.category.rawValue)
+                            .font(AppTheme.Typography.headline)
+                            .foregroundColor(AppTheme.textPrimary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 200)
+                    .background(
+                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
+                            .fill(AppTheme.softPink.opacity(0.1))
+                    )
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+                    
+                    // Product Info
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                        HStack {
+                            Text("Price")
+                                .font(AppTheme.Typography.headline)
+                                .foregroundColor(AppTheme.textPrimary)
+                            
+                            Spacer()
+                            
+                            Text("$\(String(format: "%.2f", product.price))")
+                                .font(AppTheme.Typography.largeTitle)
+                                .fontWeight(.bold)
+                                .foregroundColor(AppTheme.primaryColor)
+                        }
+                        
+                        if product.rating > 0 {
+                            HStack {
+                                HStack(spacing: 4) {
+                                    ForEach(0..<5) { index in
+                                        Image(systemName: index < Int(product.rating) ? "star.fill" : "star")
+                                            .font(.caption)
+                                            .foregroundColor(.yellow)
+                                    }
+                                }
+                                
+                                Text(String(format: "%.1f", product.rating))
+                                    .font(AppTheme.Typography.subheadline)
+                                    .foregroundColor(AppTheme.textSecondary)
+                                
+                                Spacer()
+                            }
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+                    
+                    // Benefits Section
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                        Text("Benefits")
+                            .font(AppTheme.Typography.headline)
+                            .foregroundColor(AppTheme.textPrimary)
+                        
+                        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                            ForEach(["Hydrates skin", "Reduces fine lines", "Improves texture"], id: \.self) { benefit in
+                                HStack {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                        .font(.caption)
+                                    
+                                    Text(benefit)
+                                        .font(AppTheme.Typography.body)
+                                        .foregroundColor(AppTheme.textPrimary)
+                                    
+                                    Spacer()
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+                    
+                    // How to Use Section
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                        Text("How to Use")
+                            .font(AppTheme.Typography.headline)
+                            .foregroundColor(AppTheme.textPrimary)
+                        
+                        Text("Apply a small amount to clean skin morning and evening. Gently massage in circular motions until absorbed.")
+                            .font(AppTheme.Typography.body)
+                            .foregroundColor(AppTheme.textSecondary)
+                            .multilineTextAlignment(.leading)
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+                    
+                    // Ingredients Section
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                        Text("Key Ingredients")
+                            .font(AppTheme.Typography.headline)
+                            .foregroundColor(AppTheme.textPrimary)
+                        
+                        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                            ForEach(["Hyaluronic Acid", "Niacinamide", "Vitamin C"], id: \.self) { ingredient in
+                                HStack {
+                                    Text("•")
+                                        .foregroundColor(AppTheme.primaryColor)
+                                        .font(.caption)
+                                    
+                                    Text(ingredient)
+                                        .font(AppTheme.Typography.body)
+                                        .foregroundColor(AppTheme.textPrimary)
+                                    
+                                    Spacer()
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+                    .padding(.bottom, 100) // Space for navigation
+                }
+            }
+            .navigationTitle("Product Details")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+    // MARK: - Products View
+    struct ProductsView: View {
+        @StateObject private var viewModel = ProductsViewModel()
+        @Binding var selectedTab: Int
+        @State private var showingProductDetail: Product?
+        
+        var body: some View {
+            GeometryReader { geometry in
+                ZStack {
+                    // Background gradient
+                    AppTheme.backgroundGradient
+                        .ignoresSafeArea()
+                    
+                    VStack(spacing: 0) {
+                        // Header
+                        VStack(spacing: AppTheme.Spacing.md) {
+                            Text("Products")
+                                .font(AppTheme.Typography.largeTitle)
+                                .foregroundColor(AppTheme.textPrimary)
+                                .padding(.top, geometry.size.height * 0.05)
+                        }
+                        
+                        // Category Selection Bar
+                        categorySelectionBar()
+                        
+                        // Search Bar
+                        searchBar()
+                        
+                        // Products Grid
+                        productsGrid()
+                    }
+                    
+                    // Bottom Navigation
+                    VStack {
+                        Spacer()
+                        BottomNavigationView(selectedTab: $selectedTab)
+                            .background(
+                                Rectangle()
+                                    .fill(Color.white)
+                                    .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: -5)
+                            )
+                    }
+                }
+            }
+            .sheet(item: $showingProductDetail, onDismiss: {
+                // Reset product detail state when dismissed
+                showingProductDetail = nil
+            }) { product in
+                ProductDetailView(product: product)
+            }
+            .onAppear {
+                print("✅ ProductsView appeared, items=\(viewModel.filteredProducts.count)")
+            }
+        }
+    
+    // MARK: - Category Selection Bar
+    private func categorySelectionBar() -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: AppTheme.Spacing.sm) {
+                ForEach([ProductCategory.all, .cleanser, .moisturizer, .serum, .sunscreen], id: \.self) { category in
+                    Button(action: {
+                        viewModel.selectCategory(category)
+                    }) {
+                        Text(category.rawValue)
+                            .font(AppTheme.Typography.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(viewModel.selectedCategory == category ? .white : AppTheme.textPrimary)
+                            .padding(.horizontal, AppTheme.Spacing.md)
+                            .padding(.vertical, AppTheme.Spacing.sm)
+                            .background(
+                                viewModel.selectedCategory == category ?
+                                    AppTheme.primaryColor : AppTheme.creamWhite
+                            )
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            .padding(.horizontal, AppTheme.Spacing.lg)
+            .padding(.vertical, AppTheme.Spacing.md)
+        }
+    }
+    
+    // MARK: - Search Bar
+    private func searchBar() -> some View {
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(AppTheme.textSecondary)
+                .font(AppTheme.Typography.subheadline)
+            
+            TextField("Search products…", text: $viewModel.query)
+                .font(AppTheme.Typography.subheadline)
+                .foregroundColor(AppTheme.textPrimary)
+                .textFieldStyle(PlainTextFieldStyle())
+                .onChange(of: viewModel.query) {
+                    viewModel.filterProducts()
+                }
+            
+            if !viewModel.query.isEmpty {
+                Button(action: {
+                    viewModel.clearSearch()
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(AppTheme.textSecondary)
+                        .font(AppTheme.Typography.subheadline)
+                }
+            }
+        }
+        .padding(.horizontal, AppTheme.Spacing.md)
+        .padding(.vertical, AppTheme.Spacing.sm)
+        .background(AppTheme.creamWhite)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium))
+        .padding(.horizontal, AppTheme.Spacing.lg)
+        .padding(.bottom, AppTheme.Spacing.md)
+    }
+    
+    // MARK: - Products Grid
+    private func productsGrid() -> some View {
+        ScrollView {
+            if viewModel.isLoading {
+                ProgressView()
+                    .padding()
+            } else if viewModel.filteredProducts.isEmpty {
+                emptyStateView()
+            } else {
+                LazyVGrid(
+                    columns: [
+                        GridItem(.adaptive(minimum: 160), spacing: AppTheme.Spacing.md)
+                    ],
+                    spacing: AppTheme.Spacing.md
+                ) {
+                    ForEach(viewModel.filteredProducts) { product in
+                        Button(action: {
+                            showingProductDetail = product
+                        }) {
+                            ProductCardView(product: product, viewModel: viewModel)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .padding(.horizontal, AppTheme.Spacing.lg)
+                .padding(.bottom, 100) // Space for bottom navigation
+            }
+        }
+        .refreshable {
+            viewModel.loadProducts()
+        }
+    }
+    
+    // MARK: - Empty State
+    private func emptyStateView() -> some View {
+        VStack(spacing: AppTheme.Spacing.lg) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 48))
+                .foregroundColor(AppTheme.textSecondary.opacity(0.5))
+            
+            Text("No products found")
+                .font(AppTheme.Typography.title2)
+                .fontWeight(.semibold)
+                .foregroundColor(AppTheme.textPrimary)
+            
+            Text("Try adjusting your search or category filter")
+                .font(AppTheme.Typography.body)
+                .foregroundColor(AppTheme.textSecondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+    }
+}
+
+// MARK: - Product Card View
+struct ProductCardView: View {
+    let product: Product
+    @ObservedObject var viewModel: ProductsViewModel
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            // Product Icon/Placeholder with Favorite Button
+            ZStack(alignment: .topTrailing) {
+                VStack(spacing: AppTheme.Spacing.sm) {
+                    Image(systemName: product.category.icon)
+                        .font(.system(size: 32))
+                        .foregroundColor(AppTheme.primaryColor)
+                    
+                    Text(product.category.rawValue)
+                        .font(AppTheme.Typography.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(AppTheme.textSecondary)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 80)
+                .background(
+                    RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                        .fill(AppTheme.softPink.opacity(0.1))
+                )
+                
+                // Favorite Button
+                Button(action: {
+                    viewModel.toggleFavorite(for: product)
+                }) {
+                    Image(systemName: viewModel.isFavorite(product) ? "heart.fill" : "heart")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(viewModel.isFavorite(product) ? .red : AppTheme.textSecondary)
+                        .padding(8)
+                        .background(
+                            Circle()
+                                .fill(Color.white)
+                                .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+                        )
+                }
+                .buttonStyle(PlainButtonStyle())
+                .padding(.top, 8)
+                .padding(.trailing, 8)
+            }
+            
+            // Product Info
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                // Brand
+                Text(product.brand)
+                    .font(AppTheme.Typography.subheadline)
+                    .foregroundColor(AppTheme.primaryColor)
+                
+                // Product Name
+                Text(product.name)
+                    .font(AppTheme.Typography.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(AppTheme.textPrimary)
+                    .lineLimit(2)
+                
+                // Volume (if available)
+                if !product.description.isEmpty {
+                    Text(product.description)
+                        .font(AppTheme.Typography.caption)
+                        .foregroundColor(AppTheme.textSecondary)
+                        .lineLimit(1)
+                }
+                
+                // Rating
+                if product.rating > 0 {
+                    HStack(spacing: 4) {
+                        HStack(spacing: 2) {
+                            ForEach(0..<5) { index in
+                                Image(systemName: index < Int(product.rating) ? "star.fill" : 
+                                      (index == Int(product.rating) && product.rating.truncatingRemainder(dividingBy: 1) > 0) ? "star.leadinghalf.filled" : "star")
+                                    .font(.caption)
+                                    .foregroundColor(.yellow)
+                            }
+                        }
+                        
+                        Text(String(format: "%.1f", product.rating))
+                            .font(AppTheme.Typography.caption)
+                            .foregroundColor(AppTheme.textSecondary)
+                        
+                        Text("(\(Int.random(in: 100...2000)))")
+                            .font(AppTheme.Typography.caption)
+                            .foregroundColor(AppTheme.textSecondary)
+                    }
+                }
+                
+                // Price and Tags
+                HStack {
+                    Text("$\(String(format: "%.2f", product.price))")
+                        .font(AppTheme.Typography.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(AppTheme.textPrimary)
+                    
+                    Spacer()
+                    
+                    if Bool.random() {
+                        Text("Recommended")
+                            .font(AppTheme.Typography.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, AppTheme.Spacing.sm)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(Color.green)
+                            )
+                    }
+                }
+                
+                // Attribute Tags
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    Text("Cruelty Free")
+                        .font(AppTheme.Typography.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, AppTheme.Spacing.sm)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(AppTheme.primaryColor.opacity(0.8))
+                        )
+                    
+                    if Bool.random() {
+                        Text("Vegan")
+                            .font(AppTheme.Typography.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, AppTheme.Spacing.sm)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(AppTheme.primaryColor.opacity(0.8))
+                            )
+                    }
+                }
+            }
+        }
+        .padding(AppTheme.Spacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+        )
+    }
     }

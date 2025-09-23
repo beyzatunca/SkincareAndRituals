@@ -416,8 +416,10 @@ class ProductsViewModel: ObservableObject {
     @Published var selectedCategory: ProductCategory = .all
     @Published var query: String = ""
     @Published var isLoading: Bool = false
+    @Published var favoriteProductIds: Set<UUID> = []
     
     init() {
+        loadFavorites()
         loadProducts()
         setupCategories()
     }
@@ -522,6 +524,33 @@ class ProductsViewModel: ObservableObject {
         guard !products.isEmpty else { return 0 }
         let totalRating = products.reduce(0) { $0 + $1.rating }
         return totalRating / Double(products.count)
+    }
+    
+    // MARK: - Favorites Management
+    func toggleFavorite(for product: Product) {
+        if favoriteProductIds.contains(product.id) {
+            favoriteProductIds.remove(product.id)
+        } else {
+            favoriteProductIds.insert(product.id)
+        }
+        saveFavorites()
+    }
+    
+    func isFavorite(_ product: Product) -> Bool {
+        return favoriteProductIds.contains(product.id)
+    }
+    
+    private func loadFavorites() {
+        if let data = UserDefaults.standard.data(forKey: "favoriteProductIds"),
+           let favorites = try? JSONDecoder().decode(Set<UUID>.self, from: data) {
+            favoriteProductIds = favorites
+        }
+    }
+    
+    private func saveFavorites() {
+        if let data = try? JSONEncoder().encode(favoriteProductIds) {
+            UserDefaults.standard.set(data, forKey: "favoriteProductIds")
+        }
     }
 }
 import PhotosUI
