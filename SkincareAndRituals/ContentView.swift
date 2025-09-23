@@ -6,31 +6,103 @@ struct ContentView: View {
     @StateObject private var surveyViewModel = SurveyViewModel()
     
     var body: some View {
-        if surveyViewModel.isNewUser {
-            // New user flow: Show onboarding, survey, and face analysis
-            if surveyViewModel.showFaceAnalysis {
-                NavigationView {
-                    FaceAnalysisView(surveyViewModel: surveyViewModel)
+        Group {
+            if surveyViewModel.isNewUser {
+                // New user flow: Show onboarding, survey, and face analysis
+                if surveyViewModel.showFaceAnalysis {
+                    NavigationView {
+                        FaceAnalysisView(surveyViewModel: surveyViewModel)
+                    }
+                    .navigationViewStyle(StackNavigationViewStyle())
+                } else if surveyViewModel.isOnboardingComplete {
+                    // This should only happen after face analysis is complete
+                    MainAppView()
+                } else {
+                    NavigationView {
+                        SurveyView(viewModel: surveyViewModel)
+                    }
+                    .navigationViewStyle(StackNavigationViewStyle())
                 }
-                .navigationViewStyle(StackNavigationViewStyle())
-            } else if surveyViewModel.isOnboardingComplete {
-                // This should only happen after face analysis is complete
-                MainAppView()
             } else {
-                NavigationView {
-                    SurveyView(viewModel: surveyViewModel)
-                }
-                .navigationViewStyle(StackNavigationViewStyle())
+                // Existing user flow: Go directly to main app
+                MainAppView()
             }
-        } else {
-            // Existing user flow: Go directly to main app
-            MainAppView()
         }
     }
 }
 
 // MARK: - Main App View
 struct MainAppView: View {
+    var body: some View {
+        VStack(spacing: 30) {
+            // Header
+            VStack(spacing: 10) {
+                Text("Skincare & Rituals")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Text("Your Personal Skincare Journey")
+                    .font(.title3)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            
+            // Main content area
+            VStack(spacing: 20) {
+                // Welcome message
+                Text("Welcome to your personalized skincare experience!")
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+                
+                // Action buttons
+                VStack(spacing: 15) {
+                    Button(action: {
+                        print("🔴 Start Your Routine button tapped")
+                    }) {
+                        HStack {
+                            Image(systemName: "play.circle.fill")
+                                .font(.title2)
+                            Text("Start Your Routine")
+                                .font(.headline)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                    }
+                    
+                    Button(action: {
+                        print("🔴 Explore Products button tapped")
+                    }) {
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .font(.title2)
+                            Text("Explore Products")
+                                .font(.headline)
+                        }
+                        .foregroundColor(.blue)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(10)
+                    }
+                }
+                .padding(.horizontal)
+            }
+            
+            Spacer()
+        }
+        .padding()
+        .background(Color(.systemBackground))
+    }
+}
+
+// MARK: - New User Home View
+struct NewUserHomeView: View {
     var body: some View {
         VStack(spacing: 20) {
             Text("Skincare & Rituals")
@@ -44,9 +116,9 @@ struct MainAppView: View {
                 .multilineTextAlignment(.center)
             
             Button(action: {
-                print("🔴 Explore Products button tapped")
+                print("🔴 Add Routine button tapped")
             }) {
-                Text("Explore Products")
+                Text("Add Routine")
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -70,9 +142,87 @@ struct MainAppView: View {
             .padding(.horizontal, 20)
         }
         .padding()
-        .onAppear {
-            print("🔴 MainAppView appeared successfully!")
+    }
+}
+
+// MARK: - Existing User Home View
+struct ExistingUserHomeView: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Skincare & Rituals")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+            
+            Text("Your Daily Routine")
+                .font(.title2)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            // Routine panel with radio, spotify, news buttons
+            VStack(spacing: 15) {
+                Button(action: {
+                    print("🔴 Radio button tapped")
+                }) {
+                    HStack {
+                        Image(systemName: "radio")
+                            .font(.title2)
+                        Text("Radio")
+                            .font(.headline)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                    }
+                    .foregroundColor(.primary)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(10)
+                }
+                .padding(.horizontal, 20)
+                
+                Button(action: {
+                    print("🔴 Spotify button tapped")
+                }) {
+                    HStack {
+                        Image(systemName: "music.note")
+                            .font(.title2)
+                        Text("Spotify")
+                            .font(.headline)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                    }
+                    .foregroundColor(.primary)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(10)
+                }
+                .padding(.horizontal, 20)
+                
+                Button(action: {
+                    print("🔴 News button tapped")
+                }) {
+                    HStack {
+                        Image(systemName: "newspaper")
+                            .font(.title2)
+                        Text("News")
+                            .font(.headline)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                    }
+                    .foregroundColor(.primary)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(10)
+                }
+                .padding(.horizontal, 20)
+            }
         }
+        .padding()
     }
 }
 
@@ -120,12 +270,18 @@ struct FaceAnalysisView: View {
                     viewModel.checkPermissions()
                 }
             }
-            .sheet(isPresented: $viewModel.showingPhotoPicker) {
+            .sheet(isPresented: $viewModel.showingPhotoPicker, onDismiss: {
+                // Reset photo picker state when dismissed
+                viewModel.showingPhotoPicker = false
+            }) {
                 PhotoPicker(selectedImage: $viewModel.selectedImage) { image in
                     viewModel.setSelectedImage(image)
                 }
             }
-            .sheet(isPresented: $viewModel.showingConsentSheet) {
+            .sheet(isPresented: $viewModel.showingConsentSheet, onDismiss: {
+                // Reset consent sheet state when dismissed
+                viewModel.showingConsentSheet = false
+            }) {
                 ConsentSheet(
                     image: viewModel.capturedImage,
                     onConfirm: {
@@ -507,6 +663,7 @@ struct FaceAnalysisView: View {
 }
 
     // MARK: - Face Analysis View Model
+    @MainActor
     class FaceAnalysisViewModel: NSObject, ObservableObject {
         @Published var cameraPermissionGranted = false
         @Published var capturedImage: UIImage?
@@ -649,7 +806,9 @@ struct FaceAnalysisView: View {
     
     private func stopCaptureSession() {
         DispatchQueue.global(qos: .background).async { [weak self] in
-            self?.captureSession.stopRunning()
+            guard let self = self else { return }
+            self.captureSession.stopRunning()
+            print("🔴 Capture session stopped")
         }
     }
     
@@ -698,13 +857,16 @@ struct FaceAnalysisView: View {
         }
     
     deinit {
-        stopCaptureSession()
+        // Stop capture session synchronously to avoid concurrency issues
+        if captureSession.isRunning {
+            captureSession.stopRunning()
+        }
     }
 }
 
 // MARK: - Face Analysis View Model Extensions
-extension FaceAnalysisViewModel: AVCapturePhotoCaptureDelegate {
-    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+extension FaceAnalysisViewModel: @preconcurrency AVCapturePhotoCaptureDelegate {
+    nonisolated func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         guard let imageData = photo.fileDataRepresentation(),
               let image = UIImage(data: imageData) else {
             return

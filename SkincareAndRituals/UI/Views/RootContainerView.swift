@@ -1,5 +1,6 @@
 import SwiftUI
 
+
 // MARK: - Color Extension
 extension Color {
     init(hex: String) {
@@ -38,7 +39,7 @@ struct RootContainerView: View {
             VStack(spacing: 0) {
                 // Content area
                 TabView(selection: $selectedTab) {
-                    MainPageView()
+                    SkincareAndRitualsMainView()
                         .tag(AppTab.home)
                     
                     ProductsView()

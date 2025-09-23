@@ -41,10 +41,16 @@ struct FaceAnalysisView: View {
         .onAppear {
             viewModel.checkPermissions()
         }
-        .sheet(isPresented: $viewModel.showingPhotoPicker) {
+        .sheet(isPresented: $viewModel.showingPhotoPicker, onDismiss: {
+            // Reset photo picker state when dismissed
+            viewModel.showingPhotoPicker = false
+        }) {
             PhotoPicker(selectedImage: $viewModel.selectedImage)
         }
-        .sheet(isPresented: $viewModel.showingConsentSheet) {
+        .sheet(isPresented: $viewModel.showingConsentSheet, onDismiss: {
+            // Reset consent sheet state when dismissed
+            viewModel.showingConsentSheet = false
+        }) {
             ConsentSheet(
                 image: viewModel.capturedImage,
                 onConfirm: {

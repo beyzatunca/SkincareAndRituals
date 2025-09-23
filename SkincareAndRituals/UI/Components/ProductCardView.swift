@@ -148,7 +148,11 @@ struct ProductCardView: View {
 
 // MARK: - Preview
 #Preview {
-    let sampleProduct = Product.sampleProducts.first!
+    guard let sampleProduct = Product.sampleProducts.first else {
+        return VStack {
+            Text("No sample products available")
+        }
+    }
     
     return VStack {
         ProductCardView(product: sampleProduct) {

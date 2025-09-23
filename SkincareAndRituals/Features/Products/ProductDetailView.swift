@@ -418,7 +418,11 @@ struct ProductDetailView: View {
 
 // MARK: - Preview
 #Preview {
-    let sampleProduct = Product.sampleProducts.first!
+    guard let sampleProduct = Product.sampleProducts.first else {
+        return VStack {
+            Text("No sample products available")
+        }
+    }
     
     return ProductDetailView(product: sampleProduct)
 }

@@ -29,7 +29,10 @@ struct ProductsView: View {
             }
             .background(Color(hex: "F6F7F8"))
         }
-        .sheet(item: $showingProductDetail) { product in
+        .sheet(item: $showingProductDetail, onDismiss: {
+            // Reset product detail state when dismissed
+            showingProductDetail = nil
+        }) { product in
             ProductDetailView(product: product)
         }
         .onAppear {
