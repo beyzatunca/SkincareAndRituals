@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import Photos
 import PhotosUI
 
 struct ContentView: View {
@@ -16,7 +17,7 @@ struct ContentView: View {
                 .navigationViewStyle(StackNavigationViewStyle())
             } else if surveyViewModel.isOnboardingComplete {
                 // This should only happen after face analysis is complete
-                MainAppView()
+                MainAppView(surveyViewModel: surveyViewModel)
             } else {
                 NavigationView {
                     SurveyView(viewModel: surveyViewModel)
@@ -25,7 +26,7 @@ struct ContentView: View {
             }
         } else {
             // Existing user flow: Go directly to main app
-            MainAppView()
+            MainAppView(surveyViewModel: surveyViewModel)
             }
         }
     }
@@ -33,8 +34,10 @@ struct ContentView: View {
 
 // MARK: - Main App View
 struct MainAppView: View {
+    @ObservedObject var surveyViewModel: SurveyViewModel
+    
     var body: some View {
-        SkincareRitualsHomeView()
+        SkincareRitualsHomeView(surveyViewModel: surveyViewModel)
     }
 }
 
@@ -804,6 +807,7 @@ struct FaceAnalysisView: View {
 // MARK: - Skincare & Rituals Home View
 struct SkincareRitualsHomeView: View {
     @State private var selectedTab = 0
+    @ObservedObject var surveyViewModel: SurveyViewModel
     
     var body: some View {
         GeometryReader { geometry in
@@ -853,21 +857,40 @@ struct SkincareRitualsHomeView: View {
                     .font(AppTheme.Typography.largeTitle)
                     .foregroundColor(AppTheme.textPrimary)
                     .padding(.top, geometry.size.height * 0.05)
+                
             }
             
             ScrollView {
                 VStack(spacing: AppTheme.Spacing.lg) {
-                    // Add Routine Panel
-                    AddRoutineCard()
                     
-                    // Environmental Factors
-                    HStack(spacing: AppTheme.Spacing.md) {
-                        UVIndexCard()
-                        HumidityCard()
+                    // Conditional content based on isNewUser
+                    if surveyViewModel.isNewUser {
+                        // New user: Show Add Routine + Environmental Factors
+                        AddRoutineCard()
+                        
+                        // Environmental Factors
+                        HStack(spacing: AppTheme.Spacing.md) {
+                            UVIndexCard()
+                            HumidityCard()
+                        }
+                        
+                        // Pollution Level Panel
+                        PollutionLevelCard()
+                    } else {
+                        // Existing user: Show Today's Routine + Skin Journal + Environmental Factors
+                        TodaysRoutineCard()
+                        
+                        SkinJournalCard()
+                        
+                        // Environmental Factors
+                        HStack(spacing: AppTheme.Spacing.md) {
+                            UVIndexCard()
+                            HumidityCard()
+                        }
+                        
+                        // Pollution Level Panel
+                        PollutionLevelCard()
                     }
-                    
-                    // Pollution Level Panel
-                    PollutionLevelCard()
                 }
                 .padding(.horizontal, AppTheme.Spacing.lg)
                 .padding(.bottom, 100) // Space for bottom navigation
@@ -1008,6 +1031,280 @@ struct AddRoutineCard: View {
     }
 }
 
+// MARK: - Today's Routine Card
+struct TodaysRoutineCard: View {
+    @State private var selectedTime = "Morning"
+    @State private var completedSteps = Set<String>()
+    
+    private let routineSteps = [
+        ("Cleanser", "bottle.fill"),
+        ("Serum", "drop.fill"),
+        ("Moisturizer", "jar.fill"),
+        ("SPF", "sun.max.fill")
+    ]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            // Header
+            HStack {
+                Text("Today's Routine")
+                    .font(AppTheme.Typography.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(AppTheme.textPrimary)
+                
+                Spacer()
+                
+                HStack(spacing: 4) {
+                    ForEach(0..<3) { _ in
+                        Circle()
+                            .fill(AppTheme.textSecondary.opacity(0.3))
+                            .frame(width: 4, height: 4)
+                    }
+                }
+            }
+            
+            // Time Selection
+            HStack(spacing: AppTheme.Spacing.sm) {
+                Button(action: { selectedTime = "Morning" }) {
+                    Text("Morning")
+                        .font(AppTheme.Typography.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(selectedTime == "Morning" ? .white : AppTheme.textSecondary)
+                        .padding(.horizontal, AppTheme.Spacing.md)
+                        .padding(.vertical, AppTheme.Spacing.sm)
+                        .background(
+                            Capsule()
+                                .fill(selectedTime == "Morning" ? AppTheme.primaryColor : Color.clear)
+                        )
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                Button(action: { selectedTime = "Evening" }) {
+                    Text("Evening")
+                        .font(AppTheme.Typography.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(selectedTime == "Evening" ? .white : AppTheme.textSecondary)
+                        .padding(.horizontal, AppTheme.Spacing.md)
+                        .padding(.vertical, AppTheme.Spacing.sm)
+                        .background(
+                            Capsule()
+                                .fill(selectedTime == "Evening" ? AppTheme.primaryColor : Color.clear)
+                        )
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                Spacer()
+            }
+            
+            // Routine Steps
+            VStack(spacing: AppTheme.Spacing.sm) {
+                ForEach(routineSteps, id: \.0) { step in
+                    HStack {
+                        Image(systemName: step.1)
+                            .font(.system(size: 16))
+                            .foregroundColor(AppTheme.primaryColor)
+                            .frame(width: 24)
+                        
+                        Text(step.0)
+                            .font(AppTheme.Typography.body)
+                            .foregroundColor(AppTheme.textPrimary)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            if completedSteps.contains(step.0) {
+                                completedSteps.remove(step.0)
+                            } else {
+                                completedSteps.insert(step.0)
+                            }
+                        }) {
+                            Image(systemName: completedSteps.contains(step.0) ? "checkmark.circle.fill" : "circle")
+                                .font(.system(size: 20))
+                                .foregroundColor(completedSteps.contains(step.0) ? AppTheme.primaryColor : AppTheme.textSecondary)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+            
+            // Progress and Additional Info
+            HStack {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
+                    Text("\(completedSteps.count)/\(routineSteps.count) steps")
+                        .font(AppTheme.Typography.caption)
+                        .foregroundColor(AppTheme.textPrimary)
+                        .fontWeight(.medium)
+                    
+                    HStack(spacing: 4) {
+                        Text("Cruelty-free")
+                            .font(AppTheme.Typography.caption)
+                            .foregroundColor(AppTheme.primaryColor)
+                        
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 12))
+                            .foregroundColor(AppTheme.primaryColor)
+                    }
+                }
+                
+                Spacer()
+                
+                // Progress Circle
+                ZStack {
+                    Circle()
+                        .stroke(AppTheme.primaryColor.opacity(0.2), lineWidth: 3)
+                        .frame(width: 50, height: 50)
+                    
+                    Circle()
+                        .trim(from: 0, to: Double(completedSteps.count) / Double(routineSteps.count))
+                        .stroke(AppTheme.primaryColor, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                        .frame(width: 50, height: 50)
+                        .rotationEffect(.degrees(-90))
+                    
+                    Text("\(completedSteps.count)/\(routineSteps.count)")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(AppTheme.textPrimary)
+                }
+            }
+            
+            // Action Buttons
+            HStack(spacing: AppTheme.Spacing.sm) {
+                ActionButton(icon: "music.note", text: "Spotify", color: .purple)
+                ActionButton(icon: "radio", text: "Radio", color: .purple)
+                ActionButton(icon: "newspaper", text: "Daily news", color: .purple)
+                ActionButton(icon: "leaf", text: "Mintot.", color: .pink)
+            }
+        }
+        .padding(AppTheme.Spacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
+        )
+    }
+}
+
+// MARK: - Action Button
+struct ActionButton: View {
+    let icon: String
+    let text: String
+    let color: Color
+    
+    var body: some View {
+        Button(action: {}) {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 12))
+                
+                Text(text)
+                    .font(.system(size: 10, weight: .medium))
+            }
+            .foregroundColor(.white)
+            .padding(.horizontal, AppTheme.Spacing.sm)
+            .padding(.vertical, 6)
+            .background(
+                Capsule()
+                    .fill(color)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// MARK: - Skin Journal Card
+struct SkinJournalCard: View {
+    @State private var selectedMood = 0
+    @State private var selectedConditions = Set<String>()
+    @State private var noteText = ""
+    
+    private let moods = ["😊", "😌", "😐", "😕", "😢"]
+    private let conditions = ["Redness", "Dryness", "Breakout", "Glowy"]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            // Header
+            HStack {
+                Text("Skin Journal")
+                    .font(AppTheme.Typography.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(AppTheme.textPrimary)
+                
+                Spacer()
+                
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 14))
+                    .foregroundColor(AppTheme.primaryColor)
+            }
+            
+            // Prompt
+            Text("How does your skin feel today?")
+                .font(AppTheme.Typography.body)
+                .foregroundColor(AppTheme.textPrimary)
+            
+            // Mood Selection
+            HStack(spacing: AppTheme.Spacing.md) {
+                ForEach(0..<moods.count, id: \.self) { index in
+                    Button(action: { selectedMood = index }) {
+                        Text(moods[index])
+                            .font(.system(size: 24))
+                            .frame(width: 40, height: 40)
+                            .background(
+                                Circle()
+                                    .fill(selectedMood == index ? AppTheme.primaryColor.opacity(0.1) : Color.clear)
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            
+            // Skin Condition Tags
+            HStack(spacing: AppTheme.Spacing.sm) {
+                ForEach(conditions, id: \.self) { condition in
+                    Button(action: {
+                        if selectedConditions.contains(condition) {
+                            selectedConditions.remove(condition)
+                        } else {
+                            selectedConditions.insert(condition)
+                        }
+                    }) {
+                        Text(condition)
+                            .font(AppTheme.Typography.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(selectedConditions.contains(condition) ? .white : AppTheme.textPrimary)
+                            .padding(.horizontal, AppTheme.Spacing.sm)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(selectedConditions.contains(condition) ? AppTheme.primaryColor : AppTheme.primaryColor.opacity(0.1))
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            
+            // Note Input
+            TextField("Add a note...", text: $noteText)
+                .font(AppTheme.Typography.body)
+                .foregroundColor(AppTheme.textPrimary)
+                .padding(AppTheme.Spacing.md)
+                .background(
+                    RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                        .fill(AppTheme.backgroundColor)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                                .stroke(AppTheme.textSecondary.opacity(0.2), lineWidth: 1)
+                        )
+                )
+        }
+        .padding(AppTheme.Spacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
+        )
+    }
+}
+
 // MARK: - UV Index Card
 struct UVIndexCard: View {
     var body: some View {
@@ -1026,7 +1323,7 @@ struct UVIndexCard: View {
                 .font(.system(size: 32, weight: .bold))
                 .foregroundColor(.orange)
             
-            Text("High UV – Wear sunscreen and limit sun exposure.")
+            Text("Şapka/gölge, SPF50+, öğlen kaçın.")
                 .font(AppTheme.Typography.caption)
                 .foregroundColor(AppTheme.textSecondary)
                 .multilineTextAlignment(.leading)
@@ -1058,11 +1355,11 @@ struct HumidityCard: View {
                     .foregroundColor(AppTheme.textPrimary)
             }
             
-            Text("40%")
+            Text("45%")
                 .font(.system(size: 32, weight: .bold))
                 .foregroundColor(.blue)
             
-            Text("Moderate humidity – Balanced skin condition.")
+            Text("Denge iyi — normal rutin.")
                 .font(AppTheme.Typography.caption)
                 .foregroundColor(AppTheme.textSecondary)
                 .multilineTextAlignment(.leading)
@@ -1111,7 +1408,7 @@ struct PollutionLevelCard: View {
                         )
                 }
                 
-                Text("Low pollution – Minimal impact on skin.")
+                Text("Normal; antioksidan iyi fikir.")
                     .font(AppTheme.Typography.caption)
                     .foregroundColor(AppTheme.textSecondary)
                     .multilineTextAlignment(.leading)
@@ -3135,3 +3432,4 @@ struct ProductCardView: View {
         )
     }
     }
+

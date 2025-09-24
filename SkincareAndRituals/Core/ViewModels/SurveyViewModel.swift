@@ -16,12 +16,9 @@ class SurveyViewModel: ObservableObject {
     }
     
     private func checkUserStatus() {
-        let userDefaults = UserDefaults.standard
-        let hasCompletedOnboarding = userDefaults.bool(forKey: "has_completed_onboarding")
-        isNewUser = !hasCompletedOnboarding
-        
-        // For testing purposes, you can set this to true to test new user flow
-        isNewUser = true // Set to true for testing with new user flow
+        // For testing purposes, set isNewUser to false
+        // Change this value to test different flows: true for new user, false for existing user
+        isNewUser = false
     }
     
     // Survey questions
@@ -105,11 +102,8 @@ class SurveyViewModel: ObservableObject {
         
         // Show face analysis for new users before marking onboarding as completed
         if isNewUser {
-            print("🔴 Setting showFaceAnalysis = true")
             showFaceAnalysis = true
-            // Don't set isNewUser = false here, let completeFaceAnalysis() handle it
         } else {
-            print("🔴 Setting isOnboardingComplete = true")
             // Navigate directly to main app for existing users
             isOnboardingComplete = true
         }
@@ -121,25 +115,18 @@ class SurveyViewModel: ObservableObject {
     
     func completeFaceAnalysis() {
         // Face analysis completed, navigate to main app
-        print("🔴 Face analysis completed, navigating to main app")
-        print("🔴 Before: showFaceAnalysis = \(showFaceAnalysis), isOnboardingComplete = \(isOnboardingComplete), isNewUser = \(isNewUser)")
-        
         // Set all flags at once to prevent navigation conflicts
         showFaceAnalysis = false
         isOnboardingComplete = true
-        isNewUser = false
-        
-        print("🔴 After: showFaceAnalysis = \(showFaceAnalysis), isOnboardingComplete = \(isOnboardingComplete), isNewUser = \(isNewUser)")
+        // Keep isNewUser value as set in checkUserStatus() for testing
+        // Don't change isNewUser here - let it remain as manually set
     }
     
     func goBackToSurvey() {
         // Go back to the last question of the survey
-        print("🔴 Going back to survey from face analysis")
-        print("🔴 Before: showFaceAnalysis = \(showFaceAnalysis), currentQuestionIndex = \(currentQuestionIndex)")
         showFaceAnalysis = false
         // Set current question to the last question (index 7 for question 8)
         currentQuestionIndex = totalQuestions - 1
-        print("🔴 After: showFaceAnalysis = \(showFaceAnalysis), currentQuestionIndex = \(currentQuestionIndex), totalQuestions = \(totalQuestions)")
     }
     
     private func saveSurveyDataToUserDefaults() {
