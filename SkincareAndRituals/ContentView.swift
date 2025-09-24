@@ -852,16 +852,20 @@ struct SkincareRitualsHomeView: View {
     private func homeContent(geometry: GeometryProxy) -> some View {
         VStack(spacing: 0) {
             // Header
-            VStack(spacing: AppTheme.Spacing.md) {
+            VStack(spacing: AppTheme.Spacing.lg) {
+                // Dynamic Greeting with Animation
+                GreetingView()
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+                    .padding(.top, geometry.size.height * 0.05)
+                
                 Text("Skincare & Rituals")
                     .font(AppTheme.Typography.largeTitle)
                     .foregroundColor(AppTheme.textPrimary)
-                    .padding(.top, geometry.size.height * 0.05)
-                
+                    .padding(.bottom, AppTheme.Spacing.md)
             }
             
             ScrollView {
-                VStack(spacing: AppTheme.Spacing.lg) {
+                VStack(spacing: AppTheme.Spacing.xl) {
                     
                     // Conditional content based on isNewUser
                     if surveyViewModel.isNewUser {
@@ -872,6 +876,12 @@ struct SkincareRitualsHomeView: View {
                         HStack(spacing: AppTheme.Spacing.md) {
                             UVIndexCard()
                             HumidityCard()
+                        }
+                        
+                        // Weather Conditions
+                        HStack(spacing: AppTheme.Spacing.md) {
+                            TemperatureCard()
+                            WindCard()
                         }
                         
                         // Pollution Level Panel
@@ -886,6 +896,12 @@ struct SkincareRitualsHomeView: View {
                         HStack(spacing: AppTheme.Spacing.md) {
                             UVIndexCard()
                             HumidityCard()
+                        }
+                        
+                        // Weather Conditions
+                        HStack(spacing: AppTheme.Spacing.md) {
+                            TemperatureCard()
+                            WindCard()
                         }
                         
                         // Pollution Level Panel
@@ -1037,9 +1053,9 @@ struct TodaysRoutineCard: View {
     @State private var completedSteps = Set<String>()
     
     private let routineSteps = [
-        ("Cleanser", "bottle.fill"),
+        ("Cleanser", "soap.fill"),
         ("Serum", "drop.fill"),
-        ("Moisturizer", "jar.fill"),
+        ("Moisturizer", "pump.fill"),
         ("SPF", "sun.max.fill")
     ]
     
@@ -1101,9 +1117,9 @@ struct TodaysRoutineCard: View {
                 ForEach(routineSteps, id: \.0) { step in
                     HStack {
                         Image(systemName: step.1)
-                            .font(.system(size: 16))
+                            .font(.system(size: 20, weight: .medium))
                             .foregroundColor(AppTheme.primaryColor)
-                            .frame(width: 24)
+                            .frame(width: 28, height: 28)
                         
                         Text(step.0)
                             .font(AppTheme.Typography.body)
@@ -1135,16 +1151,6 @@ struct TodaysRoutineCard: View {
                         .font(AppTheme.Typography.caption)
                         .foregroundColor(AppTheme.textPrimary)
                         .fontWeight(.medium)
-                    
-                    HStack(spacing: 4) {
-                        Text("Cruelty-free")
-                            .font(AppTheme.Typography.caption)
-                            .foregroundColor(AppTheme.primaryColor)
-                        
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 12))
-                            .foregroundColor(AppTheme.primaryColor)
-                    }
                 }
                 
                 Spacer()
@@ -1323,7 +1329,7 @@ struct UVIndexCard: View {
                 .font(.system(size: 32, weight: .bold))
                 .foregroundColor(.orange)
             
-            Text("Şapka/gölge, SPF50+, öğlen kaçın.")
+            Text("Wear hat/shade, SPF50+, avoid midday sun.")
                 .font(AppTheme.Typography.caption)
                 .foregroundColor(AppTheme.textSecondary)
                 .multilineTextAlignment(.leading)
@@ -1359,7 +1365,7 @@ struct HumidityCard: View {
                 .font(.system(size: 32, weight: .bold))
                 .foregroundColor(.blue)
             
-            Text("Denge iyi — normal rutin.")
+            Text("Good balance — continue normal routine.")
                 .font(AppTheme.Typography.caption)
                 .foregroundColor(AppTheme.textSecondary)
                 .multilineTextAlignment(.leading)
@@ -1408,7 +1414,7 @@ struct PollutionLevelCard: View {
                         )
                 }
                 
-                Text("Normal; antioksidan iyi fikir.")
+                Text("Normal levels; antioxidants are a good idea.")
                     .font(AppTheme.Typography.caption)
                     .foregroundColor(AppTheme.textSecondary)
                     .multilineTextAlignment(.leading)
@@ -3432,4 +3438,375 @@ struct ProductCardView: View {
         )
     }
     }
+
+// MARK: - Weather Cards
+struct TemperatureCard: View {
+    @State private var temperature: Double = 22.0 // Simulated temperature
+    @State private var location: String = "Istanbul"
+    
+    private var temperatureLevel: TemperatureLevel {
+        switch temperature {
+        case ..<0:
+            return .veryCold
+        case 0..<10:
+            return .cold
+        case 10..<20:
+            return .mild
+        case 20..<30:
+            return .warm
+        case 30..<40:
+            return .hot
+        default:
+            return .veryHot
+        }
+    }
+    
+    private var cardColor: Color {
+        switch temperatureLevel {
+        case .veryCold:
+            return Color.blue.opacity(0.1)
+        case .cold:
+            return Color.blue.opacity(0.2)
+        case .mild:
+            return Color.green.opacity(0.1)
+        case .warm:
+            return Color.orange.opacity(0.1)
+        case .hot:
+            return Color.orange.opacity(0.2)
+        case .veryHot:
+            return Color.red.opacity(0.2)
+        }
+    }
+    
+    private var borderColor: Color {
+        switch temperatureLevel {
+        case .veryCold:
+            return Color.blue
+        case .cold:
+            return Color.blue.opacity(0.7)
+        case .mild:
+            return Color.green
+        case .warm:
+            return Color.orange
+        case .hot:
+            return Color.orange.opacity(0.8)
+        case .veryHot:
+            return Color.red
+        }
+    }
+    
+    private var skinImpact: String {
+        switch temperatureLevel {
+        case .veryCold:
+            return "Extreme cold can cause skin dryness and irritation"
+        case .cold:
+            return "Cold weather may lead to dry, tight skin"
+        case .mild:
+            return "Mild temperatures are gentle on your skin"
+        case .warm:
+            return "Warm weather may increase oil production"
+        case .hot:
+            return "Hot weather can cause dehydration and sun sensitivity"
+        case .veryHot:
+            return "Extreme heat requires extra hydration and sun protection"
+        }
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            HStack {
+                Image(systemName: "thermometer")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(borderColor)
+                
+                Text("Temperature")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(AppTheme.textPrimary)
+                
+                Spacer()
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(Int(temperature))°C")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(borderColor)
+                
+                Text(location)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(AppTheme.textSecondary)
+            }
+            
+            Text(skinImpact)
+                .font(.system(size: 11, weight: .regular))
+                .foregroundColor(AppTheme.textSecondary)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+        }
+        .padding(AppTheme.Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                .fill(cardColor)
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                        .stroke(borderColor, lineWidth: 1)
+                )
+        )
+    }
+}
+
+struct WindCard: View {
+    @State private var windSpeed: Double = 15.0 // Simulated wind speed in km/h
+    @State private var windDirection: String = "NW"
+    
+    private var windLevel: WindLevel {
+        switch windSpeed {
+        case ..<5:
+            return .calm
+        case 5..<15:
+            return .light
+        case 15..<30:
+            return .moderate
+        case 30..<50:
+            return .strong
+        case 50..<70:
+            return .veryStrong
+        default:
+            return .extreme
+        }
+    }
+    
+    private var cardColor: Color {
+        switch windLevel {
+        case .calm:
+            return Color.green.opacity(0.1)
+        case .light:
+            return Color.blue.opacity(0.1)
+        case .moderate:
+            return Color.orange.opacity(0.1)
+        case .strong:
+            return Color.orange.opacity(0.2)
+        case .veryStrong:
+            return Color.red.opacity(0.1)
+        case .extreme:
+            return Color.red.opacity(0.2)
+        }
+    }
+    
+    private var borderColor: Color {
+        switch windLevel {
+        case .calm:
+            return Color.green
+        case .light:
+            return Color.blue
+        case .moderate:
+            return Color.orange
+        case .strong:
+            return Color.orange.opacity(0.8)
+        case .veryStrong:
+            return Color.red
+        case .extreme:
+            return Color.red
+        }
+    }
+    
+    private var skinImpact: String {
+        switch windLevel {
+        case .calm:
+            return "Gentle conditions are ideal for skin health"
+        case .light:
+            return "Light breeze may help cool your skin naturally"
+        case .moderate:
+            return "Moderate wind can cause mild skin dryness"
+        case .strong:
+            return "Strong wind may lead to skin irritation and dryness"
+        case .veryStrong:
+            return "Very strong wind can cause significant skin dehydration"
+        case .extreme:
+            return "Extreme wind conditions require extra skin protection"
+        }
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            HStack {
+                Image(systemName: "wind")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(borderColor)
+                
+                Text("Wind")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(AppTheme.textPrimary)
+                
+                Spacer()
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(Int(windSpeed)) km/h")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(borderColor)
+                
+                Text("\(windDirection)")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(AppTheme.textSecondary)
+            }
+            
+            Text(skinImpact)
+                .font(.system(size: 11, weight: .regular))
+                .foregroundColor(AppTheme.textSecondary)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+        }
+        .padding(AppTheme.Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                .fill(cardColor)
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                        .stroke(borderColor, lineWidth: 1)
+                )
+        )
+    }
+}
+
+// MARK: - Weather Enums
+enum TemperatureLevel {
+    case veryCold, cold, mild, warm, hot, veryHot
+}
+
+enum WindLevel {
+    case calm, light, moderate, strong, veryStrong, extreme
+}
+
+// MARK: - Greeting System
+struct GreetingView: View {
+    @State private var currentTime = Date()
+    @State private var animationOffset: CGFloat = 0
+    @State private var animationOpacity: Double = 0
+    
+    private let userName = "Beyza" // This could be dynamic from user profile
+    
+    private var timeOfDay: TimeOfDay {
+        let hour = Calendar.current.component(.hour, from: currentTime)
+        switch hour {
+        case 5..<12:
+            return .morning
+        case 12..<17:
+            return .afternoon
+        case 17..<21:
+            return .evening
+        default:
+            return .night
+        }
+    }
+    
+    private var greetingText: String {
+        switch timeOfDay {
+        case .morning:
+            return "Good Morning, \(userName)"
+        case .afternoon:
+            return "Good Afternoon, \(userName)"
+        case .evening:
+            return "Good Evening, \(userName)"
+        case .night:
+            return "Good Night, \(userName)"
+        }
+    }
+    
+    private var greetingIcon: String {
+        switch timeOfDay {
+        case .morning:
+            return "sun.max.fill"
+        case .afternoon:
+            return "sun.max"
+        case .evening:
+            return "sunset.fill"
+        case .night:
+            return "moon.stars.fill"
+        }
+    }
+    
+    private var greetingColor: Color {
+        switch timeOfDay {
+        case .morning:
+            return Color.orange.opacity(0.8)
+        case .afternoon:
+            return Color.orange.opacity(0.7)
+        case .evening:
+            return Color.purple.opacity(0.8)
+        case .night:
+            return Color.blue.opacity(0.8)
+        }
+    }
+    
+    var body: some View {
+        HStack(spacing: AppTheme.Spacing.md) {
+            // Greeting Text
+            Text(greetingText)
+                .font(AppTheme.Typography.title2)
+                .fontWeight(.medium)
+                .foregroundColor(AppTheme.textPrimary)
+                .opacity(animationOpacity)
+                .animation(
+                    Animation.easeInOut(duration: 1.5),
+                    value: animationOpacity
+                )
+            
+            Spacer()
+            
+            // Animated Icon - Modern Design
+            ZStack {
+                // Background circle for modern look
+                Circle()
+                    .fill(greetingColor.opacity(0.15))
+                    .frame(width: 50, height: 50)
+                    .scaleEffect(animationOpacity)
+                    .animation(
+                        Animation.easeInOut(duration: 1.0),
+                        value: animationOpacity
+                    )
+                
+                // Icon
+                Image(systemName: greetingIcon)
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundColor(greetingColor)
+                    .offset(y: animationOffset)
+                    .opacity(animationOpacity)
+                    .animation(
+                        Animation.easeInOut(duration: 2.0)
+                            .repeatForever(autoreverses: true),
+                        value: animationOffset
+                    )
+            }
+        }
+        .padding(.horizontal, AppTheme.Spacing.lg)
+        .padding(.vertical, AppTheme.Spacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white.opacity(0.1))
+                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        )
+        .onAppear {
+            startAnimations()
+        }
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
+            currentTime = Date()
+        }
+    }
+    
+    private func startAnimations() {
+        withAnimation(.easeInOut(duration: 1.0)) {
+            animationOpacity = 1.0
+        }
+        
+        withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+            animationOffset = -5
+        }
+    }
+}
+
+enum TimeOfDay {
+    case morning, afternoon, evening, night
+}
 
