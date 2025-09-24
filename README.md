@@ -10,6 +10,13 @@ Modern SwiftUI tabanlı iOS uygulaması - kişiselleştirilmiş cilt bakımı ru
 - **Responsive Tasarım**: Tüm iPhone boyutları için optimize edilmiş
 - **Dark Mode Desteği**: Otomatik tema değişimi
 - **Animasyonlar**: Smooth geçişler ve kullanıcı deneyimi
+- **Tab Bar Navigation**: 5 ana sekme ile kolay navigasyon
+- **Product Scanner**: Ürün tarama ve analiz özelliği
+- **Face Analysis**: Yüz analizi ve cilt durumu değerlendirmesi
+- **Skin Journal**: Günlük cilt durumu takibi
+- **Routine Tracking**: Sabah ve akşam rutin takibi
+- **Daily Tips**: 365 günlük cilt bakım ipuçları
+- **Product Database**: Ürün veritabanı ve detaylı bilgiler
 
 ## 📱 Ekranlar
 
@@ -26,6 +33,20 @@ Modern SwiftUI tabanlı iOS uygulaması - kişiselleştirilmiş cilt bakımı ru
 5. **Motivasyon**: Cilt bakım hedefleri (çoklu seçim)
 6. **Bütçe**: Skincare bütçe aralığı seçimi
 
+### 3. Ana Ekranlar (Tab Bar)
+- **🏠 Home**: Ana dashboard ve rutin takibi
+- **🔍 Products**: Ürün arama ve detayları
+- **📷 Scanner**: Ürün tarama ve analiz
+- **👤 Profile**: Kullanıcı profili ve ayarlar
+- **🔬 Analysis**: Yüz analizi ve cilt durumu
+
+### 4. Özel Özellikler
+- **Skin Journal**: Günlük cilt durumu takibi
+- **Morning/Evening Routine**: Rehberli rutin takibi
+- **Daily Tips**: 365 günlük cilt bakım ipuçları
+- **Product Database**: Detaylı ürün bilgileri
+- **Face Analysis**: AI destekli yüz analizi
+
 ## 🏗️ Proje Yapısı
 
 ```
@@ -33,24 +54,62 @@ SkincareAndRituals/
 ├── Features/
 │   ├── Onboarding/
 │   │   └── OnboardingView.swift
-│   └── Survey/
-│       ├── SurveyView.swift
-│       └── QuestionViews.swift
+│   ├── Survey/
+│   │   ├── SurveyView.swift
+│   │   └── QuestionViews.swift
+│   ├── Home/
+│   │   └── SkincareRitualsHomeView.swift
+│   ├── Products/
+│   │   ├── ProductsView.swift
+│   │   └── ProductDetailView.swift
+│   ├── Profile/
+│   │   ├── ProfileView.swift
+│   │   ├── MySkinProfileView.swift
+│   │   └── AppSettingsView.swift
+│   ├── Scanner/
+│   │   └── ProductScannerView.swift
+│   ├── FaceAnalysis/
+│   │   ├── FaceAnalysisView.swift
+│   │   └── FaceAnalysisViewModel.swift
+│   └── Explore/
+│       └── ExploreRoutinesView.swift
 ├── Core/
 │   ├── Models/
-│   │   └── SurveyModels.swift
+│   │   ├── SurveyModels.swift
+│   │   ├── ProductModels.swift
+│   │   ├── ProfileModels.swift
+│   │   ├── AppTab.swift
+│   │   └── SkincareTips.swift
 │   └── ViewModels/
-│       └── SurveyViewModel.swift
+│       ├── SurveyViewModel.swift
+│       ├── ProductsViewModel.swift
+│       └── ProductDetailViewModel.swift
 ├── UI/
 │   ├── Components/
-│   │   └── CommonComponents.swift
-│   └── Styles/
-│       └── AppTheme.swift
+│   │   ├── CommonComponents.swift
+│   │   ├── AppTabBar.swift
+│   │   ├── ProductCardView.swift
+│   │   └── FlaggedIngredientView.swift
+│   ├── Styles/
+│   │   └── AppTheme.swift
+│   └── Views/
+│       └── RootContainerView.swift
 ├── Resources/
-│   └── Assets/
-│       └── Assets.xcassets/
+│   ├── Assets/
+│   │   └── Assets.xcassets/
+│   │       ├── AppIcon.appiconset/
+│   │       ├── PrimaryColor.colorset/
+│   │       ├── SecondaryColor.colorset/
+│   │       ├── BackgroundColor.colorset/
+│   │       ├── SurfaceColor.colorset/
+│   │       ├── TextPrimary.colorset/
+│   │       └── TextSecondary.colorset/
+│   └── SampleProducts.json
+├── Preview Content/
+│   └── Preview Assets.xcassets/
 ├── SkincareAndRitualsApp.swift
-└── ContentView.swift
+├── ContentView.swift
+└── Info.plist
 ```
 
 ## 🎨 Tasarım Sistemi
@@ -141,14 +200,22 @@ struct SurveyResponse: Codable {
 
 ## 🎯 Gelecek Özellikler
 
-- [ ] Chat entegrasyonu ile cilt analizi
-- [ ] Kişiselleştirilmiş ürün önerileri
-- [ ] Rutin takip sistemi
-- [ ] Push notifications
-- [ ] Sosyal medya entegrasyonu
-- [ ] Ürün veritabanı
-- [ ] Kullanıcı profilleri
-- [ ] İlerleme takibi
+- [x] ✅ Tab Bar Navigation sistemi
+- [x] ✅ Product Scanner özelliği
+- [x] ✅ Face Analysis modülü
+- [x] ✅ Skin Journal günlük takip
+- [x] ✅ Morning/Evening Routine tracking
+- [x] ✅ Daily Tips sistemi (365 gün)
+- [x] ✅ Product Database
+- [x] ✅ Enhanced UI/UX tasarımı
+- [ ] 🔄 Chat entegrasyonu ile cilt analizi
+- [ ] 🔄 Kişiselleştirilmiş ürün önerileri
+- [ ] 🔄 Push notifications
+- [ ] 🔄 Sosyal medya entegrasyonu
+- [ ] 🔄 Kullanıcı profilleri
+- [ ] 🔄 İlerleme takibi
+- [ ] 🔄 Cloud sync
+- [ ] 🔄 Offline mode
 
 ## 🤝 Katkıda Bulunma
 
