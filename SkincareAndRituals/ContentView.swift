@@ -1085,7 +1085,7 @@ struct MorningRoutineCard: View {
                 .multilineTextAlignment(.leading)
         }
         .padding(AppTheme.Spacing.md)
-        .background(
+                        .background(
             RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
                 .fill(AppTheme.surfaceColor)
                 .appShadow(AppTheme.Shadows.small)
@@ -1129,7 +1129,7 @@ struct EveningRoutineCard: View {
                 .multilineTextAlignment(.leading)
         }
         .padding(AppTheme.Spacing.md)
-        .background(
+                        .background(
             RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
                 .fill(AppTheme.surfaceColor)
                 .appShadow(AppTheme.Shadows.small)
@@ -1249,11 +1249,11 @@ struct EveningRoutineStartOptionsView: View {
                     Text("How do you want to start?")
                         .font(AppTheme.Typography.title1)
                         .fontWeight(.bold)
-                        .foregroundColor(AppTheme.textPrimary)
+                            .foregroundColor(AppTheme.textPrimary)
                         .multilineTextAlignment(.center)
-                    
+                        
                     Text("Choose your preferred way to begin your evening skincare routine")
-                        .font(AppTheme.Typography.body)
+                            .font(AppTheme.Typography.body)
                         .foregroundColor(AppTheme.textSecondary)
                         .multilineTextAlignment(.center)
                 }
@@ -1271,11 +1271,11 @@ struct EveningRoutineStartOptionsView: View {
                     }
                 }
                 .padding(.horizontal, AppTheme.Spacing.lg)
-                
-                Spacer()
-                
+                        
+                        Spacer()
+                        
                 // Start Button
-                Button(action: {
+                        Button(action: {
                     if selectedOption != nil {
                         showingRoutineGuide = true
                     }
@@ -1342,7 +1342,7 @@ struct RoutineStartOptionButton: View {
                 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 20))
+                                .font(.system(size: 20))
                         .foregroundColor(AppTheme.primaryColor)
                 }
             }
@@ -1355,9 +1355,9 @@ struct RoutineStartOptionButton: View {
                             .stroke(isSelected ? AppTheme.primaryColor : Color.clear, lineWidth: 2)
                     )
             )
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
 }
 
 // MARK: - Routine Guide View
@@ -1393,7 +1393,7 @@ struct RoutineGuideView: View {
                 // Overlay Content
                 VStack {
                     // Header
-                    HStack {
+            HStack {
                         Button("Cancel") {
                             dismiss()
                         }
@@ -1431,7 +1431,7 @@ struct RoutineGuideView: View {
                                     .foregroundColor(option.color)
                                 
                                 Text(option.title)
-                                    .font(AppTheme.Typography.caption)
+                        .font(AppTheme.Typography.caption)
                                     .foregroundColor(AppTheme.textSecondary)
                                 
                                 Spacer()
@@ -1453,7 +1453,7 @@ struct RoutineGuideView: View {
                             Text(routineSteps[currentStep].0)
                                 .font(AppTheme.Typography.title2)
                                 .fontWeight(.bold)
-                                .foregroundColor(AppTheme.textPrimary)
+                        .foregroundColor(AppTheme.textPrimary)
                         }
                         
                         // Instructions
@@ -1556,7 +1556,7 @@ struct EveningRoutineGuideView: View {
     
     var body: some View {
         NavigationView {
-            ZStack {
+                ZStack {
                 // Camera Background (only when mirror is on)
                 if isMirrorOn {
                     RoutineCameraPreview()
@@ -1642,11 +1642,11 @@ struct EveningRoutineGuideView: View {
                         Text("\(timeRemaining)s")
                             .font(.system(size: 48, weight: .bold))
                             .foregroundColor(AppTheme.primaryColor)
-                    }
-                    .padding(AppTheme.Spacing.lg)
-                    .background(
-                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
-                            .fill(Color.white)
+        }
+        .padding(AppTheme.Spacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
+                .fill(Color.white)
                             .appShadow(AppTheme.Shadows.medium)
                     )
                     .padding(.horizontal, AppTheme.Spacing.md)
@@ -1755,93 +1755,193 @@ struct ActionButton: View {
 struct SkinJournalCard: View {
     @State private var selectedMood = 0
     @State private var selectedConditions = Set<String>()
-    @State private var noteText = ""
+    @State private var isExpanded = false
+    @State private var sparkleRotation = 0.0
+    @State private var isAnimating = false
     
     private let moods = ["😊", "😌", "😐", "😕", "😢"]
     private let conditions = ["Redness", "Dryness", "Breakout", "Glowy"]
     
     var body: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            // Header
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+            // Header with animation
             HStack {
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.yellow)
+                        .rotationEffect(.degrees(sparkleRotation))
+                        .animation(.linear(duration: 2.0).repeatForever(autoreverses: false), value: sparkleRotation)
+                    
                 Text("Skin Journal")
                     .font(AppTheme.Typography.headline)
                     .fontWeight(.bold)
-                    .foregroundColor(AppTheme.textPrimary)
+                        .foregroundColor(.white)
+                }
                 
                 Spacer()
                 
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 14))
-                    .foregroundColor(AppTheme.primaryColor)
-            }
-            
-            // Prompt
-            Text("How does your skin feel today?")
-                .font(AppTheme.Typography.body)
-                .foregroundColor(AppTheme.textPrimary)
-            
-            // Mood Selection
-            HStack(spacing: AppTheme.Spacing.md) {
-                ForEach(0..<moods.count, id: \.self) { index in
-                    Button(action: { selectedMood = index }) {
-                        Text(moods[index])
-                            .font(.system(size: 24))
-                            .frame(width: 40, height: 40)
-                            .background(
-                                Circle()
-                                    .fill(selectedMood == index ? AppTheme.primaryColor.opacity(0.1) : Color.clear)
-                            )
+                Button(action: { 
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                        isExpanded.toggle()
                     }
-                    .buttonStyle(PlainButtonStyle())
+                }) {
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
+                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: isExpanded)
                 }
             }
             
-            // Skin Condition Tags
-            HStack(spacing: AppTheme.Spacing.sm) {
+            if isExpanded {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+                    // Fun prompt with emoji
+                    HStack {
+                        Text("✨")
+                            .font(.system(size: 20))
+            Text("How does your skin feel today?")
+                .font(AppTheme.Typography.body)
+                            .fontWeight(.medium)
+                            .foregroundColor(.white)
+                    }
+                    
+                    // Enhanced Mood Selection
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                        Text("Mood Check")
+                            .font(AppTheme.Typography.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white.opacity(0.8))
+                            .textCase(.uppercase)
+                            .tracking(0.5)
+                        
+            HStack(spacing: AppTheme.Spacing.md) {
+                ForEach(0..<moods.count, id: \.self) { index in
+                                Button(action: { 
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                        selectedMood = index
+                                    }
+                                }) {
+                        Text(moods[index])
+                                        .font(.system(size: 28))
+                                        .frame(width: 50, height: 50)
+                            .background(
+                                Circle()
+                                                .fill(selectedMood == index ? Color.white.opacity(0.3) : Color.clear)
+                                                .overlay(
+                                                    Circle()
+                                                        .stroke(selectedMood == index ? Color.white.opacity(0.5) : Color.clear, lineWidth: 2)
+                            )
+                                        )
+                                        .scaleEffect(selectedMood == index ? 1.1 : 1.0)
+                                        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: selectedMood)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                    }
+                    
+                    // Enhanced Skin Condition Tags
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                        Text("Skin Conditions")
+                            .font(AppTheme.Typography.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white.opacity(0.8))
+                            .textCase(.uppercase)
+                            .tracking(0.5)
+                        
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: AppTheme.Spacing.sm) {
                 ForEach(conditions, id: \.self) { condition in
                     Button(action: {
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                         if selectedConditions.contains(condition) {
                             selectedConditions.remove(condition)
                         } else {
                             selectedConditions.insert(condition)
+                                        }
                         }
                     }) {
                         Text(condition)
                             .font(AppTheme.Typography.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(selectedConditions.contains(condition) ? .white : AppTheme.textPrimary)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(selectedConditions.contains(condition) ? .white : .white.opacity(0.9))
                             .padding(.horizontal, AppTheme.Spacing.sm)
-                            .padding(.vertical, 6)
+                                        .padding(.vertical, 8)
+                                        .frame(maxWidth: .infinity)
                             .background(
-                                Capsule()
-                                    .fill(selectedConditions.contains(condition) ? AppTheme.primaryColor : AppTheme.primaryColor.opacity(0.1))
-                            )
+                                            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.small)
+                                                .fill(selectedConditions.contains(condition) ? Color.white.opacity(0.3) : Color.white.opacity(0.1))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: AppTheme.CornerRadius.small)
+                                                        .stroke(selectedConditions.contains(condition) ? Color.white.opacity(0.5) : Color.white.opacity(0.2), lineWidth: 1)
+                                                )
+                                        )
+                                        .scaleEffect(selectedConditions.contains(condition) ? 1.02 : 1.0)
+                                        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: selectedConditions)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
             }
-            
-            // Note Input
-            TextField("Add a note...", text: $noteText)
-                .font(AppTheme.Typography.body)
-                .foregroundColor(AppTheme.textPrimary)
-                .padding(AppTheme.Spacing.md)
-                .background(
-                    RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
-                        .fill(AppTheme.backgroundColor)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
-                                .stroke(AppTheme.textSecondary.opacity(0.2), lineWidth: 1)
-                        )
-                )
+                    }
+                }
+                .transition(.asymmetric(
+                    insertion: .opacity.combined(with: .move(edge: .top)),
+                    removal: .opacity.combined(with: .move(edge: .top))
+                ))
+            }
         }
         .padding(AppTheme.Spacing.lg)
         .background(
+            ZStack {
+                // Gradient background
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.blue.opacity(0.8),
+                        Color.purple.opacity(0.7),
+                        Color.pink.opacity(0.6)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                
+                // Animated background pattern
             RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
-                .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                Color.white.opacity(0.1),
+                                Color.clear
+                            ]),
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: 150
+                        )
+                    )
+                    .scaleEffect(isAnimating ? 1.1 : 0.9)
+                    .animation(
+                        Animation.easeInOut(duration: 3.0)
+                            .repeatForever(autoreverses: true),
+                        value: isAnimating
+                    )
+            }
         )
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large))
+        .appShadow(AppTheme.Shadows.medium)
+        .scaleEffect(isAnimating ? 1.01 : 1.0)
+        .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: isAnimating)
+        .onAppear {
+            startAnimations()
+        }
+    }
+    
+    private func startAnimations() {
+        withAnimation(.easeInOut(duration: 0.8)) {
+            isAnimating = true
+        }
+        
+        withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
+            sparkleRotation = 360
+        }
     }
 }
 
