@@ -12,6 +12,7 @@
 		A1234567890123456789012E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789012F /* Assets.xcassets */; };
 		A1234567890123456789013A /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789013B /* Preview Assets.xcassets */; };
 		A1234567890123456789013C /* SurveyModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789013D /* SurveyModels.swift */; };
+		8505AE9D9AC3488E9C30D8BA /* SkincareTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D35813C11A48F09FAB0457 /* SkincareTips.swift */; };
 		A1234567890123456789013E /* SurveyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789013F /* SurveyViewModel.swift */; };
 		A1234567890123456789014A /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789014B /* AppTheme.swift */; };
 		A1234567890123456789014C /* CommonComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789014D /* CommonComponents.swift */; };
@@ -26,6 +27,7 @@
 		A1234567890123456789012F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1234567890123456789013B /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		A1234567890123456789013D /* SurveyModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyModels.swift; sourceTree = "<group>"; };
+		30D35813C11A48F09FAB0457 /* SkincareTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkincareTips.swift; sourceTree = "<group>"; };
 		A1234567890123456789013F /* SurveyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurveyViewModel.swift; sourceTree = "<group>"; };
 		A1234567890123456789014B /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		A1234567890123456789014D /* CommonComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonComponents.swift; sourceTree = "<group>"; };
@@ -73,6 +75,7 @@
 			isa = PBXGroup;
 			children = (
 				A1234567890123456789013D /* SurveyModels.swift */,
+				30D35813C11A48F09FAB0457 /* SkincareTips.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -232,6 +235,7 @@
 			files = (
 				A1234567890123456789012C /* ContentView.swift in Sources */,
 				A1234567890123456789013C /* SurveyModels.swift in Sources */,
+				8505AE9D9AC3488E9C30D8BA /* SkincareTips.swift in Sources */,
 				A1234567890123456789013E /* SurveyViewModel.swift in Sources */,
 				A1234567890123456789014A /* AppTheme.swift in Sources */,
 				A1234567890123456789014C /* CommonComponents.swift in Sources */,

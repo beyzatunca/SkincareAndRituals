@@ -888,7 +888,9 @@ struct SkincareRitualsHomeView: View {
                         PollutionLevelCard()
                     } else {
                         // Existing user: Show Today's Routine + Skin Journal + Environmental Factors
-                        TodaysRoutineCard()
+                        MorningRoutineCard()
+                        
+                        EveningRoutineCard()
                         
                         SkinJournalCard()
                         
@@ -906,6 +908,9 @@ struct SkincareRitualsHomeView: View {
                         
                         // Pollution Level Panel
                         PollutionLevelCard()
+                        
+                        // Did you know? Section
+                        DidYouKnowCard()
                     }
                 }
                 .padding(.horizontal, AppTheme.Spacing.lg)
@@ -1047,146 +1052,675 @@ struct AddRoutineCard: View {
     }
 }
 
-// MARK: - Today's Routine Card
-struct TodaysRoutineCard: View {
-    @State private var selectedTime = "Morning"
-    @State private var completedSteps = Set<String>()
-    
-    private let routineSteps = [
-        ("Cleanser", "soap.fill"),
-        ("Serum", "drop.fill"),
-        ("Moisturizer", "pump.fill"),
-        ("SPF", "sun.max.fill")
-    ]
+// MARK: - Morning Routine Card
+struct MorningRoutineCard: View {
+    @State private var isCompleted = false
+    @State private var showingStartOptions = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             // Header
             HStack {
-                Text("Today's Routine")
+                Text("Morning Routine")
                     .font(AppTheme.Typography.headline)
                     .fontWeight(.bold)
                     .foregroundColor(AppTheme.textPrimary)
                 
                 Spacer()
                 
-                HStack(spacing: 4) {
-                    ForEach(0..<3) { _ in
-                        Circle()
-                            .fill(AppTheme.textSecondary.opacity(0.3))
-                            .frame(width: 4, height: 4)
-                    }
+                Button(action: {
+                    showingStartOptions = true
+                }) {
+                    Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 24))
+                        .foregroundColor(isCompleted ? .green : AppTheme.textSecondary)
                 }
+                .buttonStyle(PlainButtonStyle())
             }
             
-            // Time Selection
-            HStack(spacing: AppTheme.Spacing.sm) {
-                Button(action: { selectedTime = "Morning" }) {
-                    Text("Morning")
-                        .font(AppTheme.Typography.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(selectedTime == "Morning" ? .white : AppTheme.textSecondary)
-                        .padding(.horizontal, AppTheme.Spacing.md)
-                        .padding(.vertical, AppTheme.Spacing.sm)
-                        .background(
-                            Capsule()
-                                .fill(selectedTime == "Morning" ? AppTheme.primaryColor : Color.clear)
-                        )
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                Button(action: { selectedTime = "Evening" }) {
-                    Text("Evening")
-                        .font(AppTheme.Typography.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(selectedTime == "Evening" ? .white : AppTheme.textSecondary)
-                        .padding(.horizontal, AppTheme.Spacing.md)
-                        .padding(.vertical, AppTheme.Spacing.sm)
-                        .background(
-                            Capsule()
-                                .fill(selectedTime == "Evening" ? AppTheme.primaryColor : Color.clear)
-                        )
-                }
-                .buttonStyle(PlainButtonStyle())
+            // Description
+            Text("Start your day with a guided skincare routine")
+                .font(AppTheme.Typography.body)
+                .foregroundColor(AppTheme.textSecondary)
+                .multilineTextAlignment(.leading)
+        }
+        .padding(AppTheme.Spacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                .fill(AppTheme.surfaceColor)
+                .appShadow(AppTheme.Shadows.small)
+        )
+        .sheet(isPresented: $showingStartOptions) {
+            RoutineStartOptionsView(isCompleted: $isCompleted)
+        }
+    }
+}
+
+// MARK: - Evening Routine Card
+struct EveningRoutineCard: View {
+    @State private var isCompleted = false
+    @State private var showingStartOptions = false
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            // Header
+            HStack {
+                Text("Evening Routine")
+                    .font(AppTheme.Typography.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(AppTheme.textPrimary)
                 
                 Spacer()
+                
+                Button(action: {
+                    showingStartOptions = true
+                }) {
+                    Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 24))
+                        .foregroundColor(isCompleted ? .green : AppTheme.textSecondary)
+                }
+                .buttonStyle(PlainButtonStyle())
             }
             
-            // Routine Steps
-            VStack(spacing: AppTheme.Spacing.sm) {
-                ForEach(routineSteps, id: \.0) { step in
+            // Description
+            Text("End your day with a guided skincare routine")
+                .font(AppTheme.Typography.body)
+                .foregroundColor(AppTheme.textSecondary)
+                .multilineTextAlignment(.leading)
+        }
+        .padding(AppTheme.Spacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                .fill(AppTheme.surfaceColor)
+                .appShadow(AppTheme.Shadows.small)
+        )
+        .sheet(isPresented: $showingStartOptions) {
+            EveningRoutineStartOptionsView(isCompleted: $isCompleted)
+        }
+    }
+}
+
+// MARK: - Routine Start Options View
+struct RoutineStartOptionsView: View {
+    @Binding var isCompleted: Bool
+    @Environment(\.dismiss) private var dismiss
+    @State private var showingRoutineGuide = false
+    @State private var selectedOption: RoutineStartOption?
+    
+    private let startOptions: [RoutineStartOption] = [
+        RoutineStartOption(title: "Do routine with Spotify", icon: "music.note", color: .purple),
+        RoutineStartOption(title: "Do routine with Radio", icon: "radio", color: .purple),
+        RoutineStartOption(title: "Do routine with Daily News", icon: "newspaper", color: .purple),
+        RoutineStartOption(title: "Do routine with Mindfulness", icon: "leaf", color: .green),
+        RoutineStartOption(title: "Do routine with Silent", icon: "moon", color: .gray)
+    ]
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: AppTheme.Spacing.xl) {
+                // Header
+                VStack(spacing: AppTheme.Spacing.md) {
+                    Text("How do you want to start?")
+                        .font(AppTheme.Typography.title1)
+                        .fontWeight(.bold)
+                        .foregroundColor(AppTheme.textPrimary)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("Choose your preferred way to begin your morning skincare routine")
+                        .font(AppTheme.Typography.body)
+                        .foregroundColor(AppTheme.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.top, AppTheme.Spacing.xl)
+                
+                // Options List
+                VStack(spacing: AppTheme.Spacing.md) {
+                    ForEach(startOptions, id: \.title) { option in
+                        RoutineStartOptionButton(
+                            option: option,
+                            isSelected: selectedOption?.title == option.title
+                        ) {
+                            selectedOption = option
+                        }
+                    }
+                }
+                .padding(.horizontal, AppTheme.Spacing.lg)
+                
+                Spacer()
+                
+                // Start Button
+                Button(action: {
+                    if selectedOption != nil {
+                        showingRoutineGuide = true
+                    }
+                }) {
+                    Text("Start Routine")
+                        .font(AppTheme.Typography.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, AppTheme.Spacing.md)
+                        .background(
+                            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                                .fill(selectedOption != nil ? AppTheme.primaryColor : AppTheme.textSecondary)
+                        )
+                }
+                .disabled(selectedOption == nil)
+                .padding(.horizontal, AppTheme.Spacing.lg)
+                .padding(.bottom, AppTheme.Spacing.xl)
+            }
+            .navigationTitle("Morning Routine")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .foregroundColor(AppTheme.primaryColor)
+                }
+            }
+        }
+        .sheet(isPresented: $showingRoutineGuide) {
+            RoutineGuideView(isCompleted: $isCompleted, startOption: selectedOption)
+        }
+    }
+}
+
+// MARK: - Evening Routine Start Options View
+struct EveningRoutineStartOptionsView: View {
+    @Binding var isCompleted: Bool
+    @Environment(\.dismiss) private var dismiss
+    @State private var showingRoutineGuide = false
+    @State private var selectedOption: RoutineStartOption?
+    
+    private let startOptions: [RoutineStartOption] = [
+        RoutineStartOption(title: "Do routine with Spotify", icon: "music.note", color: .purple),
+        RoutineStartOption(title: "Do routine with Radio", icon: "radio", color: .purple),
+        RoutineStartOption(title: "Do routine with Daily News", icon: "newspaper", color: .purple),
+        RoutineStartOption(title: "Do routine with Mindfulness", icon: "leaf", color: .green),
+        RoutineStartOption(title: "Do routine with Silent", icon: "moon", color: .gray)
+    ]
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: AppTheme.Spacing.xl) {
+                // Header
+                VStack(spacing: AppTheme.Spacing.md) {
+                    Text("How do you want to start?")
+                        .font(AppTheme.Typography.title1)
+                        .fontWeight(.bold)
+                        .foregroundColor(AppTheme.textPrimary)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("Choose your preferred way to begin your evening skincare routine")
+                        .font(AppTheme.Typography.body)
+                        .foregroundColor(AppTheme.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.top, AppTheme.Spacing.xl)
+                
+                // Options List
+                VStack(spacing: AppTheme.Spacing.md) {
+                    ForEach(startOptions, id: \.title) { option in
+                        RoutineStartOptionButton(
+                            option: option,
+                            isSelected: selectedOption?.title == option.title
+                        ) {
+                            selectedOption = option
+                        }
+                    }
+                }
+                .padding(.horizontal, AppTheme.Spacing.lg)
+                
+                Spacer()
+                
+                // Start Button
+                Button(action: {
+                    if selectedOption != nil {
+                        showingRoutineGuide = true
+                    }
+                }) {
+                    Text("Start Routine")
+                        .font(AppTheme.Typography.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, AppTheme.Spacing.md)
+                        .background(
+                            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                                .fill(selectedOption != nil ? AppTheme.primaryColor : AppTheme.textSecondary)
+                        )
+                }
+                .disabled(selectedOption == nil)
+                .padding(.horizontal, AppTheme.Spacing.lg)
+                .padding(.bottom, AppTheme.Spacing.xl)
+            }
+            .navigationTitle("Evening Routine")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .foregroundColor(AppTheme.primaryColor)
+                }
+            }
+        }
+        .sheet(isPresented: $showingRoutineGuide) {
+            EveningRoutineGuideView(isCompleted: $isCompleted, startOption: selectedOption)
+        }
+    }
+}
+
+// MARK: - Routine Start Option Model
+struct RoutineStartOption {
+    let title: String
+    let icon: String
+    let color: Color
+}
+
+// MARK: - Routine Start Option Button
+struct RoutineStartOptionButton: View {
+    let option: RoutineStartOption
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: AppTheme.Spacing.md) {
+                Image(systemName: option.icon)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(option.color)
+                    .frame(width: 24)
+                
+                Text(option.title)
+                    .font(AppTheme.Typography.body)
+                    .fontWeight(.medium)
+                    .foregroundColor(AppTheme.textPrimary)
+                
+                Spacer()
+                
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(AppTheme.primaryColor)
+                }
+            }
+            .padding(AppTheme.Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                    .fill(isSelected ? AppTheme.primaryColor.opacity(0.1) : AppTheme.surfaceColor)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                            .stroke(isSelected ? AppTheme.primaryColor : Color.clear, lineWidth: 2)
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// MARK: - Routine Guide View
+struct RoutineGuideView: View {
+    @Binding var isCompleted: Bool
+    let startOption: RoutineStartOption?
+    @Environment(\.dismiss) private var dismiss
+    @State private var currentStep = 0
+    @State private var timeRemaining = 0
+    @State private var timer: Timer?
+    @State private var showingCompletion = false
+    @State private var isMirrorOn = true
+    
+    private let routineSteps = [
+        ("Cleanser", "soap.fill", "Apply gently in circular motions", 30),
+        ("Serum", "drop.fill", "Pat gently until absorbed", 45),
+        ("Moisturizer", "pump.fill", "Massage in upward motions", 60),
+        ("SPF", "sun.max.fill", "Apply evenly to face and neck", 30)
+    ]
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                // Camera Background (only when mirror is on)
+                if isMirrorOn {
+                    RoutineCameraPreview()
+                        .ignoresSafeArea()
+                } else {
+                    Color.black
+                        .ignoresSafeArea()
+                }
+                
+                // Overlay Content
+                VStack {
+                    // Header
                     HStack {
-                        Image(systemName: step.1)
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(AppTheme.primaryColor)
-                            .frame(width: 28, height: 28)
-                        
-                        Text(step.0)
-                            .font(AppTheme.Typography.body)
-                            .foregroundColor(AppTheme.textPrimary)
+                        Button("Cancel") {
+                            dismiss()
+                        }
+                        .foregroundColor(.white)
                         
                         Spacer()
                         
-                        Button(action: {
-                            if completedSteps.contains(step.0) {
-                                completedSteps.remove(step.0)
-                            } else {
-                                completedSteps.insert(step.0)
-                            }
-                        }) {
-                            Image(systemName: completedSteps.contains(step.0) ? "checkmark.circle.fill" : "circle")
-                                .font(.system(size: 20))
-                                .foregroundColor(completedSteps.contains(step.0) ? AppTheme.primaryColor : AppTheme.textSecondary)
+                        Text("Step \(currentStep + 1)/\(routineSteps.count)")
+                            .foregroundColor(.white)
+                            .fontWeight(.semibold)
+                        
+                        Spacer()
+                        
+                        // Mirror Toggle
+                        HStack(spacing: 4) {
+                            Image(systemName: "mirror")
+                                .font(.system(size: 16))
+                            Toggle("", isOn: $isMirrorOn)
+                                .toggleStyle(SwitchToggleStyle(tint: .green))
+                                .scaleEffect(0.8)
                         }
-                        .buttonStyle(PlainButtonStyle())
+                        .foregroundColor(.white)
                     }
-                    .padding(.vertical, 4)
-                }
-            }
-            
-            // Progress and Additional Info
-            HStack {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-                    Text("\(completedSteps.count)/\(routineSteps.count) steps")
-                        .font(AppTheme.Typography.caption)
-                        .foregroundColor(AppTheme.textPrimary)
-                        .fontWeight(.medium)
-                }
-                
-                Spacer()
-                
-                // Progress Circle
-                ZStack {
-                    Circle()
-                        .stroke(AppTheme.primaryColor.opacity(0.2), lineWidth: 3)
-                        .frame(width: 50, height: 50)
+                    .padding()
                     
-                    Circle()
-                        .trim(from: 0, to: Double(completedSteps.count) / Double(routineSteps.count))
-                        .stroke(AppTheme.primaryColor, style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                        .frame(width: 50, height: 50)
-                        .rotationEffect(.degrees(-90))
+                    Spacer()
                     
-                    Text("\(completedSteps.count)/\(routineSteps.count)")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(AppTheme.textPrimary)
+                    // Product Info Card
+                    VStack(spacing: AppTheme.Spacing.md) {
+                        // Selected Option Indicator
+                        if let option = startOption {
+                            HStack {
+                                Image(systemName: option.icon)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(option.color)
+                                
+                                Text(option.title)
+                                    .font(AppTheme.Typography.caption)
+                                    .foregroundColor(AppTheme.textSecondary)
+                                
+                                Spacer()
+                            }
+                            .padding(.horizontal, AppTheme.Spacing.md)
+                            .padding(.vertical, AppTheme.Spacing.sm)
+                            .background(
+                                RoundedRectangle(cornerRadius: AppTheme.CornerRadius.small)
+                                    .fill(option.color.opacity(0.1))
+                            )
+                        }
+                        
+                        // Product Icon and Name
+                        HStack {
+                            Image(systemName: routineSteps[currentStep].1)
+                                .font(.system(size: 32, weight: .medium))
+                                .foregroundColor(AppTheme.primaryColor)
+                            
+                            Text(routineSteps[currentStep].0)
+                                .font(AppTheme.Typography.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(AppTheme.textPrimary)
+                        }
+                        
+                        // Instructions
+                        Text(routineSteps[currentStep].2)
+                            .font(AppTheme.Typography.body)
+                            .foregroundColor(AppTheme.textSecondary)
+                            .multilineTextAlignment(.center)
+                        
+                        // Timer
+                        Text("\(timeRemaining)s")
+                            .font(.system(size: 48, weight: .bold))
+                            .foregroundColor(AppTheme.primaryColor)
+                    }
+                    .padding(AppTheme.Spacing.lg)
+                    .background(
+                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
+                            .fill(Color.white)
+                            .appShadow(AppTheme.Shadows.medium)
+                    )
+                    .padding(.horizontal, AppTheme.Spacing.md)
+                    
+                    // Skip Button
+                    Button("Skip") {
+                        nextStep()
+                    }
+                    .font(AppTheme.Typography.headline)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, AppTheme.Spacing.xl)
+                    .padding(.vertical, AppTheme.Spacing.md)
+                    .background(
+                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                            .fill(Color.gray.opacity(0.7))
+                    )
+                    .padding(.horizontal, AppTheme.Spacing.md)
+                    .padding(.bottom, AppTheme.Spacing.lg)
                 }
-            }
-            
-            // Action Buttons
-            HStack(spacing: AppTheme.Spacing.sm) {
-                ActionButton(icon: "music.note", text: "Spotify", color: .purple)
-                ActionButton(icon: "radio", text: "Radio", color: .purple)
-                ActionButton(icon: "newspaper", text: "Daily news", color: .purple)
-                ActionButton(icon: "leaf", text: "Mintot.", color: .pink)
             }
         }
-        .padding(AppTheme.Spacing.lg)
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
-                .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
-        )
+        .onAppear {
+            timeRemaining = routineSteps[currentStep].3
+            startTimer()
+        }
+        .onChange(of: timeRemaining) { newValue in
+            if newValue == 0 && currentStep < routineSteps.count - 1 {
+                nextStep()
+            } else if newValue == 0 && currentStep == routineSteps.count - 1 {
+                showingCompletion = true
+            }
+        }
+        .alert("Congratulations! 🎉", isPresented: $showingCompletion) {
+            Button("Done") {
+                isCompleted = true
+                dismiss()
+            }
+        } message: {
+            Text("You've completed your morning skincare routine!")
+        }
+    }
+    
+    private func startTimer() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            if timeRemaining > 0 {
+                timeRemaining -= 1
+            } else {
+                timer?.invalidate()
+            }
+        }
+    }
+    
+    private func nextStep() {
+        timer?.invalidate()
+        if currentStep < routineSteps.count - 1 {
+            currentStep += 1
+            timeRemaining = routineSteps[currentStep].3
+        } else {
+            showingCompletion = true
+        }
+    }
+}
+
+// MARK: - Evening Routine Guide View
+struct EveningRoutineGuideView: View {
+    @Binding var isCompleted: Bool
+    let startOption: RoutineStartOption?
+    @Environment(\.dismiss) private var dismiss
+    @State private var currentStep = 0
+    @State private var timeRemaining = 0
+    @State private var timer: Timer?
+    @State private var showingCompletion = false
+    @State private var isMirrorOn = true
+    
+    private let routineSteps = [
+        ("Cleanser", "soap.fill", "Remove makeup and cleanse thoroughly", 45),
+        ("Toner", "drop.fill", "Apply with cotton pad in gentle strokes", 30),
+        ("Serum", "drop.fill", "Pat gently until absorbed", 45),
+        ("Moisturizer", "pump.fill", "Massage in upward motions", 60),
+        ("Night Cream", "jar.fill", "Apply generously for overnight care", 30)
+    ]
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                // Camera Background (only when mirror is on)
+                if isMirrorOn {
+                    RoutineCameraPreview()
+                        .ignoresSafeArea()
+                } else {
+                    Color.black
+                        .ignoresSafeArea()
+                }
+                
+                // Overlay Content
+                VStack {
+                    // Header
+                    HStack {
+                        Button("Cancel") {
+                            dismiss()
+                        }
+                        .foregroundColor(.white)
+                        
+                        Spacer()
+                        
+                        Text("Step \(currentStep + 1)/\(routineSteps.count)")
+                            .foregroundColor(.white)
+                            .fontWeight(.semibold)
+                        
+                        Spacer()
+                        
+                        // Mirror Toggle
+                        HStack(spacing: 4) {
+                            Image(systemName: "mirror")
+                                .font(.system(size: 16))
+                            Toggle("", isOn: $isMirrorOn)
+                                .toggleStyle(SwitchToggleStyle(tint: .green))
+                                .scaleEffect(0.8)
+                        }
+                        .foregroundColor(.white)
+                    }
+                    .padding()
+                    
+                    Spacer()
+                    
+                    // Product Info Card
+                    VStack(spacing: AppTheme.Spacing.md) {
+                        // Selected Option Indicator
+                        if let option = startOption {
+                            HStack {
+                                Image(systemName: option.icon)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(option.color)
+                                
+                                Text(option.title)
+                                    .font(AppTheme.Typography.caption)
+                                    .foregroundColor(AppTheme.textSecondary)
+                                
+                                Spacer()
+                            }
+                            .padding(.horizontal, AppTheme.Spacing.md)
+                            .padding(.vertical, AppTheme.Spacing.sm)
+                            .background(
+                                RoundedRectangle(cornerRadius: AppTheme.CornerRadius.small)
+                                    .fill(option.color.opacity(0.1))
+                            )
+                        }
+                        
+                        // Product Icon and Name
+                        HStack {
+                            Image(systemName: routineSteps[currentStep].1)
+                                .font(.system(size: 32, weight: .medium))
+                                .foregroundColor(AppTheme.primaryColor)
+                            
+                            Text(routineSteps[currentStep].0)
+                                .font(AppTheme.Typography.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(AppTheme.textPrimary)
+                        }
+                        
+                        // Instructions
+                        Text(routineSteps[currentStep].2)
+                            .font(AppTheme.Typography.body)
+                            .foregroundColor(AppTheme.textSecondary)
+                            .multilineTextAlignment(.center)
+                        
+                        // Timer
+                        Text("\(timeRemaining)s")
+                            .font(.system(size: 48, weight: .bold))
+                            .foregroundColor(AppTheme.primaryColor)
+                    }
+                    .padding(AppTheme.Spacing.lg)
+                    .background(
+                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
+                            .fill(Color.white)
+                            .appShadow(AppTheme.Shadows.medium)
+                    )
+                    .padding(.horizontal, AppTheme.Spacing.md)
+                    
+                    // Skip Button
+                    Button("Skip") {
+                        nextStep()
+                    }
+                    .font(AppTheme.Typography.headline)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, AppTheme.Spacing.xl)
+                    .padding(.vertical, AppTheme.Spacing.md)
+                    .background(
+                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                            .fill(Color.gray.opacity(0.7))
+                    )
+                    .padding(.horizontal, AppTheme.Spacing.md)
+                    .padding(.bottom, AppTheme.Spacing.lg)
+                }
+            }
+        }
+        .onAppear {
+            timeRemaining = routineSteps[currentStep].3
+            startTimer()
+        }
+        .onChange(of: timeRemaining) { newValue in
+            if newValue == 0 && currentStep < routineSteps.count - 1 {
+                nextStep()
+            } else if newValue == 0 && currentStep == routineSteps.count - 1 {
+                showingCompletion = true
+            }
+        }
+        .alert("Congratulations! 🎉", isPresented: $showingCompletion) {
+            Button("Done") {
+                isCompleted = true
+                dismiss()
+            }
+        } message: {
+            Text("You've completed your evening skincare routine!")
+        }
+    }
+    
+    private func startTimer() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            if timeRemaining > 0 {
+                timeRemaining -= 1
+            } else {
+                timer?.invalidate()
+            }
+        }
+    }
+    
+    private func nextStep() {
+        timer?.invalidate()
+        if currentStep < routineSteps.count - 1 {
+            currentStep += 1
+            timeRemaining = routineSteps[currentStep].3
+        } else {
+            showingCompletion = true
+        }
+    }
+}
+
+// MARK: - Routine Camera Preview View
+struct RoutineCameraPreview: View {
+    var body: some View {
+        Rectangle()
+            .fill(Color.black)
+            .overlay(
+                Text("Camera Preview")
+                    .foregroundColor(.white)
+                    .font(.title)
+            )
     }
 }
 
@@ -3808,5 +4342,130 @@ struct GreetingView: View {
 
 enum TimeOfDay {
     case morning, afternoon, evening, night
+}
+
+// MARK: - Did You Know Card
+struct DidYouKnowCard: View {
+    @State private var currentTip: DailyTip?
+    @State private var tipIndex: Int = 0
+    @State private var isAnimating = false
+    @State private var sparkleRotation = 0.0
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            // Header with animated sparkles
+            HStack {
+                Text("Did you know?")
+                    .font(AppTheme.Typography.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                
+                Spacer()
+                
+                HStack(spacing: 4) {
+                    ForEach(0..<3, id: \.self) { index in
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(.yellow)
+                            .rotationEffect(.degrees(sparkleRotation + Double(index * 120)))
+                            .scaleEffect(isAnimating ? 1.2 : 0.8)
+                            .animation(
+                                Animation.easeInOut(duration: 1.5)
+                                    .repeatForever(autoreverses: true)
+                                    .delay(Double(index) * 0.2),
+                                value: isAnimating
+                            )
+                    }
+                }
+            }
+            
+            // Tip Content with fun styling
+            if let tip = currentTip {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                    Text(tip.text)
+                        .font(AppTheme.Typography.body)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(nil)
+                        .opacity(isAnimating ? 1.0 : 0.7)
+                        .animation(.easeInOut(duration: 0.8), value: isAnimating)
+                }
+            } else {
+                HStack {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(0.8)
+                    
+                    Text("Loading fun tip...")
+                        .font(AppTheme.Typography.body)
+                        .foregroundColor(.white.opacity(0.8))
+                }
+            }
+        }
+        .padding(AppTheme.Spacing.lg)
+        .background(
+            ZStack {
+                // Gradient background
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.purple.opacity(0.8),
+                        Color.pink.opacity(0.6),
+                        Color.orange.opacity(0.7)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                
+                // Animated background pattern
+                RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                Color.white.opacity(0.1),
+                                Color.clear
+                            ]),
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: 100
+                        )
+                    )
+                    .scaleEffect(isAnimating ? 1.1 : 0.9)
+                    .animation(
+                        Animation.easeInOut(duration: 3.0)
+                            .repeatForever(autoreverses: true),
+                        value: isAnimating
+                    )
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large))
+        .appShadow(AppTheme.Shadows.medium)
+        .scaleEffect(isAnimating ? 1.02 : 1.0)
+        .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: isAnimating)
+        .onAppear {
+            loadDailyTip()
+            startAnimations()
+        }
+    }
+    
+    private func loadDailyTip() {
+        // Get current day of year (1-365)
+        let calendar = Calendar.current
+        let dayOfYear = calendar.ordinality(of: .day, in: .year, for: Date()) ?? 1
+        
+        // Use day of year to get the tip (with bounds checking)
+        let tipIndex = (dayOfYear - 1) % SKINCARE_TIPS_365.count
+        currentTip = SKINCARE_TIPS_365[tipIndex]
+    }
+    
+    private func startAnimations() {
+        withAnimation(.easeInOut(duration: 0.8)) {
+            isAnimating = true
+        }
+        
+        withAnimation(.linear(duration: 4.0).repeatForever(autoreverses: false)) {
+            sparkleRotation = 360
+        }
+    }
 }
 
