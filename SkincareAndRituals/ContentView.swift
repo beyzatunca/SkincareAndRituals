@@ -2639,6 +2639,18 @@ struct ProductDetailView: View {
                         Text(product.description)
                             .font(AppTheme.Typography.body)
                             .foregroundColor(AppTheme.textSecondary)
+                        
+                        // Fit Score Section
+                        HStack {
+                            Spacer()
+                            
+                            Text("97% fit for you")
+                                .font(AppTheme.Typography.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(AppTheme.primaryColor)
+                            
+                            Spacer()
+                        }
                     }
                     .padding(.horizontal, AppTheme.Spacing.lg)
                     
@@ -2662,6 +2674,7 @@ struct ProductDetailView: View {
                     
                     // Product Info
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                        // Price Section
                         HStack {
                             Text("Price")
                                 .font(AppTheme.Typography.headline)
@@ -2675,19 +2688,85 @@ struct ProductDetailView: View {
                                 .foregroundColor(AppTheme.primaryColor)
                         }
                         
+                        // Rating Section
                         if product.rating > 0 {
-                            HStack {
-                                HStack(spacing: 4) {
-                                    ForEach(0..<5) { index in
-                                        Image(systemName: index < Int(product.rating) ? "star.fill" : "star")
-                                            .font(.caption)
-                                            .foregroundColor(.yellow)
-                                    }
+                            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                                HStack {
+                                    Text("Rating")
+                                        .font(AppTheme.Typography.headline)
+                                        .foregroundColor(AppTheme.textPrimary)
+                                    
+                                    Spacer()
                                 }
                                 
-                                Text(String(format: "%.1f", product.rating))
-                                    .font(AppTheme.Typography.subheadline)
-                                    .foregroundColor(AppTheme.textSecondary)
+                                HStack(spacing: AppTheme.Spacing.sm) {
+                                    HStack(spacing: 4) {
+                                        ForEach(0..<5) { index in
+                                            Image(systemName: index < Int(product.rating) ? "star.fill" : 
+                                                  (index == Int(product.rating) && product.rating.truncatingRemainder(dividingBy: 1) > 0) ? "star.leadinghalf.filled" : "star")
+                                                .font(.system(size: 16))
+                                                .foregroundColor(.yellow)
+                                        }
+                                    }
+                                    
+                                    Text(String(format: "%.1f", product.rating))
+                                        .font(AppTheme.Typography.headline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(AppTheme.textPrimary)
+                                    
+                                    Text("(\(Int.random(in: 100...2000)) reviews)")
+                                        .font(AppTheme.Typography.body)
+                                        .foregroundColor(AppTheme.textSecondary)
+                                    
+                                    Spacer()
+                                }
+                            }
+                        }
+                        
+                        // Product Attributes
+                        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                            Text("Product Attributes")
+                                .font(AppTheme.Typography.headline)
+                                .foregroundColor(AppTheme.textPrimary)
+                            
+                            HStack(spacing: AppTheme.Spacing.sm) {
+                                // Cruelty Free
+                                HStack(spacing: 4) {
+                                    Image(systemName: "heart.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.white)
+                                    
+                                    Text("Cruelty Free")
+                                        .font(AppTheme.Typography.caption)
+                                        .fontWeight(.medium)
+                                        .foregroundColor(.white)
+                                }
+                                .padding(.horizontal, AppTheme.Spacing.sm)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(AppTheme.primaryColor)
+                                )
+                                
+                                // Vegan
+                                if Bool.random() {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "leaf.fill")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.white)
+                                        
+                                        Text("Vegan")
+                                            .font(AppTheme.Typography.caption)
+                                            .fontWeight(.medium)
+                                            .foregroundColor(.white)
+                                    }
+                                    .padding(.horizontal, AppTheme.Spacing.sm)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Capsule()
+                                            .fill(Color.green)
+                                    )
+                                }
                                 
                                 Spacer()
                             }
@@ -2753,6 +2832,47 @@ struct ProductDetailView: View {
                                 }
                             }
                         }
+                        
+                        // All Ingredients Section
+                        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                            Text("All Ingredients")
+                                .font(AppTheme.Typography.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(AppTheme.textPrimary)
+                            
+                            Text("Aqua, Glycerin, Hyaluronic Acid, Niacinamide, Vitamin C, Sodium Hyaluronate, Ceramides, Peptides, Retinol, Salicylic Acid, Alpha Hydroxy Acids, Beta Hydroxy Acids, Antioxidants, Preservatives, Fragrance")
+                                .font(AppTheme.Typography.caption)
+                                .foregroundColor(AppTheme.textSecondary)
+                                .lineLimit(nil)
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+                    
+                    // Buy Online Button
+                    VStack(spacing: AppTheme.Spacing.md) {
+                        Button(action: {
+                            // Open Amazon link
+                            if let url = URL(string: "https://amazon.com") {
+                                UIApplication.shared.open(url)
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: "cart.fill")
+                                    .font(.system(size: 16, weight: .medium))
+                                
+                                Text("Buy Online from Amazon")
+                                    .font(AppTheme.Typography.headline)
+                                    .fontWeight(.semibold)
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, AppTheme.Spacing.md)
+                            .background(
+                                RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
+                                    .fill(Color.orange)
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding(.horizontal, AppTheme.Spacing.lg)
                     .padding(.bottom, 100) // Space for navigation
@@ -2948,21 +3068,20 @@ struct ProductCardView: View {
     @ObservedObject var viewModel: ProductsViewModel
     
     var body: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            // Product Icon/Placeholder with Favorite Button
+        VStack(alignment: .leading, spacing: 0) {
+            // Product Image/Icon - Much Larger
             ZStack(alignment: .topTrailing) {
                 VStack(spacing: AppTheme.Spacing.sm) {
                     Image(systemName: product.category.icon)
-                        .font(.system(size: 32))
+                        .font(.system(size: 80))
                         .foregroundColor(AppTheme.primaryColor)
                     
                     Text(product.category.rawValue)
-                        .font(AppTheme.Typography.caption)
-                        .fontWeight(.medium)
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundColor(AppTheme.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
-                .frame(height: 80)
+                .frame(height: 180)
                 .background(
                     RoundedRectangle(cornerRadius: AppTheme.CornerRadius.medium)
                         .fill(AppTheme.softPink.opacity(0.1))
@@ -2987,106 +3106,32 @@ struct ProductCardView: View {
                 .padding(.trailing, 8)
             }
             
-            // Product Info
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                // Brand
-                Text(product.brand)
-                    .font(AppTheme.Typography.subheadline)
-                    .foregroundColor(AppTheme.primaryColor)
-                
-                // Product Name
-                Text(product.name)
-                    .font(AppTheme.Typography.headline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(AppTheme.textPrimary)
-                    .lineLimit(2)
-                
-                // Volume (if available)
-                if !product.description.isEmpty {
-                    Text(product.description)
-                        .font(AppTheme.Typography.caption)
+                // Product Info - Much Smaller Text
+                VStack(alignment: .leading, spacing: 4) {
+                    // Brand - Very Small
+                    Text(product.brand)
+                        .font(.system(size: 10, weight: .medium))
                         .foregroundColor(AppTheme.textSecondary)
+                    
+                    // Product Name - Smaller
+                    Text(product.name)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(AppTheme.textPrimary)
+                        .lineLimit(2)
+                    
+                    // Category - Very Small
+                    Text(product.category.rawValue)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(AppTheme.primaryColor)
                         .lineLimit(1)
                 }
-                
-                // Rating
-                if product.rating > 0 {
-                    HStack(spacing: 4) {
-                        HStack(spacing: 2) {
-                            ForEach(0..<5) { index in
-                                Image(systemName: index < Int(product.rating) ? "star.fill" : 
-                                      (index == Int(product.rating) && product.rating.truncatingRemainder(dividingBy: 1) > 0) ? "star.leadinghalf.filled" : "star")
-                                    .font(.caption)
-                                    .foregroundColor(.yellow)
-                            }
-                        }
-                        
-                        Text(String(format: "%.1f", product.rating))
-                            .font(AppTheme.Typography.caption)
-                            .foregroundColor(AppTheme.textSecondary)
-                        
-                        Text("(\(Int.random(in: 100...2000)))")
-                            .font(AppTheme.Typography.caption)
-                            .foregroundColor(AppTheme.textSecondary)
-                    }
-                }
-                
-                // Price and Tags
-                HStack {
-                    Text("$\(String(format: "%.2f", product.price))")
-                        .font(AppTheme.Typography.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(AppTheme.textPrimary)
-                    
-                    Spacer()
-                    
-                    if Bool.random() {
-                        Text("Recommended")
-                            .font(AppTheme.Typography.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, AppTheme.Spacing.sm)
-                            .padding(.vertical, 4)
-                            .background(
-                                Capsule()
-                                    .fill(Color.green)
-                            )
-                    }
-                }
-                
-                // Attribute Tags
-                HStack(spacing: AppTheme.Spacing.sm) {
-                    Text("Cruelty Free")
-                        .font(AppTheme.Typography.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, AppTheme.Spacing.sm)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule()
-                                .fill(AppTheme.primaryColor.opacity(0.8))
-                        )
-                    
-                    if Bool.random() {
-                        Text("Vegan")
-                            .font(AppTheme.Typography.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, AppTheme.Spacing.sm)
-                            .padding(.vertical, 4)
-                            .background(
-                                Capsule()
-                                    .fill(AppTheme.primaryColor.opacity(0.8))
-                            )
-                    }
-                }
-            }
+            .padding(.horizontal, AppTheme.Spacing.sm)
+            .padding(.bottom, AppTheme.Spacing.sm)
         }
-        .padding(AppTheme.Spacing.md)
         .background(
             RoundedRectangle(cornerRadius: AppTheme.CornerRadius.large)
                 .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
         )
     }
     }
