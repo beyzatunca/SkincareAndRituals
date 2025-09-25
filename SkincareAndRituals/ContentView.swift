@@ -952,28 +952,7 @@ struct SkincareRitualsHomeView: View {
     
     // MARK: - Profile Content
     private func profileContent(geometry: GeometryProxy) -> some View {
-        VStack(spacing: AppTheme.Spacing.lg) {
-            Text("Profile")
-                .font(AppTheme.Typography.largeTitle)
-                .foregroundColor(AppTheme.textPrimary)
-                .padding(.top, geometry.size.height * 0.1)
-            
-            Spacer()
-            
-            VStack(spacing: AppTheme.Spacing.lg) {
-                Image(systemName: "person.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(AppTheme.primaryColor)
-                
-                Text("Manage your skincare profile and preferences")
-                    .font(AppTheme.Typography.body)
-                    .foregroundColor(AppTheme.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, AppTheme.Spacing.lg)
-            }
-            
-            Spacer()
-        }
+        ProfileView()
     }
 }
 
@@ -6165,4 +6144,526 @@ struct RoutineCardView: View {
         )
     }
 }
+
+// MARK: - Profile View
+struct ProfileView: View {
+    @StateObject private var viewModel = ProfileViewModel()
+    @State private var showingActionSheet = false
+    @State private var showingAppSettings = false
+    @State private var showingMySkinProfile = false
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 0) {
+                    // Profile Header
+                    profileHeaderSection
+                    
+                    // Scans & Diary Card
+                    scansAndDiaryCard
+                    
+                    // Profile Sections
+                    profileSectionsView
+                    
+                    // Log Out Button
+                    logOutButton
+                    
+                    Spacer(minLength: 100)
+                }
+            }
+            .background(Color(hex: "F8F8F8"))
+            .navigationTitle("Profile")
+            .navigationBarTitleDisplayMode(.large)
+        }
+        .alert("Log Out", isPresented: $viewModel.showingLogOutAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Log Out", role: .destructive) {
+                viewModel.logOut()
+            }
+        } message: {
+            Text("Are you sure you want to log out?")
+        }
+        .sheet(isPresented: $showingAppSettings, onDismiss: {
+            showingAppSettings = false
+        }) {
+            Text("App Settings")
+                .navigationTitle("App Settings")
+        }
+        .sheet(isPresented: $showingMySkinProfile) {
+            Text("My Skin Profile")
+                .navigationTitle("My Skin Profile")
+        }
+    }
+    
+    // MARK: - Profile Header Section
+    private var profileHeaderSection: some View {
+        VStack(spacing: 16) {
+            // Avatar with edit button
+            ZStack {
+                Circle()
+                    .fill(Color(hex: "E5E7EB"))
+                    .frame(width: 80, height: 80)
+                
+                Text("😊")
+                    .font(.system(size: 40))
+                
+                // Edit button
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            // Handle edit profile
+                        }) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 20, height: 20)
+                                .background(Color(hex: "8B5CF6"))
+                                .clipShape(Circle())
+                        }
+                    }
+                }
+                .frame(width: 80, height: 80)
+            }
+            
+            // User name
+            Text(viewModel.userProfile.name)
+                .font(.system(size: 28, weight: .bold))
+                .foregroundColor(Color(hex: "111111"))
+        }
+        .padding(.top, 20)
+        .padding(.bottom, 24)
+    }
+    
+    // MARK: - Scans & Diary Card
+    private var scansAndDiaryCard: some View {
+        Button(action: {
+            viewModel.handleAction(.faceScans)
+        }) {
+            HStack {
+                Image(systemName: "calendar")
+                    .font(.system(size: 20))
+                    .foregroundColor(Color(hex: "6B7280"))
+                
+                Text("Scans & Diary - September")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(hex: "111111"))
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(hex: "6B7280"))
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .padding(.horizontal, 16)
+        .padding(.bottom, 24)
+    }
+    
+    // MARK: - Profile Sections View
+    private var profileSectionsView: some View {
+        VStack(spacing: 32) {
+            ForEach(ProfileSection.allCases) { section in
+                profileSectionView(section: section)
+            }
+        }
+        .padding(.horizontal, 16)
+    }
+    
+    // MARK: - Profile Section View
+    private func profileSectionView(section: ProfileSection) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Section Header
+            Text(section.rawValue)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(Color(hex: "6B7280"))
+                .padding(.horizontal, 4)
+            
+            // Section Items
+            VStack(spacing: 0) {
+                ForEach(Array(section.items.enumerated()), id: \.element.id) { index, item in
+                    profileMenuItemView(item: item, isLast: index == section.items.count - 1)
+                }
+            }
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+    }
+    
+    // MARK: - Profile Menu Item View
+    private func profileMenuItemView(item: ProfileMenuItem, isLast: Bool) -> some View {
+        HStack(spacing: 16) {
+            // Icon
+            Image(systemName: item.icon)
+                .font(.system(size: 20))
+                .foregroundColor(Color(hex: "6B7280"))
+                .frame(width: 24, height: 24)
+            
+            // Title
+            Text(item.title)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.primary)
+            
+            Spacer()
+            
+            // Badge
+            if let badge = item.badge {
+                Text(badge)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color(hex: "8B5CF6"))
+                    .cornerRadius(12)
+            }
+            
+            // Arrow
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Color(hex: "9CA3AF"))
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        .onTapGesture {
+            print("🔴 Button tapped: \(item.action.rawValue)")
+            if item.action == .appSettings || item.action == .mySkinProfile {
+                // Handle App Settings and My Skin Profile directly in ProfileView
+                print("🔴 Calling ProfileView.handleAction for: \(item.action.rawValue)")
+                handleAction(item.action)
+            } else {
+                print("🔴 Calling ProfileViewModel.handleAction for: \(item.action.rawValue)")
+                viewModel.handleAction(item.action)
+            }
+        }
+        .overlay(
+            // Divider
+            VStack {
+                Spacer()
+                if !isLast {
+                    Rectangle()
+                        .fill(Color(hex: "E5E7EB"))
+                        .frame(height: 1)
+                        .padding(.leading, 60)
+                }
+            }
+        )
+    }
+    
+    
+    // MARK: - Log Out Button
+    private var logOutButton: some View {
+        Button(action: {
+            viewModel.handleAction(.logOut)
+        }) {
+            Text("Log Out")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color(hex: "111111"))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color(hex: "E5E7EB"))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(PlainButtonStyle())
+        .padding(.horizontal, 16)
+        .padding(.top, 32)
+    }
+    
+    // MARK: - Action Handling
+    private func handleAction(_ action: ProfileAction) {
+        switch action {
+        case .mySkinProfile:
+            // Navigate to skin profile - ensure state is reset first
+            print("🟡 MySkinProfile action - current state: \(showingMySkinProfile)")
+            if showingMySkinProfile {
+                print("🟡 Resetting showingMySkinProfile to false")
+                showingMySkinProfile = false
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                print("🟡 Setting showingMySkinProfile to true")
+                showingMySkinProfile = true
+            }
+        case .routinePreferences:
+            // Navigate to routine preferences
+            print("Navigate to Routine Preferences")
+        case .routineForYou:
+            // Navigate to routine for you
+            print("Navigate to Routine for You")
+        case .myShelf:
+            // Navigate to my shelf
+            print("Navigate to My Shelf")
+        case .faceScans:
+            // Navigate to face scans
+            print("Navigate to Face Scans")
+        case .subscriptionManagement:
+            // Navigate to subscription management
+            print("Navigate to Subscription Management")
+        case .frequentlyAskedQuestions:
+            // Show FAQ
+            print("Show FAQ")
+        case .appSettings:
+            // Open app settings - ensure state is reset first
+            if showingAppSettings {
+                showingAppSettings = false
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                showingAppSettings = true
+            }
+        case .suggestFeature:
+            // Open suggest feature
+            print("Open Suggest Feature")
+        case .contactUs:
+            // Open contact us
+            print("Open Contact Us")
+        case .privacyPolicy:
+            // Show privacy policy
+            print("Show Privacy Policy")
+        case .moneyBackPolicy:
+            // Show money back policy
+            print("Show Money Back Policy")
+        case .termsOfUse:
+            // Show terms of use
+            print("Show Terms of Use")
+        case .logOut:
+            // Handle logout
+            print("Handle Logout")
+        }
+    }
+}
+
+// MARK: - Profile Menu Item
+struct ProfileMenuItem: Identifiable, Hashable {
+    let id = UUID()
+    let title: String
+    let icon: String
+    let action: ProfileAction
+    let badge: String?
+    
+    init(title: String, icon: String, action: ProfileAction, badge: String? = nil) {
+        self.title = title
+        self.icon = icon
+        self.action = action
+        self.badge = badge
+    }
+}
+
+// MARK: - Profile Action
+enum ProfileAction: String, CaseIterable {
+    case mySkinProfile = "My Skin Profile"
+    case routinePreferences = "Routine Preferences"
+    case routineForYou = "Routine for you"
+    case myShelf = "My Shelf"
+    case faceScans = "Face Scans"
+    case subscriptionManagement = "Subscription Management"
+    case frequentlyAskedQuestions = "Frequently Asked Questions"
+    case appSettings = "App Settings"
+    case suggestFeature = "Suggest a Feature"
+    case contactUs = "Contact us"
+    case privacyPolicy = "Privacy policy"
+    case moneyBackPolicy = "Money-back Policy"
+    case termsOfUse = "Terms of Use"
+    case logOut = "Log Out"
+    
+    var icon: String {
+        switch self {
+        case .mySkinProfile: return "face.smiling"
+        case .routinePreferences: return "slider.horizontal.3"
+        case .routineForYou: return "sparkles"
+        case .myShelf: return "books.vertical"
+        case .faceScans: return "viewfinder"
+        case .subscriptionManagement: return "person.crop.circle.badge.checkmark"
+        case .frequentlyAskedQuestions: return "questionmark.circle"
+        case .appSettings: return "gearshape"
+        case .suggestFeature: return "lightbulb"
+        case .contactUs: return "bubble.left.and.bubble.right"
+        case .privacyPolicy: return "hand.raised"
+        case .moneyBackPolicy: return "dollarsign.circle"
+        case .termsOfUse: return "doc.text"
+        case .logOut: return "rectangle.portrait.and.arrow.right"
+        }
+    }
+}
+
+
+// MARK: - Profile Section
+enum ProfileSection: String, CaseIterable, Identifiable {
+    case personal = "PERSONAL"
+    case needHelp = "NEED HELP?"
+    case legal = "LEGAL"
+    
+    var id: String { rawValue }
+    
+    var items: [ProfileMenuItem] {
+        switch self {
+        case .personal:
+            return [
+                ProfileMenuItem(title: "My Skin Profile", icon: ProfileAction.mySkinProfile.icon, action: .mySkinProfile),
+                ProfileMenuItem(title: "Routine Preferences", icon: ProfileAction.routinePreferences.icon, action: .routinePreferences),
+                ProfileMenuItem(title: "Routine for you", icon: ProfileAction.routineForYou.icon, action: .routineForYou),
+                ProfileMenuItem(title: "My Shelf", icon: ProfileAction.myShelf.icon, action: .myShelf),
+                ProfileMenuItem(title: "Face Scans (2)", icon: ProfileAction.faceScans.icon, action: .faceScans, badge: "2"),
+                ProfileMenuItem(title: "Subscription Management", icon: ProfileAction.subscriptionManagement.icon, action: .subscriptionManagement)
+            ]
+        case .needHelp:
+            return [
+                ProfileMenuItem(title: "Frequently Asked Questions", icon: ProfileAction.frequentlyAskedQuestions.icon, action: .frequentlyAskedQuestions),
+                ProfileMenuItem(title: "App Settings", icon: ProfileAction.appSettings.icon, action: .appSettings),
+                ProfileMenuItem(title: "Suggest a Feature", icon: ProfileAction.suggestFeature.icon, action: .suggestFeature),
+                ProfileMenuItem(title: "Contact us", icon: ProfileAction.contactUs.icon, action: .contactUs)
+            ]
+        case .legal:
+            return [
+                ProfileMenuItem(title: "Privacy policy", icon: ProfileAction.privacyPolicy.icon, action: .privacyPolicy),
+                ProfileMenuItem(title: "Money-back Policy", icon: ProfileAction.moneyBackPolicy.icon, action: .moneyBackPolicy),
+                ProfileMenuItem(title: "Terms of Use", icon: ProfileAction.termsOfUse.icon, action: .termsOfUse)
+            ]
+        }
+    }
+}
+
+// MARK: - User Profile
+struct UserProfile: Codable {
+    var name: String
+    var avatar: String?
+    var joinDate: Date
+    var subscriptionStatus: SubscriptionStatus
+    var faceScansCount: Int
+    var preferences: UserPreferences
+    
+    // Skin Profile Information
+    var gender: String
+    var ageRange: String
+    var skinType: String
+    var skinSensitivity: String
+    var skinConcerns: String
+    
+    init(name: String = "User", avatar: String? = nil, joinDate: Date = Date(), subscriptionStatus: SubscriptionStatus = .free, faceScansCount: Int = 2, preferences: UserPreferences = UserPreferences(), gender: String = "Prefer not to say", ageRange: String = "18-24", skinType: String = "Normal", skinSensitivity: String = "Not sensitive", skinConcerns: String = "Acne or pimples") {
+        self.name = name
+        self.avatar = avatar
+        self.joinDate = joinDate
+        self.subscriptionStatus = subscriptionStatus
+        self.faceScansCount = faceScansCount
+        self.preferences = preferences
+        self.gender = gender
+        self.ageRange = ageRange
+        self.skinType = skinType
+        self.skinSensitivity = skinSensitivity
+        self.skinConcerns = skinConcerns
+    }
+}
+
+// MARK: - Subscription Status
+enum SubscriptionStatus: String, CaseIterable, Codable {
+    case free = "Free"
+    case premium = "Premium"
+    case pro = "Pro"
+    
+    var displayName: String {
+        switch self {
+        case .free: return "Free Plan"
+        case .premium: return "Premium Plan"
+        case .pro: return "Pro Plan"
+        }
+    }
+    
+    var color: String {
+        switch self {
+        case .free: return "6B7280"
+        case .premium: return "8B5CF6"
+        case .pro: return "F59E0B"
+        }
+    }
+}
+
+// MARK: - User Preferences
+struct UserPreferences: Codable {
+    var notifications: Bool
+    var darkMode: Bool
+    var language: String
+    var units: String
+    
+    init(notifications: Bool = true, darkMode: Bool = false, language: String = "English", units: String = "Metric") {
+        self.notifications = notifications
+        self.darkMode = darkMode
+        self.language = language
+        self.units = units
+    }
+}
+
+// MARK: - Profile ViewModel
+@MainActor
+class ProfileViewModel: ObservableObject {
+    @Published var userProfile: UserProfile
+    @Published var showingLogOutAlert = false
+    @Published var selectedAction: ProfileAction?
+    
+    init() {
+        self.userProfile = UserProfile()
+    }
+    
+    // MARK: - Actions
+    func handleAction(_ action: ProfileAction) {
+        switch action {
+        case .logOut:
+            selectedAction = action
+            showingLogOutAlert = true
+        case .suggestFeature:
+            selectedAction = action
+            openSuggestFeature()
+        case .contactUs:
+            selectedAction = action
+            openContactUs()
+        case .appSettings:
+            // App Settings is handled in ProfileView, don't set selectedAction
+            return
+        case .mySkinProfile:
+            // My Skin Profile is handled in ProfileView, don't set selectedAction
+            return
+        default:
+            // Handle other actions
+            selectedAction = action
+            print("Selected action: \(action.rawValue)")
+        }
+    }
+    
+    private func openSuggestFeature() {
+        if let url = URL(string: "mailto:feedback@skincareandrituals.com?subject=Feature%20Suggestion") {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    private func openContactUs() {
+        if let url = URL(string: "mailto:support@skincareandrituals.com") {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    
+    func logOut() {
+        // Handle logout logic
+        print("User logged out")
+    }
+    
+    // MARK: - Computed Properties
+    var formattedJoinDate: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: userProfile.joinDate)
+    }
+    
+    var subscriptionDisplayText: String {
+        return userProfile.subscriptionStatus.displayName
+    }
+}
+
 

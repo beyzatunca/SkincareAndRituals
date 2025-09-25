@@ -26,6 +26,7 @@ enum ProfileAction: String, CaseIterable {
     case subscriptionManagement = "Subscription Management"
     case frequentlyAskedQuestions = "Frequently Asked Questions"
     case appSettings = "App Settings"
+    case suggestFeature = "Suggest a Feature"
     case contactUs = "Contact us"
     case privacyPolicy = "Privacy policy"
     case moneyBackPolicy = "Money-back Policy"
@@ -42,6 +43,7 @@ enum ProfileAction: String, CaseIterable {
         case .subscriptionManagement: return "person.crop.circle.badge.checkmark"
         case .frequentlyAskedQuestions: return "questionmark.circle"
         case .appSettings: return "gearshape"
+        case .suggestFeature: return "lightbulb"
         case .contactUs: return "bubble.left.and.bubble.right"
         case .privacyPolicy: return "hand.raised"
         case .moneyBackPolicy: return "dollarsign.circle"
@@ -75,6 +77,7 @@ enum ProfileSection: String, CaseIterable, Identifiable {
             return [
                 ProfileMenuItem(title: "Frequently Asked Questions", icon: ProfileAction.frequentlyAskedQuestions.icon, action: .frequentlyAskedQuestions),
                 ProfileMenuItem(title: "App Settings", icon: ProfileAction.appSettings.icon, action: .appSettings),
+                ProfileMenuItem(title: "Suggest a Feature", icon: ProfileAction.suggestFeature.icon, action: .suggestFeature),
                 ProfileMenuItem(title: "Contact us", icon: ProfileAction.contactUs.icon, action: .contactUs)
             ]
         case .legal:
@@ -173,6 +176,9 @@ class ProfileViewModel: ObservableObject {
         case .logOut:
             selectedAction = action
             showingLogOutAlert = true
+        case .suggestFeature:
+            selectedAction = action
+            openSuggestFeature()
         case .contactUs:
             selectedAction = action
             openContactUs()
@@ -186,6 +192,12 @@ class ProfileViewModel: ObservableObject {
             // Handle other actions
             selectedAction = action
             print("Selected action: \(action.rawValue)")
+        }
+    }
+    
+    private func openSuggestFeature() {
+        if let url = URL(string: "mailto:feedback@skincareandrituals.com?subject=Feature%20Suggestion") {
+            UIApplication.shared.open(url)
         }
     }
     

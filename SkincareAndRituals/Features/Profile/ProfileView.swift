@@ -274,6 +274,9 @@ struct ProfileView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 showingAppSettings = true
             }
+        case .suggestFeature:
+            // Open suggest feature
+            print("Open Suggest Feature")
         case .contactUs:
             // Open contact us
             print("Open Contact Us")
