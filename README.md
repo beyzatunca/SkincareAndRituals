@@ -17,6 +17,9 @@ Modern SwiftUI tabanlı iOS uygulaması - kişiselleştirilmiş cilt bakımı ru
 - **Routine Tracking**: Sabah ve akşam rutin takibi
 - **Daily Tips**: 365 günlük cilt bakım ipuçları
 - **Product Database**: Ürün veritabanı ve detaylı bilgiler
+- **DIY Skincare Recipes**: Evde yapılabilecek doğal cilt bakım tarifleri
+- **Explore Routines**: Farklı zorluk seviyelerinde cilt bakım rutinleri
+- **Skincare Application Guides**: Uygulama teknikleri ve face gym rehberleri
 
 ## 📱 Ekranlar
 
@@ -47,6 +50,27 @@ Modern SwiftUI tabanlı iOS uygulaması - kişiselleştirilmiş cilt bakımı ru
 - **Product Database**: Detaylı ürün bilgileri
 - **Face Analysis**: AI destekli yüz analizi
 
+### 5. Discovery Ekranı (Explore Tab)
+- **Explore Routines**: 6 farklı cilt bakım rutini
+  - Essential Routine (Başlangıç)
+  - Complete Routine (Orta)
+  - Power Routine (İleri)
+  - High-Performance Routine (Uzman)
+  - SOS Skincare Routine (Acil)
+  - Skin Cycling Routine (Döngüsel)
+
+- **Skincare Application & Face Gym Guides**: 20 uygulama rehberi
+  - Temizlik ürünleri (Micellar Water, Cleansing Balm, vs.)
+  - Tedavi ürünleri (Enzyme Power, Chemical Peeling, vs.)
+  - Nemlendirme ürünleri (Face Cream, Sheet Mask, vs.)
+  - Koruma ürünleri (SPF, Face Oil, vs.)
+
+- **DIY Skincare**: 4 kategoride doğal tarifler
+  - **Hydration**: Nemlendirici maskeler (2 tarif)
+  - **Brightening**: Parlaklık veren tarifler (2 tarif)
+  - **Nourishing**: Besleyici maskeler (2 tarif)
+  - **Exfoliation**: Peeling ve scrub tarifleri (2 tarif)
+
 ## 🏗️ Proje Yapısı
 
 ```
@@ -71,8 +95,7 @@ SkincareAndRituals/
 │   ├── FaceAnalysis/
 │   │   ├── FaceAnalysisView.swift
 │   │   └── FaceAnalysisViewModel.swift
-│   └── Explore/
-│       └── ExploreRoutinesView.swift
+│   └── Explore/ (Empty - ExploreRoutinesView integrated into ContentView.swift)
 ├── Core/
 │   ├── Models/
 │   │   ├── SurveyModels.swift
@@ -108,7 +131,11 @@ SkincareAndRituals/
 ├── Preview Content/
 │   └── Preview Assets.xcassets/
 ├── SkincareAndRitualsApp.swift
-├── ContentView.swift
+├── ContentView.swift (Contains all models and views)
+│   ├── Models: Routine, SkincareGuide, DIYRecipe, Recipe
+│   ├── Views: ExploreRoutinesView, RecipeCardView, RecipeDetailView
+│   ├── Sample Data: Routines, Skincare Guides, DIY Recipes, Recipes
+│   └── Components: RoutineCardView, SkincareGuideCardView, DIYRecipeCardView
 └── Info.plist
 ```
 
@@ -198,6 +225,44 @@ struct SurveyResponse: Codable {
 }
 ```
 
+## 🍯 DIY Skincare Recipes
+
+### Tarif Kategorileri
+- **Hydration**: Nemlendirici maskeler ve tedaviler
+- **Brightening**: Parlaklık veren ve aydınlatıcı tarifler
+- **Nourishing**: Besleyici ve onarıcı maskeler
+- **Exfoliation**: Peeling ve scrub tarifleri
+
+### Tarif Yapısı
+```swift
+struct Recipe: Identifiable {
+    let title: String
+    let imageName: String
+    let ingredients: [String]
+    let steps: [String]
+    let skinConcern: SkinConcern
+    let timeNeeded: Int // dakika
+    let difficulty: RecipeDifficulty
+    let category: RecipeCategory
+}
+
+enum SkinConcern: String, CaseIterable {
+    case dryness, dullness, acne, aging, sensitivity, oiliness
+}
+
+enum RecipeDifficulty: String, CaseIterable {
+    case easy = "⭐"
+    case medium = "⭐⭐"
+    case hard = "⭐⭐⭐"
+}
+```
+
+### Örnek Tarifler
+1. **Honey & Yogurt Hydrating Mask** (15 dk, ⭐ Easy)
+2. **Turmeric Brightening Mask** (10 dk, ⭐ Easy)
+3. **Oatmeal Nourishing Mask** (15 dk, ⭐ Easy)
+4. **Sugar & Coffee Scrub** (5 dk, ⭐ Easy)
+
 ## 🎯 Gelecek Özellikler
 
 - [x] ✅ Tab Bar Navigation sistemi
@@ -208,6 +273,11 @@ struct SurveyResponse: Codable {
 - [x] ✅ Daily Tips sistemi (365 gün)
 - [x] ✅ Product Database
 - [x] ✅ Enhanced UI/UX tasarımı
+- [x] ✅ Explore Routines (6 farklı rutin)
+- [x] ✅ Skincare Application Guides (20 uygulama rehberi)
+- [x] ✅ DIY Skincare Recipes (8 doğal tarif)
+- [x] ✅ Recipe Detail View with navigation
+- [x] ✅ Modern card design with blurry backgrounds
 - [ ] 🔄 Chat entegrasyonu ile cilt analizi
 - [ ] 🔄 Kişiselleştirilmiş ürün önerileri
 - [ ] 🔄 Push notifications
@@ -216,6 +286,9 @@ struct SurveyResponse: Codable {
 - [ ] 🔄 İlerleme takibi
 - [ ] 🔄 Cloud sync
 - [ ] 🔄 Offline mode
+- [ ] 🔄 Recipe favorileri ve koleksiyonları
+- [ ] 🔄 Tarif paylaşımı
+- [ ] 🔄 Malzeme listesi ve alışveriş özelliği
 
 ## 🤝 Katkıda Bulunma
 
