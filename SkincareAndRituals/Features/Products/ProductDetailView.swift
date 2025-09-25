@@ -5,6 +5,7 @@ struct ProductDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showingIngredients = false
     @State private var showingWarnings = false
+    @State private var showingFitInfo = false
     
     var body: some View {
         NavigationView {
@@ -58,12 +59,34 @@ struct ProductDetailView: View {
                     }
                 }
             }
+            .sheet(isPresented: $showingFitInfo) {
+                fitInfoSheet()
+            }
         }
     }
     
     // MARK: - Product Header Section
     private var productHeaderSection: some View {
         VStack(alignment: .leading, spacing: 8) {
+            // Fit Percentage
+            HStack {
+                Text("97% fit for you")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(hex: "111111"))
+                
+                Spacer()
+                
+                Button(action: {
+                    showingFitInfo = true
+                }) {
+                    Image(systemName: "info.circle")
+                        .font(.title2)
+                        .foregroundColor(Color(hex: "6B7280"))
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            
             Text(product.brand)
                 .font(.headline)
                 .fontWeight(.semibold)
@@ -413,6 +436,124 @@ struct ProductDetailView: View {
         .padding(.vertical, 4)
         .background(Color(hex: color).opacity(0.1))
         .clipShape(Capsule())
+    }
+    
+    // MARK: - Fit Info Sheet
+    private func fitInfoSheet() -> some View {
+        NavigationView {
+            VStack(alignment: .leading, spacing: 20) {
+                // Header
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("How we calculate your fit")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(hex: "111111"))
+                    
+                    Text("Our AI analyzes multiple factors to determine how well this product matches your skin profile.")
+                        .font(.body)
+                        .foregroundColor(Color(hex: "6B7280"))
+                        .lineSpacing(4)
+                }
+                
+                // Factors
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Evaluation Factors")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(Color(hex: "111111"))
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        fitFactorRow(
+                            title: "Skin Type Compatibility",
+                            description: "Matches your skin type (Normal, Dry, Oily, etc.)",
+                            percentage: 25
+                        )
+                        
+                        fitFactorRow(
+                            title: "Ingredient Analysis",
+                            description: "Safe ingredients for your skin concerns",
+                            percentage: 30
+                        )
+                        
+                        fitFactorRow(
+                            title: "Skin Concerns",
+                            description: "Addresses your specific skin issues",
+                            percentage: 20
+                        )
+                        
+                        fitFactorRow(
+                            title: "User Reviews",
+                            description: "Similar users' experiences and ratings",
+                            percentage: 15
+                        )
+                        
+                        fitFactorRow(
+                            title: "Allergy Risk",
+                            description: "Low risk of allergic reactions",
+                            percentage: 10
+                        )
+                    }
+                }
+                
+                // Total Score
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Total Fit Score")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(Color(hex: "111111"))
+                        
+                        Spacer()
+                        
+                        Text("97%")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(Color(hex: "10B981"))
+                    }
+                    
+                    Text("Excellent match for your skin profile")
+                        .font(.subheadline)
+                        .foregroundColor(Color(hex: "10B981"))
+                }
+                .padding()
+                .background(Color(hex: "10B981").opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .background(Color(hex: "F6F7F8"))
+            .navigationTitle("Fit Analysis")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(trailing: Button("Done") {
+                showingFitInfo = false
+            })
+        }
+    }
+    
+    private func fitFactorRow(title: String, description: String, percentage: Int) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(Color(hex: "111111"))
+                
+                Spacer()
+                
+                Text("\(percentage)%")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color(hex: "8B5CF6"))
+            }
+            
+            Text(description)
+                .font(.caption)
+                .foregroundColor(Color(hex: "6B7280"))
+                .lineSpacing(2)
+        }
+        .padding(.vertical, 8)
     }
 }
 

@@ -44,7 +44,7 @@ struct OnboardingView: View {
                     // Features Section - Centered between title and button
                     VStack(spacing: AppTheme.Spacing.lg) {
                         FeatureRow(icon: "person.crop.circle", title: "Personalized Analysis", subtitle: "Tailored to your skin type and concerns", geometry: geometry)
-                        FeatureRow(icon: "sparkles", title: "Expert Recommendations", subtitle: "Curated by skincare professionals", geometry: geometry)
+                        FeatureRow(icon: "sparkles", title: "Expert Discovery", subtitle: "Curated by skincare professionals", geometry: geometry)
                         FeatureRow(icon: "heart", title: "Simple & Effective", subtitle: "Easy-to-follow routines that work", geometry: geometry)
                     }
                     .padding(.horizontal, AppTheme.Spacing.lg)

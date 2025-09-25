@@ -947,28 +947,7 @@ struct SkincareRitualsHomeView: View {
     
     // MARK: - Sparkles Content
     private func sparklesContent(geometry: GeometryProxy) -> some View {
-        VStack(spacing: AppTheme.Spacing.lg) {
-            Text("Recommendations")
-                .font(AppTheme.Typography.largeTitle)
-                .foregroundColor(AppTheme.textPrimary)
-                .padding(.top, geometry.size.height * 0.1)
-            
-            Spacer()
-            
-            VStack(spacing: AppTheme.Spacing.lg) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 80))
-                    .foregroundColor(AppTheme.primaryColor)
-                
-                Text("AI-powered skincare recommendations based on your skin analysis")
-                    .font(AppTheme.Typography.body)
-                    .foregroundColor(AppTheme.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, AppTheme.Spacing.lg)
-            }
-            
-            Spacer()
-        }
+        ExploreRoutinesView()
     }
     
     // MARK: - Profile Content
@@ -4566,6 +4545,1558 @@ struct DidYouKnowCard: View {
         withAnimation(.linear(duration: 4.0).repeatForever(autoreverses: false)) {
             sparkleRotation = 360
         }
+    }
+}
+
+// MARK: - Routine Model
+struct Routine: Identifiable {
+    let id = UUID()
+    let title: String
+    let description: String
+    let icon: String
+    let gradient: LinearGradient
+    let difficulty: Difficulty
+    
+    enum Difficulty: String, CaseIterable {
+        case beginner = "Başlangıç"
+        case intermediate = "Orta"
+        case advanced = "İleri"
+        case expert = "Uzman"
+        
+        var color: Color {
+            switch self {
+            case .beginner:
+                return .green
+            case .intermediate:
+                return .orange
+            case .advanced:
+                return .red
+            case .expert:
+                return .purple
+            }
+        }
+    }
+}
+
+// MARK: - Skincare Guide Model
+struct SkincareGuide: Identifiable {
+    let id = UUID()
+    let title: String
+    let icon: String
+    let gradient: LinearGradient
+    let category: GuideCategory
+    
+    enum GuideCategory: String, CaseIterable {
+        case cleansing = "Temizlik"
+        case treatment = "Tedavi"
+        case moisturizing = "Nemlendirme"
+        case protection = "Koruma"
+        
+        var color: Color {
+            switch self {
+            case .cleansing:
+                return .blue
+            case .treatment:
+                return .purple
+            case .moisturizing:
+                return .green
+            case .protection:
+                return .orange
+            }
+        }
+    }
+}
+
+// MARK: - DIY Skincare Model
+struct DIYRecipe: Identifiable {
+    let id = UUID()
+    let title: String
+    let icon: String
+    let gradient: LinearGradient
+    let category: RecipeCategory
+    
+    enum RecipeCategory: String, CaseIterable {
+        case hydration = "Hydration"
+        case brightening = "Brightening"
+        case nourishing = "Nourishing"
+        case exfoliation = "Exfoliation"
+        
+        var color: Color {
+            switch self {
+            case .hydration:
+                return .blue
+            case .brightening:
+                return .yellow
+            case .nourishing:
+                return .green
+            case .exfoliation:
+                return .orange
+            }
+        }
+    }
+}
+
+// MARK: - DIY Recipe Sample Data
+extension DIYRecipe {
+    static let sampleRecipes: [DIYRecipe] = [
+        DIYRecipe(
+            title: "Hydration",
+            icon: "drop.fill",
+            gradient: LinearGradient(
+                colors: [Color.blue.opacity(0.8), Color.cyan.opacity(0.6)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .hydration
+        ),
+        DIYRecipe(
+            title: "Brightening",
+            icon: "sun.max.fill",
+            gradient: LinearGradient(
+                colors: [Color.yellow.opacity(0.8), Color.orange.opacity(0.6)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .brightening
+        ),
+        DIYRecipe(
+            title: "Nourishing",
+            icon: "leaf.fill",
+            gradient: LinearGradient(
+                colors: [Color.green.opacity(0.8), Color.mint.opacity(0.6)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .nourishing
+        ),
+        DIYRecipe(
+            title: "Exfoliation",
+            icon: "sparkles",
+            gradient: LinearGradient(
+                colors: [Color.purple.opacity(0.8), Color.pink.opacity(0.6)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .exfoliation
+        )
+    ]
+}
+
+// MARK: - Recipe Model
+struct Recipe: Identifiable {
+    let id = UUID()
+    let title: String
+    let imageName: String
+    let ingredients: [String]
+    let steps: [String]
+    let skinConcern: SkinConcern
+    let timeNeeded: Int // minutes
+    let difficulty: RecipeDifficulty
+    let category: RecipeCategory
+    
+    enum SkinConcern: String, CaseIterable {
+        case dryness = "Dryness"
+        case dullness = "Dullness"
+        case acne = "Acne"
+        case aging = "Aging"
+        case sensitivity = "Sensitivity"
+        case oiliness = "Oiliness"
+        
+        var color: Color {
+            switch self {
+            case .dryness:
+                return .blue
+            case .dullness:
+                return .orange
+            case .acne:
+                return .red
+            case .aging:
+                return .purple
+            case .sensitivity:
+                return .pink
+            case .oiliness:
+                return .green
+            }
+        }
+    }
+    
+    enum RecipeDifficulty: String, CaseIterable {
+        case easy = "Easy"
+        case medium = "Medium"
+        case hard = "Hard"
+        
+        var stars: String {
+            switch self {
+            case .easy:
+                return "⭐"
+            case .medium:
+                return "⭐⭐"
+            case .hard:
+                return "⭐⭐⭐"
+            }
+        }
+        
+        var color: Color {
+            switch self {
+            case .easy:
+                return .green
+            case .medium:
+                return .orange
+            case .hard:
+                return .red
+            }
+        }
+    }
+    
+    enum RecipeCategory: String, CaseIterable {
+        case hydration = "Hydration"
+        case brightening = "Brightening"
+        case nourishing = "Nourishing"
+        case exfoliation = "Exfoliation"
+        
+        var color: Color {
+            switch self {
+            case .hydration:
+                return .blue
+            case .brightening:
+                return .yellow
+            case .nourishing:
+                return .green
+            case .exfoliation:
+                return .purple
+            }
+        }
+    }
+}
+
+// MARK: - Recipe Sample Data
+extension Recipe {
+    static let sampleRecipes: [Recipe] = [
+        // Hydration Recipes
+        Recipe(
+            title: "Honey & Yogurt Hydrating Mask",
+            imageName: "honey_yogurt_mask",
+            ingredients: [
+                "2 yemek kaşığı yoğurt",
+                "1 çay kaşığı bal",
+                "1 çay kaşığı zeytinyağı"
+            ],
+            steps: [
+                "Tüm malzemeleri karıştırın",
+                "Temiz cilde uygulayın",
+                "15 dakika bekleyip ılık suyla yıkayın"
+            ],
+            skinConcern: .dryness,
+            timeNeeded: 15,
+            difficulty: .easy,
+            category: .hydration
+        ),
+        Recipe(
+            title: "Avocado Hydrating Treatment",
+            imageName: "avocado_mask",
+            ingredients: [
+                "1/2 olgun avokado",
+                "1 çay kaşığı bal",
+                "2 damla lavanta yağı"
+            ],
+            steps: [
+                "Avokadoyu ezin",
+                "Bal ve yağı ekleyin",
+                "10 dakika uygulayın"
+            ],
+            skinConcern: .dryness,
+            timeNeeded: 10,
+            difficulty: .easy,
+            category: .hydration
+        ),
+        
+        // Brightening Recipes
+        Recipe(
+            title: "Turmeric Brightening Mask",
+            imageName: "turmeric_mask",
+            ingredients: [
+                "1 çay kaşığı zerdeçal",
+                "1 çay kaşığı yoğurt",
+                "1 çay kaşığı bal"
+            ],
+            steps: [
+                "Malzemeleri karıştırın",
+                "Cilde uygulayın",
+                "10 dakika bekleyip yıkayın"
+            ],
+            skinConcern: .dullness,
+            timeNeeded: 10,
+            difficulty: .easy,
+            category: .brightening
+        ),
+        Recipe(
+            title: "Lemon & Honey Glow",
+            imageName: "lemon_honey",
+            ingredients: [
+                "1 çay kaşığı limon suyu",
+                "1 çay kaşığı bal",
+                "1 çay kaşığı yulaf"
+            ],
+            steps: [
+                "Yulafları öğütün",
+                "Limon ve balı ekleyin",
+                "5 dakika uygulayın"
+            ],
+            skinConcern: .dullness,
+            timeNeeded: 5,
+            difficulty: .easy,
+            category: .brightening
+        ),
+        
+        // Nourishing Recipes
+        Recipe(
+            title: "Oatmeal Nourishing Mask",
+            imageName: "oatmeal_mask",
+            ingredients: [
+                "2 çay kaşığı yulaf",
+                "1 çay kaşığı bal",
+                "1 çay kaşığı süt"
+            ],
+            steps: [
+                "Yulafları öğütün",
+                "Süt ve balı ekleyin",
+                "15 dakika uygulayın"
+            ],
+            skinConcern: .dryness,
+            timeNeeded: 15,
+            difficulty: .easy,
+            category: .nourishing
+        ),
+        Recipe(
+            title: "Banana & Honey Nourisher",
+            imageName: "banana_mask",
+            ingredients: [
+                "1/2 olgun muz",
+                "1 çay kaşığı bal",
+                "1 çay kaşığı badem yağı"
+            ],
+            steps: [
+                "Muzu ezin",
+                "Diğer malzemeleri ekleyin",
+                "20 dakika uygulayın"
+            ],
+            skinConcern: .dryness,
+            timeNeeded: 20,
+            difficulty: .medium,
+            category: .nourishing
+        ),
+        
+        // Exfoliation Recipes
+        Recipe(
+            title: "Sugar & Coffee Scrub",
+            imageName: "sugar_coffee_scrub",
+            ingredients: [
+                "1 çay kaşığı kahve telvesi",
+                "1 çay kaşığı şeker",
+                "1 çay kaşığı hindistan cevizi yağı"
+            ],
+            steps: [
+                "Malzemeleri karıştırın",
+                "Nazikçe ovalayarak uygulayın",
+                "Ilık suyla yıkayın"
+            ],
+            skinConcern: .dullness,
+            timeNeeded: 5,
+            difficulty: .easy,
+            category: .exfoliation
+        ),
+        Recipe(
+            title: "Papaya Enzyme Peel",
+            imageName: "papaya_peel",
+            ingredients: [
+                "2 çorba kaşığı papaya püresi",
+                "1 çay kaşığı bal",
+                "1 çay kaşığı limon suyu"
+            ],
+            steps: [
+                "Papayayı püre haline getirin",
+                "Bal ve limonu ekleyin",
+                "10 dakika uygulayın"
+            ],
+            skinConcern: .dullness,
+            timeNeeded: 10,
+            difficulty: .medium,
+            category: .exfoliation
+        )
+    ]
+    
+    static func recipes(for category: Recipe.RecipeCategory) -> [Recipe] {
+        return sampleRecipes.filter { $0.category == category }
+    }
+}
+
+// MARK: - Skincare Guide Sample Data
+extension SkincareGuide {
+    static let sampleGuides: [SkincareGuide] = [
+        SkincareGuide(
+            title: "Micellar Water",
+            icon: "drop.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.softPink, AppTheme.warmBeige],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .cleansing
+        ),
+        SkincareGuide(
+            title: "Eye Remover",
+            icon: "eye.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.warmBeige, AppTheme.softPink],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .cleansing
+        ),
+        SkincareGuide(
+            title: "Cleansing Balm",
+            icon: "circle.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.darkSoftPink, AppTheme.softPink],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .cleansing
+        ),
+        SkincareGuide(
+            title: "Cleansing Oil",
+            icon: "drop.circle.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.primaryColor.opacity(0.8), AppTheme.darkSoftPink],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .cleansing
+        ),
+        SkincareGuide(
+            title: "Cleansing Milk",
+            icon: "drop.triangle.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.successColor.opacity(0.7), AppTheme.warmBeige],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .cleansing
+        ),
+        SkincareGuide(
+            title: "Cleansing Foam",
+            icon: "cloud.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.warningColor.opacity(0.7), AppTheme.softPink],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .cleansing
+        ),
+        SkincareGuide(
+            title: "Enzyme Power",
+            icon: "bolt.circle.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.errorColor.opacity(0.7), AppTheme.warmBeige],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .treatment
+        ),
+        SkincareGuide(
+            title: "Chemical Peeling",
+            icon: "hexagon.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.primaryColor.opacity(0.6), AppTheme.darkSoftPink],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .treatment
+        ),
+        SkincareGuide(
+            title: "Exfoliating Toner",
+            icon: "circle.dotted",
+            gradient: LinearGradient(
+                colors: [AppTheme.softPink, AppTheme.primaryColor.opacity(0.7)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .treatment
+        ),
+        SkincareGuide(
+            title: "Toner",
+            icon: "drop.circle",
+            gradient: LinearGradient(
+                colors: [AppTheme.warmBeige, AppTheme.softPink],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .treatment
+        ),
+        SkincareGuide(
+            title: "Face Cream",
+            icon: "circle.circle.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.successColor.opacity(0.8), AppTheme.warmBeige],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .moisturizing
+        ),
+        SkincareGuide(
+            title: "Sheet Mask",
+            icon: "rectangle.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.softPink, AppTheme.darkSoftPink],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .moisturizing
+        ),
+        SkincareGuide(
+            title: "Creamy Mask",
+            icon: "oval.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.warmBeige, AppTheme.primaryColor.opacity(0.6)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .moisturizing
+        ),
+        SkincareGuide(
+            title: "Peel Off Mask",
+            icon: "oval.portrait.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.darkSoftPink, AppTheme.softPink],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .moisturizing
+        ),
+        SkincareGuide(
+            title: "Face Serum",
+            icon: "syringe.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.primaryColor.opacity(0.7), AppTheme.successColor.opacity(0.6)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .treatment
+        ),
+        SkincareGuide(
+            title: "Face Oil",
+            icon: "drop.triangle",
+            gradient: LinearGradient(
+                colors: [AppTheme.warningColor.opacity(0.8), AppTheme.softPink],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .moisturizing
+        ),
+        SkincareGuide(
+            title: "Eye Treatment",
+            icon: "eye.circle.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.softPink, AppTheme.primaryColor.opacity(0.8)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .treatment
+        ),
+        SkincareGuide(
+            title: "SPF",
+            icon: "sun.max.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.warningColor, AppTheme.errorColor.opacity(0.6)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            category: .protection
+        )
+    ]
+}
+
+// MARK: - Sample Data
+extension Routine {
+    static let sampleRoutines: [Routine] = [
+        Routine(
+            title: "Essential Routine",
+            description: "Günlük cilt bakımının temel adımları",
+            icon: "sparkles",
+            gradient: LinearGradient(
+                colors: [AppTheme.softPink, AppTheme.warmBeige],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            difficulty: .beginner
+        ),
+        Routine(
+            title: "Complete Routine",
+            description: "Kapsamlı ve detaylı cilt bakım rutini",
+            icon: "checkmark.circle.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.warmBeige, AppTheme.softPink],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            difficulty: .intermediate
+        ),
+        Routine(
+            title: "Power Routine",
+            description: "Güçlü ve etkili aktif içeriklerle rutin",
+            icon: "bolt.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.darkSoftPink, AppTheme.softPink],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            difficulty: .advanced
+        ),
+        Routine(
+            title: "High-Performance Routine",
+            description: "Profesyonel seviye yüksek performans rutini",
+            icon: "star.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.primaryColor.opacity(0.8), AppTheme.darkSoftPink],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            difficulty: .expert
+        ),
+        Routine(
+            title: "SOS Skincare Routine",
+            description: "Acil durumlar için hızlı çözüm rutini",
+            icon: "cross.case.fill",
+            gradient: LinearGradient(
+                colors: [AppTheme.errorColor.opacity(0.7), AppTheme.warningColor.opacity(0.7)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            difficulty: .beginner
+        ),
+        Routine(
+            title: "Skin Cycling Routine",
+            description: "Modern cilt döngü sistemi rutini",
+            icon: "arrow.clockwise",
+            gradient: LinearGradient(
+                colors: [AppTheme.successColor.opacity(0.7), AppTheme.warmBeige],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            difficulty: .intermediate
+        )
+    ]
+}
+
+// MARK: - Recipe Card View
+struct RecipeCardView: View {
+    let recipe: Recipe
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Image placeholder with category color
+            RoundedRectangle(cornerRadius: 12)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            recipe.category.color.opacity(0.3),
+                            recipe.category.color.opacity(0.1)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(height: 180)
+                .overlay(
+                    VStack {
+                        Image(systemName: getImageIcon(for: recipe.title))
+                            .font(.system(size: 40, weight: .medium))
+                            .foregroundColor(recipe.category.color)
+                        Text("Recipe Photo")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(recipe.category.color.opacity(0.7))
+                    }
+                )
+            
+            VStack(alignment: .leading, spacing: 12) {
+                // Title
+                Text(recipe.title)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(AppTheme.textPrimary)
+                    .multilineTextAlignment(.leading)
+                
+                // Badges Row
+                HStack(spacing: 8) {
+                    // Skin Concern Badge
+                    Text(recipe.skinConcern.rawValue)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(recipe.skinConcern.color)
+                        )
+                    
+                    Spacer()
+                    
+                    // Time Needed
+                    HStack(spacing: 4) {
+                        Image(systemName: "clock.fill")
+                            .font(.system(size: 10))
+                        Text("\(recipe.timeNeeded) dk")
+                            .font(.system(size: 10, weight: .medium))
+                    }
+                    .foregroundColor(AppTheme.textSecondary)
+                    
+                    // Difficulty Level
+                    HStack(spacing: 2) {
+                        Text(recipe.difficulty.stars)
+                            .font(.system(size: 10))
+                        Text(recipe.difficulty.rawValue)
+                            .font(.system(size: 10, weight: .medium))
+                    }
+                    .foregroundColor(recipe.difficulty.color)
+                }
+                
+                // Ingredients
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Malzemeler:")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(AppTheme.textPrimary)
+                    
+                    ForEach(recipe.ingredients, id: \.self) { ingredient in
+                        HStack(alignment: .top, spacing: 8) {
+                            Text("•")
+                                .font(.system(size: 12))
+                                .foregroundColor(recipe.category.color)
+                            Text(ingredient)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(AppTheme.textSecondary)
+                            Spacer()
+                        }
+                    }
+                }
+                
+                // Steps
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Adımlar:")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(AppTheme.textPrimary)
+                    
+                    ForEach(Array(recipe.steps.enumerated()), id: \.offset) { index, step in
+                        HStack(alignment: .top, spacing: 8) {
+                            Text("\(index + 1).")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(recipe.category.color)
+                                .frame(width: 16, alignment: .leading)
+                            Text(step)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(AppTheme.textSecondary)
+                            Spacer()
+                        }
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color.black.opacity(0.1), Color.black.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+                .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+        )
+    }
+    
+    private func getImageIcon(for title: String) -> String {
+        if title.contains("Honey") && title.contains("Yogurt") {
+            return "drop.fill"
+        } else if title.contains("Avocado") {
+            return "leaf.fill"
+        } else if title.contains("Turmeric") {
+            return "sun.max.fill"
+        } else if title.contains("Lemon") {
+            return "sun.max"
+        } else if title.contains("Oatmeal") {
+            return "grain"
+        } else if title.contains("Banana") {
+            return "leaf"
+        } else if title.contains("Sugar") && title.contains("Coffee") {
+            return "circle.grid.cross.fill"
+        } else if title.contains("Papaya") {
+            return "sparkles"
+        }
+        return "photo.fill"
+    }
+}
+
+// MARK: - DIY Recipe Card View
+struct DIYRecipeCardView: View {
+    let recipe: DIYRecipe
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            // Icon and Title
+            VStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(recipe.gradient)
+                        .frame(width: 70, height: 70)
+                    
+                    Image(systemName: recipe.icon)
+                        .font(.system(size: 28, weight: .medium))
+                        .foregroundColor(.white)
+                }
+                .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3)
+                
+                VStack(spacing: 6) {
+                    Text(recipe.title)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(AppTheme.textPrimary)
+                        .multilineTextAlignment(.center)
+                }
+            }
+            
+            Spacer()
+            
+            // Try Recipes Button
+            NavigationLink(destination: RecipeDetailView(category: convertToRecipeCategory(recipe.category))) {
+                HStack(spacing: 8) {
+                    Image(systemName: "book.fill")
+                        .font(.system(size: 14, weight: .medium))
+                    Text("Try Recipes")
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(AppTheme.primaryColor)
+                )
+            }
+        }
+        .padding(20)
+        .frame(height: 320)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color.black.opacity(0.1), Color.black.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+                .shadow(color: Color.black.opacity(0.15), radius: 15, x: 0, y: 8)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.black.opacity(0.1),
+                            Color.black.opacity(0.05)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+    }
+    
+    private func convertToRecipeCategory(_ diyCategory: DIYRecipe.RecipeCategory) -> Recipe.RecipeCategory {
+        switch diyCategory {
+        case .hydration:
+            return .hydration
+        case .brightening:
+            return .brightening
+        case .nourishing:
+            return .nourishing
+        case .exfoliation:
+            return .exfoliation
+        }
+    }
+}
+
+// MARK: - Recipe Detail View
+struct RecipeDetailView: View {
+    let category: Recipe.RecipeCategory
+    @Environment(\.presentationMode) var presentationMode
+    
+    private var recipes: [Recipe] {
+        Recipe.recipes(for: category)
+    }
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Header
+                    VStack(spacing: 8) {
+                        HStack {
+                            Text(category.rawValue)
+                                .font(.system(size: 28, weight: .bold))
+                                .foregroundColor(AppTheme.textPrimary)
+                            Spacer()
+                        }
+                        
+                        HStack {
+                            Text("\(recipes.count) tarif bulundu")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(AppTheme.textSecondary)
+                            Spacer()
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+                    
+                    // Recipes List
+                    LazyVStack(spacing: 16) {
+                        ForEach(recipes) { recipe in
+                            RecipeCardView(recipe: recipe)
+                                .padding(.horizontal, 20)
+                        }
+                    }
+                    .padding(.bottom, 20)
+                }
+            }
+            .background(AppTheme.backgroundColor)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(AppTheme.backgroundColor, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("Geri")
+                                .font(.system(size: 16, weight: .medium))
+                        }
+                        .foregroundColor(AppTheme.primaryColor)
+                    }
+                }
+                
+                ToolbarItem(placement: .principal) {
+                    Text(category.rawValue)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(AppTheme.textPrimary)
+                }
+            }
+        }
+        .ignoresSafeArea(.all, edges: .top)
+    }
+}
+
+// MARK: - Explore Routines View
+struct ExploreRoutinesView: View {
+    @State private var currentIndex: Int = 0
+    @State private var dragOffset: CGFloat = 0
+    @State private var guideCurrentIndex: Int = 0
+    @State private var guideDragOffset: CGFloat = 0
+    @State private var recipeCurrentIndex: Int = 0
+    @State private var recipeDragOffset: CGFloat = 0
+    private let routines = Routine.sampleRoutines
+    private let guides = SkincareGuide.sampleGuides
+    private let recipes = DIYRecipe.sampleRecipes
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 16) {
+                    // Explore Routines Section
+                    VStack(spacing: 4) {
+                        HStack {
+                            Text("Explore Routines")
+                                .font(.system(size: 22, weight: .bold))
+                                .foregroundColor(AppTheme.textPrimary)
+                            Spacer()
+                        }
+                        
+                        HStack {
+                            Text("Cilt bakım rutinlerini keşfedin")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(AppTheme.textSecondary)
+                            Spacer()
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+                    .padding(.bottom, 20)
+                    
+                    // Routine Cards Section
+                    ZStack {
+                        // Routine Cards
+                        ScrollViewReader { proxy in
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 16) {
+                                    ForEach(Array(routines.enumerated()), id: \.element.id) { index, routine in
+                                        RoutineCardView(routine: routine)
+                                            .frame(width: UIScreen.main.bounds.width - 80)
+                                            .id(index)
+                                    }
+                                }
+                                .padding(.horizontal, 20)
+                                .offset(x: dragOffset)
+                            }
+                            .scrollDisabled(true)
+                            .onAppear {
+                                scrollToIndex(proxy, index: currentIndex)
+                            }
+                            .onChange(of: currentIndex) { newIndex in
+                                withAnimation(.easeInOut(duration: 0.5)) {
+                                    scrollToIndex(proxy, index: newIndex)
+                                }
+                            }
+                            .gesture(
+                                DragGesture()
+                                    .onChanged { value in
+                                        dragOffset = value.translation.width
+                                    }
+                                    .onEnded { value in
+                                        let threshold: CGFloat = 50
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            if value.translation.width > threshold && currentIndex > 0 {
+                                                currentIndex -= 1
+                                            } else if value.translation.width < -threshold && currentIndex < routines.count - 1 {
+                                                currentIndex += 1
+                                            }
+                                            dragOffset = 0
+                                        }
+                                    }
+                            )
+                        }
+                        
+                        // Navigation Buttons
+                        HStack {
+                            // Left Button
+                            Button(action: {
+                                if currentIndex > 0 {
+                                    withAnimation(.easeInOut(duration: 0.5)) {
+                                        currentIndex -= 1
+                                    }
+                                }
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(currentIndex > 0 ? AppTheme.textPrimary : AppTheme.textSecondary.opacity(0.3))
+                                    .frame(width: 36, height: 36)
+                                    .background(
+                                        Circle()
+                                            .fill(AppTheme.surfaceColor)
+                                            .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 1)
+                                    )
+                            }
+                            .disabled(currentIndex <= 0)
+                            
+                            Spacer()
+                            
+                            // Right Button
+                            Button(action: {
+                                if currentIndex < routines.count - 1 {
+                                    withAnimation(.easeInOut(duration: 0.5)) {
+                                        currentIndex += 1
+                                    }
+                                }
+                            }) {
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(currentIndex < routines.count - 1 ? AppTheme.textPrimary : AppTheme.textSecondary.opacity(0.3))
+                                    .frame(width: 36, height: 36)
+                                    .background(
+                                        Circle()
+                                            .fill(AppTheme.surfaceColor)
+                                            .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 1)
+                                    )
+                            }
+                            .disabled(currentIndex >= routines.count - 1)
+                        }
+                        .padding(.horizontal, 20)
+                    }
+                    .frame(height: 320)
+                    
+                    // Page Indicator for Routines
+                    HStack(spacing: 6) {
+                        ForEach(0..<routines.count, id: \.self) { index in
+                            Circle()
+                                .fill(index == currentIndex ? AppTheme.primaryColor : AppTheme.textSecondary.opacity(0.3))
+                                .frame(width: 6, height: 6)
+                                .animation(.easeInOut(duration: 0.3), value: currentIndex)
+                        }
+                    }
+                    .padding(.top, 12)
+                    .padding(.bottom, 12)
+                    
+                    // Skincare Guides Section
+                    VStack(spacing: 4) {
+                        HStack {
+                            Text("Skincare Application & Face Gym Guides")
+                                .font(.system(size: 22, weight: .bold))
+                                .foregroundColor(AppTheme.textPrimary)
+                            Spacer()
+                        }
+                        
+                        HStack {
+                            Text("Cilt bakım ürünlerinin doğru kullanımı")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(AppTheme.textSecondary)
+                            Spacer()
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    
+                    // Guide Cards Section
+                    ZStack {
+                        // Guide Cards
+                        ScrollViewReader { proxy in
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 16) {
+                                    ForEach(Array(guides.enumerated()), id: \.element.id) { index, guide in
+                                        SkincareGuideCardView(guide: guide)
+                                            .frame(width: UIScreen.main.bounds.width - 80)
+                                            .id(index)
+                                    }
+                                }
+                                .padding(.horizontal, 20)
+                                .offset(x: guideDragOffset)
+                            }
+                            .scrollDisabled(true)
+                            .onAppear {
+                                scrollToGuideIndex(proxy, index: guideCurrentIndex)
+                            }
+                            .onChange(of: guideCurrentIndex) { newIndex in
+                                withAnimation(.easeInOut(duration: 0.5)) {
+                                    scrollToGuideIndex(proxy, index: newIndex)
+                                }
+                            }
+                            .gesture(
+                                DragGesture()
+                                    .onChanged { value in
+                                        guideDragOffset = value.translation.width
+                                    }
+                                    .onEnded { value in
+                                        let threshold: CGFloat = 50
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            if value.translation.width > threshold && guideCurrentIndex > 0 {
+                                                guideCurrentIndex -= 1
+                                            } else if value.translation.width < -threshold && guideCurrentIndex < guides.count - 1 {
+                                                guideCurrentIndex += 1
+                                            }
+                                            guideDragOffset = 0
+                                        }
+                                    }
+                            )
+                        }
+                        
+                        // Navigation Buttons for Guides
+                        HStack {
+                            // Left Button
+                            Button(action: {
+                                if guideCurrentIndex > 0 {
+                                    withAnimation(.easeInOut(duration: 0.5)) {
+                                        guideCurrentIndex -= 1
+                                    }
+                                }
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(guideCurrentIndex > 0 ? AppTheme.textPrimary : AppTheme.textSecondary.opacity(0.3))
+                                    .frame(width: 36, height: 36)
+                                    .background(
+                                        Circle()
+                                            .fill(AppTheme.surfaceColor)
+                                            .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 1)
+                                    )
+                            }
+                            .disabled(guideCurrentIndex <= 0)
+                            
+                            Spacer()
+                            
+                            // Right Button
+                            Button(action: {
+                                if guideCurrentIndex < guides.count - 1 {
+                                    withAnimation(.easeInOut(duration: 0.5)) {
+                                        guideCurrentIndex += 1
+                                    }
+                                }
+                            }) {
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(guideCurrentIndex < guides.count - 1 ? AppTheme.textPrimary : AppTheme.textSecondary.opacity(0.3))
+                                    .frame(width: 36, height: 36)
+                                    .background(
+                                        Circle()
+                                            .fill(AppTheme.surfaceColor)
+                                            .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 1)
+                                    )
+                            }
+                            .disabled(guideCurrentIndex >= guides.count - 1)
+                        }
+                        .padding(.horizontal, 20)
+                    }
+                    .frame(height: 320)
+                    
+                    // Page Indicator for Guides
+                    HStack(spacing: 6) {
+                        ForEach(0..<guides.count, id: \.self) { index in
+                            Circle()
+                                .fill(index == guideCurrentIndex ? AppTheme.primaryColor : AppTheme.textSecondary.opacity(0.3))
+                                .frame(width: 6, height: 6)
+                                .animation(.easeInOut(duration: 0.3), value: guideCurrentIndex)
+                        }
+                    }
+                    .padding(.top, 12)
+                    .padding(.bottom, 20)
+                    
+                    // DIY Skincare Section
+                    VStack(spacing: 4) {
+                        HStack {
+                            Text("DIY Skincare")
+                                .font(.system(size: 22, weight: .bold))
+                                .foregroundColor(AppTheme.textPrimary)
+                            Spacer()
+                        }
+                        
+                        HStack {
+                            Text("Evde yapabileceğin doğal cilt bakım tarifleri")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(AppTheme.textSecondary)
+                            Spacer()
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 20)
+                    
+                    // DIY Recipe Cards Section
+                    ZStack {
+                        // Recipe Cards
+                        ScrollViewReader { proxy in
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 16) {
+                                    ForEach(Array(recipes.enumerated()), id: \.element.id) { index, recipe in
+                                        DIYRecipeCardView(recipe: recipe)
+                                            .frame(width: UIScreen.main.bounds.width - 80)
+                                            .id(index)
+                                    }
+                                }
+                                .padding(.horizontal, 20)
+                                .offset(x: recipeDragOffset)
+                            }
+                            .scrollDisabled(true)
+                            .onAppear {
+                                scrollToRecipeIndex(proxy, index: recipeCurrentIndex)
+                            }
+                            .onChange(of: recipeCurrentIndex) { newIndex in
+                                withAnimation(.easeInOut(duration: 0.5)) {
+                                    scrollToRecipeIndex(proxy, index: newIndex)
+                                }
+                            }
+                            .gesture(
+                                DragGesture()
+                                    .onChanged { value in
+                                        recipeDragOffset = value.translation.width
+                                    }
+                                    .onEnded { value in
+                                        let threshold: CGFloat = 50
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            if value.translation.width > threshold && recipeCurrentIndex > 0 {
+                                                recipeCurrentIndex -= 1
+                                            } else if value.translation.width < -threshold && recipeCurrentIndex < recipes.count - 1 {
+                                                recipeCurrentIndex += 1
+                                            }
+                                            recipeDragOffset = 0
+                                        }
+                                    }
+                            )
+                        }
+                        
+                        // Navigation Buttons
+                        HStack {
+                            // Left Button
+                            Button(action: {
+                                if recipeCurrentIndex > 0 {
+                                    withAnimation(.easeInOut(duration: 0.5)) {
+                                        recipeCurrentIndex -= 1
+                                    }
+                                }
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(recipeCurrentIndex > 0 ? AppTheme.textPrimary : AppTheme.textSecondary.opacity(0.3))
+                                    .frame(width: 36, height: 36)
+                                    .background(
+                                        Circle()
+                                            .fill(AppTheme.surfaceColor)
+                                            .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 1)
+                                    )
+                            }
+                            .disabled(recipeCurrentIndex <= 0)
+                            
+                            Spacer()
+                            
+                            // Right Button
+                            Button(action: {
+                                if recipeCurrentIndex < recipes.count - 1 {
+                                    withAnimation(.easeInOut(duration: 0.5)) {
+                                        recipeCurrentIndex += 1
+                                    }
+                                }
+                            }) {
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(recipeCurrentIndex < recipes.count - 1 ? AppTheme.textPrimary : AppTheme.textSecondary.opacity(0.3))
+                                    .frame(width: 36, height: 36)
+                                    .background(
+                                        Circle()
+                                            .fill(AppTheme.surfaceColor)
+                                            .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 1)
+                                    )
+                            }
+                            .disabled(recipeCurrentIndex >= recipes.count - 1)
+                        }
+                        .padding(.horizontal, 20)
+                    }
+                    .frame(height: 320)
+                    
+                    // Page Indicator for Recipes
+                    HStack(spacing: 6) {
+                        ForEach(0..<recipes.count, id: \.self) { index in
+                            Circle()
+                                .fill(index == recipeCurrentIndex ? AppTheme.primaryColor : AppTheme.textSecondary.opacity(0.3))
+                                .frame(width: 6, height: 6)
+                                .animation(.easeInOut(duration: 0.3), value: recipeCurrentIndex)
+                        }
+                    }
+                    .padding(.top, 12)
+                    .padding(.bottom, 40)
+                }
+                .padding(.bottom, 100) // Extra padding for safe scrolling
+                .navigationTitle("Explore")
+                .navigationBarTitleDisplayMode(.inline)
+                .appBackground()
+                .ignoresSafeArea(.all, edges: .top)
+                .toolbarBackground(AppTheme.backgroundColor, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
+            }
+        }
+    }
+    
+    private func scrollToIndex(_ proxy: ScrollViewProxy, index: Int) {
+        proxy.scrollTo(index, anchor: .center)
+    }
+    
+    private func scrollToGuideIndex(_ proxy: ScrollViewProxy, index: Int) {
+        proxy.scrollTo(index, anchor: .center)
+    }
+    
+    private func scrollToRecipeIndex(_ proxy: ScrollViewProxy, index: Int) {
+        proxy.scrollTo(index, anchor: .center)
+    }
+}
+
+// MARK: - Skincare Guide Card View
+struct SkincareGuideCardView: View {
+    let guide: SkincareGuide
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            // Header with Watch & Learn Button
+            HStack {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(guide.title)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(AppTheme.textPrimary)
+                        .multilineTextAlignment(.leading)
+                    
+                    Text(guide.category.rawValue)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(guide.category.color)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule()
+                                .fill(guide.category.color.opacity(0.1))
+                        )
+                }
+                
+                Spacer()
+                
+                // Watch & Learn Button
+                Button(action: {
+                    // TODO: Implement video playback
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 12, weight: .medium))
+                        Text("Watch")
+                            .font(.system(size: 10, weight: .medium))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(guide.category.color)
+                    )
+                }
+            }
+            
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(guide.gradient)
+                    .frame(width: 80, height: 80)
+                
+                Image(systemName: guide.icon)
+                    .font(.system(size: 32, weight: .medium))
+                    .foregroundColor(.white)
+            }
+            .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3)
+            
+            Spacer()
+        }
+        .padding(20)
+        .frame(height: 320)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color.black.opacity(0.1), Color.black.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+                .shadow(color: Color.black.opacity(0.15), radius: 15, x: 0, y: 8)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            guide.category.color.opacity(0.15),
+                            Color.clear,
+                            guide.category.color.opacity(0.08)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+    }
+}
+
+// MARK: - Routine Card View
+struct RoutineCardView: View {
+    let routine: Routine
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            // Icon and Title
+            VStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(routine.gradient)
+                        .frame(width: 70, height: 70)
+                    
+                    Image(systemName: routine.icon)
+                        .font(.system(size: 28, weight: .medium))
+                        .foregroundColor(.white)
+                }
+                
+                VStack(spacing: 6) {
+                    Text(routine.title)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(AppTheme.textPrimary)
+                        .multilineTextAlignment(.center)
+                    
+                    // Difficulty Badge
+                    Text(routine.difficulty.rawValue)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(routine.difficulty.color)
+                        )
+                }
+            }
+            
+            // Description
+            Text(routine.description)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(AppTheme.textSecondary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .padding(.horizontal, 12)
+            
+            Spacer()
+            
+            // Action Button
+            Button(action: {
+                // TODO: Navigate to routine detail
+            }) {
+                HStack(spacing: 6) {
+                    Text("Rutini İncele")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
+                    
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(AppTheme.primaryColor)
+                )
+            }
+        }
+        .padding(20)
+        .frame(height: 320)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color.black.opacity(0.1), Color.black.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+                .shadow(color: Color.black.opacity(0.15), radius: 15, x: 0, y: 8)
+        )
     }
 }
 
