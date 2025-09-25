@@ -4693,6 +4693,8 @@ struct Recipe: Identifiable {
     let timeNeeded: Int // minutes
     let difficulty: RecipeDifficulty
     let category: RecipeCategory
+    var likeCount: Int
+    var isLiked: Bool
     
     enum SkinConcern: String, CaseIterable {
         case dryness = "Dryness"
@@ -4789,7 +4791,9 @@ extension Recipe {
             skinConcern: .dryness,
             timeNeeded: 15,
             difficulty: .easy,
-            category: .hydration
+            category: .hydration,
+            likeCount: 342,
+            isLiked: false
         ),
         Recipe(
             title: "Avocado Hydrating Treatment",
@@ -4807,7 +4811,9 @@ extension Recipe {
             skinConcern: .dryness,
             timeNeeded: 10,
             difficulty: .easy,
-            category: .hydration
+            category: .hydration,
+            likeCount: 289,
+            isLiked: true
         ),
         
         // Brightening Recipes
@@ -4827,7 +4833,9 @@ extension Recipe {
             skinConcern: .dullness,
             timeNeeded: 10,
             difficulty: .easy,
-            category: .brightening
+            category: .brightening,
+            likeCount: 456,
+            isLiked: false
         ),
         Recipe(
             title: "Lemon & Honey Glow",
@@ -4845,7 +4853,9 @@ extension Recipe {
             skinConcern: .dullness,
             timeNeeded: 5,
             difficulty: .easy,
-            category: .brightening
+            category: .brightening,
+            likeCount: 234,
+            isLiked: true
         ),
         
         // Nourishing Recipes
@@ -4865,7 +4875,9 @@ extension Recipe {
             skinConcern: .dryness,
             timeNeeded: 15,
             difficulty: .easy,
-            category: .nourishing
+            category: .nourishing,
+            likeCount: 567,
+            isLiked: false
         ),
         Recipe(
             title: "Banana & Honey Nourisher",
@@ -4883,7 +4895,9 @@ extension Recipe {
             skinConcern: .dryness,
             timeNeeded: 20,
             difficulty: .medium,
-            category: .nourishing
+            category: .nourishing,
+            likeCount: 198,
+            isLiked: true
         ),
         
         // Exfoliation Recipes
@@ -4903,7 +4917,9 @@ extension Recipe {
             skinConcern: .dullness,
             timeNeeded: 5,
             difficulty: .easy,
-            category: .exfoliation
+            category: .exfoliation,
+            likeCount: 423,
+            isLiked: false
         ),
         Recipe(
             title: "Papaya Enzyme Peel",
@@ -4921,7 +4937,9 @@ extension Recipe {
             skinConcern: .dullness,
             timeNeeded: 10,
             difficulty: .medium,
-            category: .exfoliation
+            category: .exfoliation,
+            likeCount: 312,
+            isLiked: true
         )
     ]
     
@@ -5191,6 +5209,14 @@ extension Routine {
 // MARK: - Recipe Card View
 struct RecipeCardView: View {
     let recipe: Recipe
+    @State private var isLiked: Bool
+    @State private var likeCount: Int
+    
+    init(recipe: Recipe) {
+        self.recipe = recipe
+        self._isLiked = State(initialValue: recipe.isLiked)
+        self._likeCount = State(initialValue: recipe.likeCount)
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -5215,6 +5241,46 @@ struct RecipeCardView: View {
                         Text("Recipe Photo")
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(recipe.category.color.opacity(0.7))
+                    }
+                )
+                .overlay(
+                    // Like Button - Top Right
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    if isLiked {
+                                        likeCount -= 1
+                                    } else {
+                                        likeCount += 1
+                                    }
+                                    isLiked.toggle()
+                                }
+                            }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: isLiked ? "heart.fill" : "heart")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(isLiked ? .red : AppTheme.textSecondary)
+                                    Text("\(likeCount)")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(AppTheme.textSecondary)
+                                }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(
+                                    Capsule()
+                                        .fill(.ultraThinMaterial)
+                                        .overlay(
+                                            Capsule()
+                                                .stroke(Color.black.opacity(0.1), lineWidth: 0.5)
+                                        )
+                                )
+                            }
+                            .padding(.top, 8)
+                            .padding(.trailing, 8)
+                        }
+                        Spacer()
                     }
                 )
             
