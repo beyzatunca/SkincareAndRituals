@@ -6151,6 +6151,7 @@ struct ProfileView: View {
     @State private var showingActionSheet = false
     @State private var showingAppSettings = false
     @State private var showingMySkinProfile = false
+    @State private var showingSkinJournalCalendar = false
     
     var body: some View {
         NavigationView {
@@ -6190,8 +6191,10 @@ struct ProfileView: View {
                 .navigationTitle("App Settings")
         }
         .sheet(isPresented: $showingMySkinProfile) {
-            Text("My Skin Profile")
-                .navigationTitle("My Skin Profile")
+            MySkinProfileView()
+        }
+        .sheet(isPresented: $showingSkinJournalCalendar) {
+            SkinJournalCalendarView()
         }
     }
     
@@ -6239,7 +6242,7 @@ struct ProfileView: View {
     // MARK: - Scans & Diary Card
     private var scansAndDiaryCard: some View {
         Button(action: {
-            viewModel.handleAction(.faceScans)
+            showingSkinJournalCalendar = true
         }) {
             HStack {
                 Image(systemName: "calendar")
@@ -6548,17 +6551,25 @@ struct UserProfile: Codable {
     var skinConcerns: String
     
     init(name: String = "User", avatar: String? = nil, joinDate: Date = Date(), subscriptionStatus: SubscriptionStatus = .free, faceScansCount: Int = 2, preferences: UserPreferences = UserPreferences(), gender: String = "Prefer not to say", ageRange: String = "18-24", skinType: String = "Normal", skinSensitivity: String = "Not sensitive", skinConcerns: String = "Acne or pimples") {
-        self.name = name
+        // Load survey data from UserDefaults
+        let surveyName = UserDefaults.standard.string(forKey: "survey_name") ?? name
+        let surveyGender = UserDefaults.standard.string(forKey: "survey_gender") ?? gender
+        let surveyAge = UserDefaults.standard.string(forKey: "survey_age") ?? ageRange
+        let surveySkinType = UserDefaults.standard.string(forKey: "survey_skin_type") ?? skinType
+        let surveySensitivity = UserDefaults.standard.string(forKey: "survey_skin_sensitivity") ?? skinSensitivity
+        let surveyConcerns = UserDefaults.standard.string(forKey: "survey_skin_concerns") ?? skinConcerns
+        
+        self.name = surveyName
         self.avatar = avatar
         self.joinDate = joinDate
         self.subscriptionStatus = subscriptionStatus
         self.faceScansCount = faceScansCount
         self.preferences = preferences
-        self.gender = gender
-        self.ageRange = ageRange
-        self.skinType = skinType
-        self.skinSensitivity = skinSensitivity
-        self.skinConcerns = skinConcerns
+        self.gender = surveyGender
+        self.ageRange = surveyAge
+        self.skinType = surveySkinType
+        self.skinSensitivity = surveySensitivity
+        self.skinConcerns = surveyConcerns
     }
 }
 
@@ -6614,6 +6625,9 @@ class ProfileViewModel: ObservableObject {
     // MARK: - Actions
     func handleAction(_ action: ProfileAction) {
         switch action {
+        case .mySkinProfile:
+            // MySkinProfile action is handled in ProfileView
+            break
         case .logOut:
             selectedAction = action
             showingLogOutAlert = true
@@ -6625,9 +6639,6 @@ class ProfileViewModel: ObservableObject {
             openContactUs()
         case .appSettings:
             // App Settings is handled in ProfileView, don't set selectedAction
-            return
-        case .mySkinProfile:
-            // My Skin Profile is handled in ProfileView, don't set selectedAction
             return
         default:
             // Handle other actions
@@ -6666,4 +6677,921 @@ class ProfileViewModel: ObservableObject {
     }
 }
 
+// MARK: - Skin Journal Models
+struct SkinJournalEntry: Identifiable, Codable {
+    let id = UUID()
+    let date: Date
+    let mood: SkinMood
+    let skinConditions: [SkinCondition]
+    let photoData: Data?
+    let notes: String?
+    
+    enum SkinMood: String, CaseIterable, Codable {
+        case happy = "😊"
+        case relieved = "😌"
+        case neutral = "😐"
+        case sad = "😔"
+        case crying = "😢"
+        
+        var emoji: String {
+            return rawValue
+        }
+        
+        var description: String {
+            switch self {
+            case .happy: return "Happy"
+            case .relieved: return "Relieved"
+            case .neutral: return "Neutral"
+            case .sad: return "Sad"
+            case .crying: return "Crying"
+            }
+        }
+    }
+    
+    enum SkinCondition: String, CaseIterable, Codable {
+        case redness = "Redness"
+        case dryness = "Dryness"
+        case breakout = "Breakout"
+        case glowy = "Glowy"
+        
+        var color: Color {
+            switch self {
+            case .redness: return .red
+            case .dryness: return .blue
+            case .breakout: return .orange
+            case .glowy: return .yellow
+            }
+        }
+    }
+}
 
+
+
+
+    // MARK: - Calendar View
+    struct SkinJournalCalendarView: View {
+        @State private var currentDate: Date = {
+            var dateComponents = DateComponents()
+            dateComponents.year = 2025
+            dateComponents.month = 9
+            dateComponents.day = 1
+            return Calendar.current.date(from: dateComponents) ?? Date()
+        }()
+    @State private var selectedDate: Date?
+    @State private var showingEntryDetail = false
+    @State private var journalEntries: [SkinJournalEntry] = []
+    
+    private let calendar = Calendar.current
+    private let dateFormatter = DateFormatter()
+    
+    init() {
+        dateFormatter.dateFormat = "MMMM yyyy"
+        loadSampleData()
+    }
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 0) {
+                // Header
+                calendarHeader
+                
+                // Calendar Grid
+                calendarGrid
+                
+                // Navigation Dots
+                navigationDots
+                
+                // Entry Detail Section
+                if let selectedDate = selectedDate,
+                   let entry = journalEntries.first(where: { calendar.isDate($0.date, inSameDayAs: selectedDate) }) {
+                    entryDetailSection(entry: entry, date: selectedDate)
+                }
+                
+                Spacer()
+            }
+            .background(Color(hex: "F8F8F8"))
+            .navigationTitle("Scans & Diary")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+    
+    // MARK: - Calendar Header
+    private var calendarHeader: some View {
+        HStack {
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    currentDate = calendar.date(byAdding: .month, value: -1, to: currentDate) ?? currentDate
+                }
+            }) {
+                HStack(spacing: 4) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 14, weight: .medium))
+                    Text("Aug")
+                        .font(.system(size: 16, weight: .medium))
+                }
+                .foregroundColor(Color(hex: "6B7280"))
+            }
+            
+            Spacer()
+            
+            Text(dateFormatter.string(from: currentDate))
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(Color(hex: "111111"))
+            
+            Spacer()
+            
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    currentDate = calendar.date(byAdding: .month, value: 1, to: currentDate) ?? currentDate
+                }
+            }) {
+                HStack(spacing: 4) {
+                    Text("Oct")
+                        .font(.system(size: 16, weight: .medium))
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .medium))
+                }
+                .foregroundColor(Color(hex: "6B7280"))
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        .padding(.bottom, 16)
+    }
+    
+    // MARK: - Calendar Grid
+    private var calendarGrid: some View {
+        VStack(spacing: 0) {
+            // Days of week header
+            HStack {
+                ForEach(["M", "T", "W", "T", "F", "S", "S"], id: \.self) { day in
+                    Text(day)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(hex: "6B7280"))
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 12)
+            
+            // Calendar dates
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
+                ForEach(calendarDays, id: \.self) { date in
+                    calendarDayView(for: date)
+                }
+            }
+            .padding(.horizontal, 20)
+        }
+    }
+    
+    // MARK: - Calendar Day View
+    private func calendarDayView(for date: Date) -> some View {
+        let isCurrentMonth = calendar.isDate(date, equalTo: currentDate, toGranularity: .month)
+        let isToday = calendar.isDateInToday(date)
+        let hasEntry = journalEntries.contains { calendar.isDate($0.date, inSameDayAs: date) }
+        
+        let entry = journalEntries.first { calendar.isDate($0.date, inSameDayAs: date) }
+        
+        // Debug: Print for day 26
+        if calendar.component(.day, from: date) == 26 {
+            print("🔴 Day 26 Debug:")
+            print("  - Date: \(date)")
+            print("  - journalEntries count: \(journalEntries.count)")
+            print("  - hasEntry: \(hasEntry)")
+            if let firstEntry = journalEntries.first {
+                print("  - First entry date: \(firstEntry.date)")
+                print("  - First entry day: \(calendar.component(.day, from: firstEntry.date))")
+                print("  - First entry month: \(calendar.component(.month, from: firstEntry.date))")
+                print("  - First entry year: \(calendar.component(.year, from: firstEntry.date))")
+            }
+        }
+        
+        // Debug: Print for all days to see if calendar is rendering
+        print("🔴 Calendar Day: \(calendar.component(.day, from: date)) - hasEntry: \(hasEntry)")
+        
+        // Simple debug for day 26
+        if calendar.component(.day, from: date) == 26 {
+            print("🔴 DAY 26 FOUND - hasEntry: \(hasEntry)")
+        }
+        
+        
+        return Button(action: {
+            print("🔴 Button tapped for day: \(calendar.component(.day, from: date))")
+            print("🔴 hasEntry: \(hasEntry)")
+            if hasEntry {
+                selectedDate = date
+                print("🔴 selectedDate set to: \(date)")
+            } else {
+                print("🔴 No entry found for this date")
+            }
+        }) {
+            VStack(spacing: 4) {
+                Text("\(calendar.component(.day, from: date))")
+                    .font(.system(size: 16, weight: isToday ? .bold : .medium))
+                    .foregroundColor(
+                        isCurrentMonth ? 
+                        (isToday ? .white : Color(hex: "111111")) : 
+                        Color(hex: "9CA3AF")
+                    )
+                
+                if hasEntry {
+                    Circle()
+                        .fill(Color(hex: "8B5CF6")) // Always purple for visibility
+                        .frame(width: 10, height: 10) // Larger size
+                } else {
+                    // Show empty space to maintain layout
+                    Circle()
+                        .fill(Color.clear)
+                        .frame(width: 10, height: 10)
+                }
+            }
+            .frame(width: 40, height: 40)
+            .background(
+                Circle()
+                    .fill(isToday ? Color(hex: "8B5CF6") : Color.clear)
+            )
+            .overlay(
+                Circle()
+                    .stroke(
+                        hasEntry ? Color(hex: "8B5CF6") : Color.clear,
+                        lineWidth: 2
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+        .disabled(!hasEntry)
+    }
+    
+    // MARK: - Navigation Dots
+    private var navigationDots: some View {
+        HStack(spacing: 6) {
+            ForEach(0..<3) { index in
+                Circle()
+                    .fill(index == 1 ? Color(hex: "8B5CF6") : Color(hex: "D1D5DB"))
+                    .frame(width: 6, height: 6)
+            }
+        }
+        .padding(.top, 16)
+    }
+    
+    // MARK: - Calendar Days
+    private var calendarDays: [Date] {
+        let startOfMonth = calendar.dateInterval(of: .month, for: currentDate)?.start ?? currentDate
+        let startOfWeek = calendar.dateInterval(of: .weekOfYear, for: startOfMonth)?.start ?? startOfMonth
+        
+        var days: [Date] = []
+        for i in 0..<42 { // 6 weeks
+            if let date = calendar.date(byAdding: .day, value: i, to: startOfWeek) {
+                days.append(date)
+            }
+        }
+        return days
+    }
+    
+    // MARK: - Entry Detail Section
+    private func entryDetailSection(entry: SkinJournalEntry, date: Date) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Date Header
+            HStack {
+                Text("\(calendar.component(.day, from: date)) Eylül 2025")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(Color(hex: "111111"))
+                
+                Spacer()
+                
+                Button(action: {
+                    selectedDate = nil
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(Color(hex: "9CA3AF"))
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            
+            // Mood Section
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Mood")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Color(hex: "111111"))
+                
+                HStack {
+                    Text(entry.mood.emoji)
+                        .font(.system(size: 24))
+                    Text(entry.mood.rawValue)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color(hex: "111111"))
+                }
+            }
+            .padding(.horizontal, 20)
+            
+            // Skin Conditions Section
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Skin Conditions")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Color(hex: "111111"))
+                
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
+                    ForEach(entry.skinConditions, id: \.self) { condition in
+                        HStack {
+                            Circle()
+                                .fill(condition.color)
+                                .frame(width: 8, height: 8)
+                            Text(condition.rawValue)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Color(hex: "111111"))
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            
+            // Photo Section
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Photo")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Color(hex: "111111"))
+                
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color(hex: "8B5CF6").opacity(0.1), Color(hex: "EC4899").opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(height: 120)
+                    .overlay(
+                        VStack(spacing: 8) {
+                            Image(systemName: "camera.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(Color(hex: "8B5CF6"))
+                            Text("Skin Photo")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(Color(hex: "8B5CF6"))
+                        }
+                    )
+            }
+            .padding(.horizontal, 20)
+            
+            // Notes Section
+            if let notes = entry.notes, !notes.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Notes")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Color(hex: "111111"))
+                    
+                    Text(notes)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(hex: "6B7280"))
+                        .multilineTextAlignment(.leading)
+                }
+                .padding(.horizontal, 20)
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        )
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+    }
+    
+    // MARK: - Sample Data
+    private func loadSampleData() {
+        print("🔴 loadSampleData called")
+        
+        // 26 Eylül 2025 tarihini oluştur
+        var dateComponents = DateComponents()
+        dateComponents.year = 2025
+        dateComponents.month = 9
+        dateComponents.day = 26
+        let september26_2025 = calendar.date(from: dateComponents) ?? Date()
+        
+        print("🔴 Sample date created: \(september26_2025)")
+        
+        let sampleEntries = [
+            SkinJournalEntry(
+                date: september26_2025,
+                mood: .happy,
+                skinConditions: [.glowy, .redness],
+                photoData: "sample_photo_data".data(using: .utf8), // Sample photo data
+                notes: "Harika bir cilt günü! Yeni serum çok işe yaradı. Cildim parlak ve sağlıklı görünüyor."
+            )
+        ]
+        journalEntries = sampleEntries
+        print("🔴 journalEntries count: \(journalEntries.count)")
+    }
+}
+
+// MARK: - Skin Journal Entry Detail View
+struct SkinJournalEntryDetailView: View {
+    let date: Date
+    let entry: SkinJournalEntry?
+    @Environment(\.presentationMode) var presentationMode
+    
+    private let dateFormatter = DateFormatter()
+    
+    init(date: Date, entry: SkinJournalEntry?) {
+        self.date = date
+        self.entry = entry
+        dateFormatter.dateFormat = "EEEE, MMMM d, yyyy"
+    }
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Date Header
+                    VStack(spacing: 8) {
+                        Text(dateFormatter.string(from: date))
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(Color(hex: "111111"))
+                        
+                        if entry != nil {
+                            Text("Skin Journal Entry")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(hex: "6B7280"))
+                        }
+                    }
+                    .padding(.top, 20)
+                    
+                    if let entry = entry {
+                        // Mood Section
+                        moodSection(entry: entry)
+                        
+                        // Skin Conditions Section
+                        skinConditionsSection(entry: entry)
+                        
+                        // Photo Section
+                        if let photoData = entry.photoData {
+                            photoSection(photoData: photoData)
+                        }
+                        
+                        // Notes Section
+                        if let notes = entry.notes, !notes.isEmpty {
+                            notesSection(notes: notes)
+                        }
+                    } else {
+                        // No Entry State
+                        noEntryState
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 40)
+            }
+            .background(Color(hex: "F8F8F8"))
+            .navigationTitle("Entry Details")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                    .foregroundColor(Color(hex: "8B5CF6"))
+                }
+            }
+        }
+    }
+    
+    // MARK: - Mood Section
+    private func moodSection(entry: SkinJournalEntry) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Mood")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(Color(hex: "111111"))
+            
+            HStack(spacing: 16) {
+                Text(entry.mood.emoji)
+                    .font(.system(size: 32))
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(entry.mood.description)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color(hex: "111111"))
+                    
+                    Text("How you felt")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(hex: "6B7280"))
+                }
+                
+                Spacer()
+            }
+            .padding(16)
+            .background(Color.white)
+            .cornerRadius(12)
+            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+    }
+    
+    // MARK: - Skin Conditions Section
+    private func skinConditionsSection(entry: SkinJournalEntry) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Skin Conditions")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(Color(hex: "111111"))
+            
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
+                ForEach(entry.skinConditions, id: \.self) { condition in
+                    HStack(spacing: 12) {
+                        Circle()
+                            .fill(condition.color)
+                            .frame(width: 12, height: 12)
+                        
+                        Text(condition.rawValue)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(hex: "111111"))
+                        
+                        Spacer()
+                    }
+                    .padding(16)
+                    .background(Color.white)
+                    .cornerRadius(12)
+                    .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Photo Section
+    private func photoSection(photoData: Data) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Photo")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(Color(hex: "111111"))
+            
+            RoundedRectangle(cornerRadius: 12)
+                .fill(
+                    LinearGradient(
+                        colors: [Color(hex: "8B5CF6").opacity(0.1), Color(hex: "EC4899").opacity(0.1)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(height: 200)
+                .overlay(
+                    VStack(spacing: 12) {
+                        Image(systemName: "camera.fill")
+                            .font(.system(size: 32))
+                            .foregroundColor(Color(hex: "8B5CF6"))
+                        Text("Skin Photo")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Color(hex: "8B5CF6"))
+                        Text("Eylül 25, 2024")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(Color(hex: "6B7280"))
+                    }
+                )
+                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+    }
+    
+    // MARK: - Notes Section
+    private func notesSection(notes: String) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Notes")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(Color(hex: "111111"))
+            
+            Text(notes)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color(hex: "111111"))
+                .padding(16)
+                .background(Color.white)
+                .cornerRadius(12)
+                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+    }
+    
+    // MARK: - No Entry State
+    private var noEntryState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "calendar.badge.plus")
+                .font(.system(size: 48))
+                .foregroundColor(Color(hex: "9CA3AF"))
+            
+            Text("No Entry for This Day")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(Color(hex: "111111"))
+            
+            Text("Tap to add a skin journal entry")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Color(hex: "6B7280"))
+        }
+        .padding(.vertical, 40)
+    }
+}
+
+// MARK: - MySkinProfileView
+struct MySkinProfileView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var surveyViewModel = SurveyViewModel()
+    @State private var userProfile: UserProfile
+    @State private var showingSkinTypePicker = false
+    @State private var showingGenderPicker = false
+    @State private var showingSensitivityPicker = false
+    @State private var showingAgePicker = false
+    @State private var showingConcernsPicker = false
+    
+    init() {
+        // Load survey data from SurveyViewModel
+        let surveyResponse = SurveyResponse()
+        let savedName = UserDefaults.standard.string(forKey: "survey_name") ?? "User"
+        let savedGender = UserDefaults.standard.string(forKey: "survey_gender") ?? "Prefer not to say"
+        let savedAge = UserDefaults.standard.string(forKey: "survey_age") ?? "18-24"
+        let savedSkinType = UserDefaults.standard.string(forKey: "survey_skin_type") ?? "Normal"
+        let savedSensitivity = UserDefaults.standard.string(forKey: "survey_skin_sensitivity") ?? "Not sensitive"
+        
+        // Convert old "Low"/"High" values to new format
+        let updatedSensitivity: String
+        switch savedSensitivity {
+        case "Low":
+            updatedSensitivity = "Not sensitive"
+        case "High":
+            updatedSensitivity = "Sensitive"
+        default:
+            updatedSensitivity = savedSensitivity
+        }
+        
+        _userProfile = State(initialValue: UserProfile(
+            name: savedName,
+            gender: savedGender,
+            ageRange: savedAge,
+            skinType: savedSkinType,
+            skinSensitivity: updatedSensitivity,
+            skinConcerns: UserDefaults.standard.string(forKey: "survey_skin_concerns") ?? "Acne or pimples"
+        ))
+    }
+    
+    // Skin Type options - only 4 as requested
+    private let skinTypeOptions = ["Oily", "Dry", "Combination", "Normal"]
+    
+    // Gender options - only 3 as requested
+    private let genderOptions = ["Female", "Male", "Prefer not to say"]
+    
+    // Skin Sensitivity options - 2 as requested
+    private let sensitivityOptions = ["Sensitive", "Not sensitive"]
+    
+    // Age options
+    private let ageOptions = ["13-17", "18-24", "25-34", "35-44", "45-54", "55+"]
+    
+    // Skin Concerns options
+    private let skinConcernsOptions = ["Acne or pimples", "Wrinkles and Fine lines", "Redness or Rosacea", "T-zone Oiliness", "Skin barrier repair", "Puffy eyes", "Enlarged pores"]
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Header with Close and Save buttons
+                    HStack {
+                        Button("Close") {
+                            dismiss()
+                        }
+                        .foregroundColor(Color(hex: "8B5CF6"))
+                        
+                        Spacer()
+                        
+                        Text("My Skin Profile")
+                            .font(.headline)
+                            .fontWeight(.bold)
+                        
+                        Spacer()
+                        
+                        Button("Save") {
+                            saveProfile()
+                            dismiss()
+                        }
+                        .foregroundColor(Color(hex: "8B5CF6"))
+                    }
+                    .padding(.horizontal)
+
+                    // Profile Icon Section
+                    VStack(spacing: 12) {
+                        Circle()
+                            .fill(Color(hex: "8B5CF6"))
+                            .frame(width: 80, height: 80)
+                            .overlay(
+                                Image(systemName: "person.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.white)
+                            )
+                        
+                        Text("Skin Profile")
+                            .font(.title)
+                            .fontWeight(.bold)
+                        
+                        Text("Your personalized skin information")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
+                    .padding(.top, 20)
+
+                    // Form Fields
+                    VStack(spacing: 20) {
+                        formField(title: "Name", value: $userProfile.name)
+                        
+                        // Gender with dropdown
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Gender")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(.gray)
+                                .padding(.horizontal, 4)
+                            
+                            Button(action: {
+                                showingGenderPicker = true
+                            }) {
+                                HStack {
+                                    Text(userProfile.gender)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    Image(systemName: "chevron.down")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(10)
+                                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                            }
+                        }
+                        
+                        // Age with dropdown
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Age")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(.gray)
+                                .padding(.horizontal, 4)
+                            
+                            Button(action: {
+                                showingAgePicker = true
+                            }) {
+                                HStack {
+                                    Text(userProfile.ageRange)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    Image(systemName: "chevron.down")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(10)
+                                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                            }
+                        }
+                        
+                        // Skin Type with dropdown
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Skin Type")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(.gray)
+                                .padding(.horizontal, 4)
+                            
+                            Button(action: {
+                                showingSkinTypePicker = true
+                            }) {
+                                HStack {
+                                    Text(userProfile.skinType)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    Image(systemName: "chevron.down")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(10)
+                                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                            }
+                        }
+                        
+                        // Skin Sensitivity with dropdown
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Skin Sensitivity")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(.gray)
+                                .padding(.horizontal, 4)
+                            
+                            Button(action: {
+                                showingSensitivityPicker = true
+                            }) {
+                                HStack {
+                                    Text(userProfile.skinSensitivity)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    Image(systemName: "chevron.down")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(10)
+                                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                            }
+                        }
+                        
+                        // Skin Concerns with tags
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Skin Concerns")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(.gray)
+                                .padding(.horizontal, 4)
+                            
+                            Button(action: {
+                                showingConcernsPicker = true
+                            }) {
+                                HStack {
+                                    Text(userProfile.skinConcerns)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    Image(systemName: "chevron.down")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(10)
+                                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+
+                    Spacer(minLength: 100)
+                }
+                .padding(.top, 20)
+            }
+            .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
+        }
+        .confirmationDialog("Select Skin Type", isPresented: $showingSkinTypePicker) {
+            ForEach(skinTypeOptions, id: \.self) { option in
+                Button(option) {
+                    userProfile.skinType = option
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+        .confirmationDialog("Select Gender", isPresented: $showingGenderPicker) {
+            ForEach(genderOptions, id: \.self) { option in
+                Button(option) {
+                    userProfile.gender = option
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+        .confirmationDialog("Select Skin Sensitivity", isPresented: $showingSensitivityPicker) {
+            ForEach(sensitivityOptions, id: \.self) { option in
+                Button(option) {
+                    userProfile.skinSensitivity = option
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+        .confirmationDialog("Select Age", isPresented: $showingAgePicker) {
+            ForEach(ageOptions, id: \.self) { option in
+                Button(option) {
+                    userProfile.ageRange = option
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+        .confirmationDialog("Select Skin Concerns", isPresented: $showingConcernsPicker) {
+            ForEach(skinConcernsOptions, id: \.self) { option in
+                Button(option) {
+                    userProfile.skinConcerns = option
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+    }
+    
+    private func saveProfile() {
+        // Save profile data to UserDefaults
+        UserDefaults.standard.set(userProfile.name, forKey: "survey_name")
+        UserDefaults.standard.set(userProfile.gender, forKey: "survey_gender")
+        UserDefaults.standard.set(userProfile.ageRange, forKey: "survey_age")
+        UserDefaults.standard.set(userProfile.skinType, forKey: "survey_skin_type")
+        UserDefaults.standard.set(userProfile.skinSensitivity, forKey: "survey_skin_sensitivity")
+        UserDefaults.standard.set(userProfile.skinConcerns, forKey: "survey_skin_concerns")
+        
+        print("Profile saved successfully!")
+    }
+    
+    private func formField(title: String, value: Binding<String>) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.caption)
+                .fontWeight(.medium)
+                .foregroundColor(.gray)
+                .padding(.horizontal, 4)
+            
+            TextField("", text: value)
+                .padding()
+                .background(Color.white)
+                .cornerRadius(10)
+                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        }
+    }
+}

@@ -6,6 +6,7 @@ struct ProfileView: View {
     @State private var showingActionSheet = false
     @State private var showingAppSettings = false
     @State private var showingMySkinProfile = false
+    @State private var showingRoutinePreferences = false
     
     var body: some View {
         NavigationView {
@@ -45,6 +46,9 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showingMySkinProfile) {
             MySkinProfileView()
+        }
+        .sheet(isPresented: $showingRoutinePreferences) {
+            RoutinePreferencesView()
         }
     }
     
@@ -192,8 +196,8 @@ struct ProfileView: View {
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
         .onTapGesture {
             print("🔴 Button tapped: \(item.action.rawValue)")
-            if item.action == .appSettings || item.action == .mySkinProfile {
-                // Handle App Settings and My Skin Profile directly in ProfileView
+            if item.action == .appSettings || item.action == .mySkinProfile || item.action == .routinePreferences {
+                // Handle App Settings, My Skin Profile, and Routine Preferences directly in ProfileView
                 print("🔴 Calling ProfileView.handleAction for: \(item.action.rawValue)")
                 handleAction(item.action)
             } else {
@@ -250,7 +254,8 @@ struct ProfileView: View {
             }
         case .routinePreferences:
             // Navigate to routine preferences
-            print("Navigate to Routine Preferences")
+            print("🟡 RoutinePreferences action - setting to true")
+            showingRoutinePreferences = true
         case .routineForYou:
             // Navigate to routine for you
             print("Navigate to Routine for You")

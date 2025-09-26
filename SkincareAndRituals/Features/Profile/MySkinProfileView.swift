@@ -2,13 +2,17 @@ import SwiftUI
 
 struct MySkinProfileView: View {
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var surveyViewModel = SurveyViewModel()
     @State private var userProfile: UserProfile
     @State private var showingSkinTypePicker = false
     @State private var showingGenderPicker = false
     @State private var showingSensitivityPicker = false
+    @State private var showingAgePicker = false
+    @State private var showingConcernsPicker = false
     
     init() {
-        // Load user profile from UserDefaults with updated sensitivity values
+        // Load survey data from SurveyViewModel
+        let surveyResponse = SurveyResponse()
         let savedName = UserDefaults.standard.string(forKey: "survey_name") ?? "User"
         let savedGender = UserDefaults.standard.string(forKey: "survey_gender") ?? "Prefer not to say"
         let savedAge = UserDefaults.standard.string(forKey: "survey_age") ?? "18-24"
@@ -31,7 +35,8 @@ struct MySkinProfileView: View {
             gender: savedGender,
             ageRange: savedAge,
             skinType: savedSkinType,
-            skinSensitivity: updatedSensitivity
+            skinSensitivity: updatedSensitivity,
+            skinConcerns: UserDefaults.standard.string(forKey: "survey_skin_concerns") ?? "Acne or pimples"
         ))
     }
     
@@ -43,6 +48,12 @@ struct MySkinProfileView: View {
     
     // Skin Sensitivity options - 2 as requested
     private let sensitivityOptions = ["Sensitive", "Not sensitive"]
+    
+    // Age options
+    private let ageOptions = ["13-17", "18-24", "25-34", "35-44", "45-54", "55+"]
+    
+    // Skin Concerns options
+    private let skinConcernsOptions = ["Acne or pimples", "Wrinkles and Fine lines", "Redness or Rosacea", "T-zone Oiliness", "Skin barrier repair", "Puffy eyes", "Enlarged pores"]
     
     var body: some View {
         NavigationView {
@@ -64,7 +75,7 @@ struct MySkinProfileView: View {
                         Spacer()
                         
                         Button("Save") {
-                            // Save profile logic
+                            saveProfile()
                             dismiss()
                         }
                         .foregroundColor(Color(hex: "8B5CF6"))
@@ -121,7 +132,30 @@ struct MySkinProfileView: View {
                             }
                         }
                         
-                        formField(title: "Age", value: $userProfile.ageRange)
+                        // Age with dropdown
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Age")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(.gray)
+                                .padding(.horizontal, 4)
+                            
+                            Button(action: {
+                                showingAgePicker = true
+                            }) {
+                                HStack {
+                                    Text(userProfile.ageRange)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    Image(systemName: "chevron.down")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(10)
+                                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                            }
+                        }
                         
                         // Skin Type with dropdown
                         VStack(alignment: .leading, spacing: 8) {
@@ -181,40 +215,20 @@ struct MySkinProfileView: View {
                                 .foregroundColor(.gray)
                                 .padding(.horizontal, 4)
                             
-                            HStack(spacing: 12) {
-                                // Selected concern
-                                HStack(spacing: 8) {
-                                    Text("Acne or pimples")
-                                        .font(.subheadline)
-                                        .foregroundColor(.white)
-                                    Image(systemName: "checkmark")
-                                        .font(.caption)
-                                        .foregroundColor(.white)
+                            Button(action: {
+                                showingConcernsPicker = true
+                            }) {
+                                HStack {
+                                    Text(userProfile.skinConcerns)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    Image(systemName: "chevron.down")
+                                        .foregroundColor(.gray)
                                 }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(Color(hex: "8B5CF6"))
-                                .cornerRadius(20)
-                                
-                                // Add concern button
-                                HStack(spacing: 8) {
-                                    Text("Wrinkles and Fine lines")
-                                        .font(.subheadline)
-                                        .foregroundColor(.black)
-                                    Image(systemName: "plus")
-                                        .font(.caption)
-                                        .foregroundColor(.black)
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
+                                .padding()
                                 .background(Color.white)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 20)
-                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                )
-                                .cornerRadius(20)
-                                
-                                Spacer()
+                                .cornerRadius(10)
+                                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                             }
                         }
                     }
@@ -250,6 +264,34 @@ struct MySkinProfileView: View {
             }
             Button("Cancel", role: .cancel) { }
         }
+        .confirmationDialog("Select Age", isPresented: $showingAgePicker) {
+            ForEach(ageOptions, id: \.self) { option in
+                Button(option) {
+                    userProfile.ageRange = option
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+        .confirmationDialog("Select Skin Concerns", isPresented: $showingConcernsPicker) {
+            ForEach(skinConcernsOptions, id: \.self) { option in
+                Button(option) {
+                    userProfile.skinConcerns = option
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+    }
+    
+    private func saveProfile() {
+        // Save profile data to UserDefaults
+        UserDefaults.standard.set(userProfile.name, forKey: "survey_name")
+        UserDefaults.standard.set(userProfile.gender, forKey: "survey_gender")
+        UserDefaults.standard.set(userProfile.ageRange, forKey: "survey_age")
+        UserDefaults.standard.set(userProfile.skinType, forKey: "survey_skin_type")
+        UserDefaults.standard.set(userProfile.skinSensitivity, forKey: "survey_skin_sensitivity")
+        UserDefaults.standard.set(userProfile.skinConcerns, forKey: "survey_skin_concerns")
+        
+        print("Profile saved successfully!")
     }
     
     private func formField(title: String, value: Binding<String>) -> some View {
